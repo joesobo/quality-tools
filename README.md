@@ -10,7 +10,6 @@ CLI for running quality checks against host-project folders and files.
 ```bash
 pnpm install
 pnpm run ci
-pnpm run release:check
 ```
 
 The CI check runs the same core gates:
@@ -37,5 +36,4 @@ Use Changesets for version bumps and release notes:
 
 ```bash
 pnpm changeset
-pnpm version-packages
 ```

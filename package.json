@@ -10,10 +10,8 @@
     "changeset": "changeset",
     "test": "pnpm --filter @poleski/quality-tools run test",
     "lint": "pnpm --filter @poleski/quality-tools run lint",
-    "release:check": "pnpm run ci && pnpm --filter @poleski/quality-tools pack --pack-destination /tmp",
     "typecheck": "pnpm --filter @poleski/quality-tools run typecheck",
-    "quality-tools": "pnpm --filter @poleski/quality-tools run cli",
-    "version-packages": "changeset version"
+    "quality-tools": "pnpm --filter @poleski/quality-tools run cli"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
