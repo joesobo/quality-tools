@@ -36,4 +36,5 @@ Use Changesets for version bumps and release notes:
 
 ```bash
 pnpm changeset
+pnpm version-packages
 ```
