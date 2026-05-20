@@ -1,0 +1,20 @@
+{
+  "name": "quality-tools-repo",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.32.0",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --filter @poleski/quality-tools run build",
+    "test": "pnpm --filter @poleski/quality-tools run test",
+    "lint": "pnpm --filter @poleski/quality-tools run lint",
+    "typecheck": "pnpm --filter @poleski/quality-tools run typecheck",
+    "quality-tools": "pnpm --filter @poleski/quality-tools run cli"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.11.0",
+    "eslint": "^9.0.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}
