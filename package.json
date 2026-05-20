@@ -6,12 +6,17 @@
   "type": "module",
   "scripts": {
     "build": "pnpm --filter @poleski/quality-tools run build",
+    "ci": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
+    "changeset": "changeset",
     "test": "pnpm --filter @poleski/quality-tools run test",
     "lint": "pnpm --filter @poleski/quality-tools run lint",
+    "release:check": "pnpm run ci && pnpm --filter @poleski/quality-tools pack --pack-destination /tmp",
     "typecheck": "pnpm --filter @poleski/quality-tools run typecheck",
-    "quality-tools": "pnpm --filter @poleski/quality-tools run cli"
+    "quality-tools": "pnpm --filter @poleski/quality-tools run cli",
+    "version-packages": "changeset version"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.30.0",
     "@eslint/js": "^9.0.0",
     "@types/node": "^20.11.0",
     "eslint": "^9.0.0",
