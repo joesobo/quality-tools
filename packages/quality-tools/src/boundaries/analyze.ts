@@ -1,13 +1,17 @@
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { basename, join } from 'path';
 import type { QualityTarget } from '../shared/resolve/target';
 import { listWorkspacePackages, type WorkspacePackage } from '../shared/util/workspacePackages';
-import { analyzePackage } from './packageAnalysis';
+import { analyzePackage } from './graph/packageAnalysis';
 import { mergeReports } from './merge';
 import type { BoundaryReport } from './model';
 
-function analyzePackageRoot(repoRoot: string, workspacePackage: WorkspacePackage): BoundaryReport {
-  return analyzePackage(repoRoot, workspacePackage);
+function analyzePackageRoot(
+  repoRoot: string,
+  workspacePackage: WorkspacePackage,
+  scope?: QualityTarget
+): BoundaryReport {
+  return analyzePackage(repoRoot, workspacePackage, scope);
 }
 
 export function analyzeBoundaries(repoRoot: string, target: QualityTarget): BoundaryReport {
@@ -22,12 +26,12 @@ export function analyzeBoundaries(repoRoot: string, target: QualityTarget): Boun
     return analyzePackageRoot(repoRoot, {
       name: target.packageName,
       root: target.packageRoot ?? join(repoRoot, 'packages', target.packageName)
-    });
+    }, target);
   }
 
   if (existsSync(target.absolutePath)) {
     const workspacePackage = {
-      name: target.absolutePath.split('/').pop() ?? 'target',
+      name: basename(target.absolutePath),
       root: target.absolutePath
     };
     return analyzePackageRoot(repoRoot, workspacePackage);

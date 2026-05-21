@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createNode } from '../../src/boundaries/node';
+import { createNode } from '../../src/boundaries/graph/node';
 
 describe('createNode', () => {
   it('classifies layers and entrypoints from package-relative patterns', () => {
@@ -37,6 +37,27 @@ describe('createNode', () => {
     ).toMatchObject({
       entrypoint: false,
       layer: undefined
+    });
+  });
+
+  it('matches a layer when any include pattern matches', () => {
+    expect(
+      createNode(
+        '/repo/packages/extension/src/model/user.ts',
+        'extension',
+        'src/model/user.ts',
+        'packages/extension/src/model/user.ts',
+        [
+          {
+            allow: [],
+            include: ['src/core/**', 'src/model/**'],
+            name: 'domain'
+          }
+        ],
+        []
+      )
+    ).toMatchObject({
+      layer: 'domain'
     });
   });
 });

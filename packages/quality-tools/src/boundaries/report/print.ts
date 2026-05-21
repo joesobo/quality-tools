@@ -1,5 +1,5 @@
 import { formatBoundaryFile, formatBoundaryViolation, summaryLines } from './format';
-import type { BoundaryReport } from './model';
+import type { BoundaryReport } from '../model';
 
 export interface BoundaryReportOptions {
   verbose?: boolean;

@@ -1,4 +1,4 @@
-import type { BoundaryFileNode } from './model';
+import type { BoundaryFileNode } from '../model';
 
 export function deadEnds(files: BoundaryFileNode[]): BoundaryFileNode[] {
   return files.filter((file) => file.incoming === 0 && file.outgoing === 0 && !file.entrypoint);

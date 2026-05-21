@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { resolvePackageCandidates } from '../../src/boundaries/selection';
+import { resolvePackageCandidates } from '../../src/boundaries/graph/selection';
 import type { WorkspacePackage } from '../../src/shared/util/workspacePackages';
 
 const tempDirs: string[] = [];

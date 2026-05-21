@@ -123,4 +123,21 @@ describe('analyzeBoundaries', () => {
       outgoing: 1
     });
   });
+
+  it('excludes violations owned by files outside a selected directory target', () => {
+    const { repoRoot, target } = createTempRepo();
+    const report = analyzeBoundaries(repoRoot, {
+      ...target,
+      absolutePath: join(target.packageRoot!, 'src', 'webview'),
+      kind: 'directory',
+      packageRelativePath: 'src/webview',
+      relativePath: 'packages/extension/src/webview'
+    });
+
+    expect(report.files.map((file) => file.relativePath)).toEqual([
+      'packages/extension/src/webview/main.tsx',
+      'packages/extension/src/webview/view.ts'
+    ]);
+    expect(report.layerViolations).toEqual([]);
+  });
 });

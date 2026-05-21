@@ -1,9 +1,9 @@
-import { resolvePackageBoundaryConfig } from '../config/quality';
-import { toPosix } from '../shared/util/pathUtils';
-import type { WorkspacePackage } from '../shared/util/workspacePackages';
+import { resolvePackageBoundaryConfig } from '../../config/quality';
+import { toPosix } from '../../shared/util/pathUtils';
+import type { WorkspacePackage } from '../../shared/util/workspacePackages';
 import { createNode } from './node';
 import { resolvePackageCandidates } from './selection';
-import type { BoundaryFileNode } from './model';
+import type { BoundaryFileNode } from '../model';
 
 export type BoundaryNode = BoundaryFileNode & { allowedLayers: string[] };
 export type BoundaryNodeIndex = Map<string, BoundaryNode>;

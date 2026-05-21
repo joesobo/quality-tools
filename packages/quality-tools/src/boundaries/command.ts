@@ -2,7 +2,7 @@ import { cleanCliArgs, parseTargetArg } from '../shared/cliArgs';
 import { REPO_ROOT } from '../shared/resolve/repoRoot';
 import { resolveQualityTarget } from '../shared/resolve/target';
 import { analyzeBoundaries } from './analyze';
-import { reportBoundaries } from './report';
+import { reportBoundaries } from './report/print';
 
 export interface BoundariesCliDependencies {
   analyzeBoundaries: typeof analyzeBoundaries;

@@ -89,4 +89,22 @@ describe('analyzeReachability', () => {
       })
     ]);
   });
+
+  it('reports only selected directory files for directory targets', () => {
+    const { repoRoot, target } = createTempRepo();
+    const report = analyzeReachability(repoRoot, {
+      ...target,
+      absolutePath: join(target.packageRoot!, 'src', 'shared'),
+      kind: 'directory',
+      packageRelativePath: 'src/shared',
+      relativePath: 'packages/extension/src/shared'
+    });
+
+    expect(report.target).toBe('packages/extension/src/shared');
+    expect(report.files.map((file) => file.relativePath)).toEqual([
+      'packages/extension/src/shared/isolated.ts',
+      'packages/extension/src/shared/orphan.ts',
+      'packages/extension/src/shared/used.ts'
+    ]);
+  });
 });

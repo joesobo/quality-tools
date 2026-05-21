@@ -8,6 +8,9 @@ describe('hasExplicitTestFileTarget', () => {
     expect(hasExplicitTestFileTarget(
       resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/tests/scrap/metrics/compute/basics.test.ts')
     )).toBe(true);
+    expect(hasExplicitTestFileTarget(
+      resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/src/scrap/metrics/compute.ts')
+    )).toBe(false);
     expect(hasExplicitTestFileTarget(resolveQualityTarget(REPO_ROOT, 'quality-tools/'))).toBe(false);
     expect(hasExplicitTestFileTarget(resolveQualityTarget(REPO_ROOT, 'README.md'))).toBe(false);
   });
@@ -32,5 +35,25 @@ describe('isInsideTarget', () => {
     const otherFile = `${REPO_ROOT}/packages/extension/tests/shared/contracts.test.ts`;
     expect(isInsideTarget(resolveQualityTarget(REPO_ROOT, 'quality-tools/'), REPO_ROOT, otherFile)).toBe(false);
     expect(isInsideTarget(resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/tests/scrap'), REPO_ROOT, otherFile)).toBe(false);
+  });
+
+  it('maps source directory targets to their matching test directory', () => {
+    const boundaryTestFile = `${REPO_ROOT}/packages/quality-tools/tests/boundaries/analyze.test.ts`;
+    const reachabilityTestFile = `${REPO_ROOT}/packages/quality-tools/tests/reachability/analyze.test.ts`;
+
+    expect(
+      isInsideTarget(
+        resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/src/boundaries'),
+        REPO_ROOT,
+        boundaryTestFile
+      )
+    ).toBe(true);
+    expect(
+      isInsideTarget(
+        resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/src/boundaries'),
+        REPO_ROOT,
+        reachabilityTestFile
+      )
+    ).toBe(false);
   });
 });

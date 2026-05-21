@@ -1,17 +1,17 @@
 import { basename } from 'path';
-import { parseFileImports } from '../organize/cohesion/parse';
-import type { WorkspacePackage } from '../shared/util/workspacePackages';
-import { deadEnds, deadSurfaces } from './deadFiles';
+import { parseFileImports } from '../../organize/cohesion/parse';
+import type { QualityTarget } from '../../shared/resolve/target';
+import type { WorkspacePackage } from '../../shared/util/workspacePackages';
 import { resolveImportTarget } from './imports';
 import { createNodesByPath, type BoundaryNodeIndex } from './nodeIndex';
-import type { BoundaryReport, BoundaryViolation } from './model';
+import { createScopedReport, selectedFiles } from './scope';
+import type { BoundaryReport, BoundaryViolation } from '../model';
 
-function collectViolations(
+function* collectViolations(
   absolutePath: string,
   nodesByPath: BoundaryNodeIndex,
-  candidatePaths: Set<string>,
-  violations: BoundaryViolation[]
-): void {
+  candidatePaths: Set<string>
+): Iterable<BoundaryViolation> {
   const node = nodesByPath.get(absolutePath)!;
 
   const imports = parseFileImports(absolutePath, basename(absolutePath));
@@ -32,32 +32,31 @@ function collectViolations(
       node.layer !== importedNode.layer &&
       !node.allowedLayers.includes(importedNode.layer)
     ) {
-      violations.push({
+      yield {
         from: node.relativePath,
         fromLayer: node.layer,
         reason: `${node.layer} cannot depend on ${importedNode.layer}`,
         to: importedNode.relativePath,
         toLayer: importedNode.layer
-      });
+      };
     }
   }
 }
 
-export function analyzePackage(repoRoot: string, workspacePackage: WorkspacePackage): BoundaryReport {
+export function analyzePackage(
+  repoRoot: string,
+  workspacePackage: WorkspacePackage,
+  scope?: QualityTarget
+): BoundaryReport {
   const { candidatePaths, nodesByPath } = createNodesByPath(repoRoot, workspacePackage);
-  const violations: BoundaryViolation[] = [];
+  const violations = Array.from(candidatePaths).flatMap((absolutePath) =>
+    Array.from(collectViolations(absolutePath, nodesByPath, candidatePaths))
+  );
 
-  for (const absolutePath of candidatePaths) {
-    collectViolations(absolutePath, nodesByPath, candidatePaths, violations);
-  }
-
-  const files = [...nodesByPath.values()];
-
-  return {
-    deadEnds: deadEnds(files),
-    deadSurfaces: deadSurfaces(files),
-    files,
-    layerViolations: violations,
-    target: `packages/${workspacePackage.name}`
-  };
+  return createScopedReport(
+    workspacePackage,
+    selectedFiles([...nodesByPath.values()], scope),
+    violations,
+    scope
+  );
 }

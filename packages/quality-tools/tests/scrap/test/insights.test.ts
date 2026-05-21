@@ -23,10 +23,22 @@ function example(overrides: Partial<ScrapExampleMetric> = {}): ScrapExampleMetri
 }
 
 describe('analyzeDuplicationInsights', () => {
-  it('marks duplicate low-complexity examples as coverage-matrix candidates', () => {
+  it('counts table-driven examples as coverage matrices without recommending table-drive cleanup', () => {
     const result = analyzeDuplicationInsights([
       example({ exampleFingerprint: 'same', tableDriven: true }),
       example({ exampleFingerprint: 'same', tableDriven: true })
+    ]);
+
+    expect(result.coverageMatrixCandidateCount).toBe(2);
+    expect(result.recommendations).not.toContainEqual(expect.objectContaining({
+      kind: 'TABLE_DRIVE'
+    }));
+  });
+
+  it('recommends table-driving repeated non-table-driven matrix examples', () => {
+    const result = analyzeDuplicationInsights([
+      example({ exampleFingerprint: 'same', literalShapeFingerprint: 'literal' }),
+      example({ exampleFingerprint: 'same', literalShapeFingerprint: 'literal' })
     ]);
 
     expect(result.coverageMatrixCandidateCount).toBe(2);

@@ -35,6 +35,13 @@ describe('aiActionability', () => {
     expect(aiActionability(metric({
       coverageMatrixCandidateCount: 2,
       extractionPressureScore: 0,
+      recommendations: [
+        {
+          confidence: 'HIGH',
+          kind: 'TABLE_DRIVE',
+          message: '2 example(s) look like a coverage matrix that should be table-driven.'
+        }
+      ],
       remediationMode: 'LOCAL'
     }))).toBe('AUTO_TABLE_DRIVE');
   });

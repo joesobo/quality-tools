@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deadEnds, deadSurfaces } from '../../src/boundaries/deadFiles';
+import { deadEnds, deadSurfaces } from '../../src/boundaries/graph/deadFiles';
 import type { BoundaryFileNode } from '../../src/boundaries/model';
 
 const files: BoundaryFileNode[] = [
@@ -20,6 +20,15 @@ const files: BoundaryFileNode[] = [
     packageName: 'example',
     packageRelativePath: 'src/b.ts',
     relativePath: 'packages/example/src/b.ts'
+  },
+  {
+    absolutePath: '/repo/relay.ts',
+    entrypoint: false,
+    incoming: 1,
+    outgoing: 1,
+    packageName: 'example',
+    packageRelativePath: 'src/relay.ts',
+    relativePath: 'packages/example/src/relay.ts'
   },
   {
     absolutePath: '/repo/main.ts',

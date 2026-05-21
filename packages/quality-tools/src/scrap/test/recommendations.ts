@@ -6,6 +6,7 @@ import { coverageRelevantExamples, strongestSetupCluster } from '../example/clus
 interface DuplicationRecommendationCounts {
   coverageMatrixCandidateCount: number;
   recommendedExtractionCount: number;
+  tableDriveCandidateCount: number;
   zeroAssertionCount: number;
 }
 
@@ -23,16 +24,16 @@ function strengthenAssertionsRecommendation(zeroAssertionCount: number): ScrapRe
 
 function tableDriveRecommendation(
   examples: ScrapExampleMetric[],
-  coverageMatrixCandidateCount: number
+  tableDriveCandidateCount: number
 ): ScrapRecommendation[] {
-  if (coverageMatrixCandidateCount === 0) {
+  if (tableDriveCandidateCount === 0) {
     return [];
   }
 
   return [{
     confidence: 'HIGH',
     kind: 'TABLE_DRIVE',
-    message: `${coverageMatrixCandidateCount} example(s) look like a coverage matrix that should be table-driven.${summarizeBlockPaths(coverageRelevantExamples(examples))}`
+    message: `${tableDriveCandidateCount} example(s) look like a coverage matrix that should be table-driven.${summarizeBlockPaths(coverageRelevantExamples(examples))}`
   }];
 }
 
@@ -56,7 +57,7 @@ export function duplicationRecommendations(
 ): ScrapRecommendation[] {
   return [
     ...strengthenAssertionsRecommendation(counts.zeroAssertionCount),
-    ...tableDriveRecommendation(examples, counts.coverageMatrixCandidateCount),
+    ...tableDriveRecommendation(examples, counts.tableDriveCandidateCount),
     ...extractSetupRecommendation(examples, counts.recommendedExtractionCount)
   ];
 }

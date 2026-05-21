@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createNodesByPath } from '../../src/boundaries/nodeIndex';
+import { createNodesByPath } from '../../src/boundaries/graph/nodeIndex';
 import type { WorkspacePackage } from '../../src/shared/util/workspacePackages';
 
 const tempDirs: string[] = [];
@@ -38,7 +38,7 @@ function createWorkspace(): { repoRoot: string; workspacePackage: WorkspacePacka
     })
   );
 
-  for (const relativePath of ['src/extension/activate.ts', 'src/shared/file.ts']) {
+  for (const relativePath of ['src/extension/activate.ts', 'src/other/free.ts', 'src/shared/file.ts']) {
     const absolutePath = join(packageRoot, relativePath);
     mkdirSync(join(absolutePath, '..'), { recursive: true });
     writeFileSync(absolutePath, 'export const value = 1;\n');
@@ -60,6 +60,7 @@ describe('createNodesByPath', () => {
 
     expect([...candidatePaths]).toEqual([
       join(workspacePackage.root, 'src/extension/activate.ts'),
+      join(workspacePackage.root, 'src/other/free.ts'),
       join(workspacePackage.root, 'src/shared/file.ts')
     ]);
     expect(nodesByPath.get(join(workspacePackage.root, 'src/extension/activate.ts'))).toMatchObject({
@@ -71,6 +72,11 @@ describe('createNodesByPath', () => {
       allowedLayers: [],
       entrypoint: false,
       layer: 'shared'
+    });
+    expect(nodesByPath.get(join(workspacePackage.root, 'src/other/free.ts'))).toMatchObject({
+      allowedLayers: [],
+      entrypoint: false,
+      layer: undefined
     });
   });
 });

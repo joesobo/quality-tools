@@ -44,3 +44,18 @@ export function coverageMatrixCandidateCount(
     )
   )).length;
 }
+
+export function tableDriveCandidateCount(
+  examples: ScrapExampleMetric[],
+  groupSizes: CoverageMatrixGroupSizes
+): number {
+  return examples.filter((example, index) => (
+    example.tableDriven !== true &&
+    isCoverageMatrixCandidate(
+      example,
+      groupSizes.exampleGroupSizes[index] ?? 0,
+      groupSizes.literalShapeGroupSizes[index] ?? 0,
+      groupSizes.fixtureGroupSizes[index] ?? 0
+    )
+  )).length;
+}

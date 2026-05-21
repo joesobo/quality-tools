@@ -8,7 +8,8 @@ Use `@poleski/quality-tools` against its own repository and follow the tool outp
 
 - Keep the package generic; do not add host-project-specific naming or assumptions.
 - Use the local package CLI through `pnpm run quality-tools -- ...`.
-- Run mutation checks only on individual files or very narrow globs.
+- For the second dogfood pass, run mutation on the current tool folder rather
+  than a single file when the folder is small enough to finish in a useful time.
 - Prefer small refactors with focused tests over broad rewrites.
 
 ## Baseline Commands
@@ -21,7 +22,60 @@ pnpm run quality-tools -- scrap quality-tools
 pnpm run quality-tools -- crap quality-tools
 ```
 
+## Tool-By-Tool Matrix
+
+Command-owned tool folders:
+
+- `packages/quality-tools/src/boundaries`
+- `packages/quality-tools/src/reachability`
+- `packages/quality-tools/src/organize`
+- `packages/quality-tools/src/scrap`
+- `packages/quality-tools/src/crap`
+- `packages/quality-tools/src/mutation`
+
+For each folder, run and iterate until signals are acceptable:
+
+```bash
+pnpm run quality-tools -- organize <tool-folder>
+pnpm run quality-tools -- boundaries <tool-folder> --strict
+pnpm run quality-tools -- reachability <tool-folder> --strict
+pnpm run quality-tools -- scrap <tool-folder>
+pnpm run quality-tools -- crap <tool-folder>
+pnpm run quality-tools -- mutate --mutate <tool-folder>
+```
+
+Good signal means no blocking dead-code/boundary/CRAP/mutation failures, and no
+organize/scrap recommendation that is clearly actionable for that current tool
+folder without broad unrelated redesign.
+
 ## Iteration Notes
+
+### Tool matrix pass: `boundaries`
+
+- `organize packages/quality-tools/src/boundaries` initially reported `[SPLIT]`
+  for 12 files and one imports-only cluster. Split the tool into
+  `boundaries/graph/` and `boundaries/report/`; rerun now reports
+  `No directories found for organize analysis.`
+- `boundaries packages/quality-tools/src/boundaries --strict` and
+  `reachability packages/quality-tools/src/boundaries --strict` initially
+  reported the entire package instead of the selected tool folder. Fixed
+  directory/file target scoping so the package graph is still used for edges,
+  while reports are limited to the selected scope. Rerun reports 12 files, 0
+  layer violations, 0 dead surfaces, and 0 dead ends.
+- `scrap packages/quality-tools/src/boundaries` initially could not find tests
+  for a source-folder target. Added source-to-test folder mapping, then fixed a
+  `scrap` false positive where already table-driven examples were still told to
+  table-drive. Rerun has no validation issues and no concrete recommendations
+  for the boundaries test files.
+- `crap packages/quality-tools/src/boundaries` reports all functions have CRAP
+  score <= 8 with 100% coverage for the boundaries source group.
+- First `mutate --mutate packages/quality-tools/src/boundaries` pass cleared
+  threshold but surfaced surviving mutants in dead-surface filtering, layer
+  matching, allowed-layer fallback, and the custom target fallback. Added
+  focused assertions, split scope/report shaping out of package analysis, and
+  removed the unreachable fallback. Final rerun: 13 source files, 14 matching
+  test files, 240/240 mutants killed, 100% mutation score, all files within the
+  50 mutation-site threshold.
 
 - Baseline `organize` found low-information `types.ts` modules in `boundaries`,
   `organize`, `reachability`, and `scrap`, plus a repeated `include` cluster in

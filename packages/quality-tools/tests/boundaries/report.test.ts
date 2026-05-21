@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { reportBoundaries } from '../../src/boundaries/report';
+import { reportBoundaries } from '../../src/boundaries/report/print';
 import type { BoundaryReport } from '../../src/boundaries/model';
 
 function createReport(): BoundaryReport {

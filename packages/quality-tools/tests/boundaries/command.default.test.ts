@@ -50,7 +50,7 @@ describe('runBoundariesCli default dependencies', () => {
     const resolveQualityTarget = vi.fn(() => createTarget());
 
     vi.doMock('../../src/boundaries/analyze', () => ({ analyzeBoundaries }));
-    vi.doMock('../../src/boundaries/report', () => ({ reportBoundaries }));
+    vi.doMock('../../src/boundaries/report/print', () => ({ reportBoundaries }));
     vi.doMock('../../src/shared/resolve/target', () => ({ resolveQualityTarget }));
 
     const { runBoundariesCli } = await import('../../src/boundaries/command');

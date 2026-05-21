@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { coverageMatrixCandidateCount, isCoverageMatrixCandidate } from '../../../../src/scrap/metrics/matrix/candidates';
+import {
+  coverageMatrixCandidateCount,
+  isCoverageMatrixCandidate,
+  tableDriveCandidateCount
+} from '../../../../src/scrap/metrics/matrix/candidates';
 import type { ScrapExampleMetric } from '../../../../src/scrap/model';
 
 function example(overrides: Partial<ScrapExampleMetric> = {}): ScrapExampleMetric {
@@ -89,5 +93,10 @@ describe('coverageMatrixCandidates', () => {
       fixtureGroupSizes: [0, 0, 0, 0, 2, 2, 0, 0],
       literalShapeGroupSizes: [2, 2, 0, 0, 0, 0, 0, 0]
     })).toBe(6);
+    expect(tableDriveCandidateCount(examples, {
+      exampleGroupSizes: [2, 2, 2, 2, 2, 2, 2, 2],
+      fixtureGroupSizes: [0, 0, 0, 0, 2, 2, 0, 0],
+      literalShapeGroupSizes: [2, 2, 0, 0, 0, 0, 0, 0]
+    })).toBe(4);
   });
 });

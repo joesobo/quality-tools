@@ -9,7 +9,7 @@ function needsManualSplit(metric: ScrapFileMetric): boolean {
 }
 
 function shouldTableDrive(metric: ScrapFileMetric): boolean {
-  return (metric.coverageMatrixCandidateCount ?? 0) > 0 &&
+  return (metric.recommendations ?? []).some((recommendation) => recommendation.kind === 'TABLE_DRIVE') &&
     (metric.extractionPressureScore ?? 0) === 0;
 }
 

@@ -1,4 +1,4 @@
-import { coverageMatrixCandidateCount } from '../metrics/matrix/candidates';
+import { coverageMatrixCandidateCount, tableDriveCandidateCount } from '../metrics/matrix/candidates';
 import { duplicateGroupCount, countedFingerprintGroups } from './groupSizes';
 import { duplicationRecommendations } from './recommendations';
 import { recommendedExtractionCount } from '../report/blocks/extractionCount';
@@ -73,6 +73,11 @@ export function analyzeDuplicationInsights(examples: ScrapExampleMetric[]): Dupl
     fixtureGroupSizes,
     literalShapeGroupSizes
   });
+  const tableDriveCandidates = tableDriveCandidateCount(examples, {
+    exampleGroupSizes,
+    fixtureGroupSizes,
+    literalShapeGroupSizes
+  });
   const harmfulDuplicationScore = setupDuplicationScore + assertionDuplicationScore + fixtureDuplicationScore;
   const effectiveDuplicationScore = Math.max(0, harmfulDuplicationScore - coverageMatrixCandidates);
   const extractionPressureScore = Math.max(
@@ -83,6 +88,7 @@ export function analyzeDuplicationInsights(examples: ScrapExampleMetric[]): Dupl
   const recommendations: ScrapRecommendation[] = duplicationRecommendations(examples, {
     coverageMatrixCandidateCount: coverageMatrixCandidates,
     recommendedExtractionCount: repeatedSetupCount,
+    tableDriveCandidateCount: tableDriveCandidates,
     zeroAssertionCount
   });
 

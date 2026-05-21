@@ -1,8 +1,8 @@
 import { join, matchesGlob } from 'path';
-import { pathIncludedByTool, resolvePackageBoundaryConfig } from '../config/quality';
-import { walkDirectories } from '../organize/metric/directoryWalk';
-import { toPosix } from '../shared/util/pathUtils';
-import type { WorkspacePackage } from '../shared/util/workspacePackages';
+import { pathIncludedByTool, resolvePackageBoundaryConfig } from '../../config/quality';
+import { walkDirectories } from '../../organize/metric/directoryWalk';
+import { toPosix } from '../../shared/util/pathUtils';
+import type { WorkspacePackage } from '../../shared/util/workspacePackages';
 
 function isBoundaryEntrypoint(repoRoot: string, packageName: string, packageRelativePath: string): boolean {
   const { entrypoints } = resolvePackageBoundaryConfig(repoRoot, packageName);

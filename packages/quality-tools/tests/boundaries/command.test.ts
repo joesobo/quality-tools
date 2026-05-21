@@ -34,11 +34,15 @@ function createDependencies(report: BoundaryReport = createReport()): Boundaries
   };
 }
 
+function runWithReport(args: string[], report: BoundaryReport = createReport()): BoundariesCliDependencies {
+  const dependencies = createDependencies(report);
+  runBoundariesCli(args, dependencies);
+  return dependencies;
+}
+
 describe('runBoundariesCli', () => {
   it('passes the resolved target into the analyzer and reports the summary', () => {
-    const dependencies = createDependencies();
-
-    runBoundariesCli(['extension/'], dependencies);
+    const dependencies = runWithReport(['extension/']);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, 'extension/');
     expect(dependencies.analyzeBoundaries).toHaveBeenCalledWith(REPO_ROOT, createTarget());
@@ -50,9 +54,7 @@ describe('runBoundariesCli', () => {
     { flag: '--verbose', verbose: true },
     { flag: '--strict', verbose: false },
   ])('treats a leading $flag flag as a value flag during target parsing', ({ flag, verbose }) => {
-    const dependencies = createDependencies();
-
-    runBoundariesCli([flag, 'extension/'], dependencies);
+    const dependencies = runWithReport([flag, 'extension/']);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, undefined);
     expect(dependencies.reportBoundaries).toHaveBeenCalledWith(createReport(), { verbose });
@@ -60,10 +62,9 @@ describe('runBoundariesCli', () => {
   });
 
   it('treats a leading --json flag as a value flag during target parsing', () => {
-    const dependencies = createDependencies();
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-    runBoundariesCli(['--json', 'extension/'], dependencies);
+    const dependencies = runWithReport(['--json', 'extension/']);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, undefined);
     expect(log).toHaveBeenCalledWith(JSON.stringify(createReport(), null, 2));
@@ -120,9 +121,7 @@ describe('runBoundariesCli', () => {
       },
     },
   ] satisfies Array<{ name: string; args: string[]; report: BoundaryReport }>)('fails for $name', ({ args, report }) => {
-    const dependencies = createDependencies(report);
-
-    runBoundariesCli(args, dependencies);
+    const dependencies = runWithReport(args, report);
 
     expect(dependencies.setExitCode).toHaveBeenCalledWith(1);
   });
@@ -150,9 +149,7 @@ describe('runBoundariesCli', () => {
       },
     },
   ] satisfies Array<{ name: string; args: string[]; report: BoundaryReport }>)('does not fail for $name', ({ args, report }) => {
-    const dependencies = createDependencies(report);
-
-    runBoundariesCli(args, dependencies);
+    const dependencies = runWithReport(args, report);
 
     expect(dependencies.setExitCode).not.toHaveBeenCalled();
   });
@@ -177,10 +174,9 @@ describe('runBoundariesCli', () => {
         }
       ]
     } satisfies BoundaryReport;
-    const dependencies = createDependencies(report);
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-    runBoundariesCli(['--json', '--strict', 'extension/'], dependencies);
+    const dependencies = runWithReport(['--json', '--strict', 'extension/'], report);
 
     expect(log).toHaveBeenCalledTimes(1);
     expect(dependencies.reportBoundaries).not.toHaveBeenCalled();

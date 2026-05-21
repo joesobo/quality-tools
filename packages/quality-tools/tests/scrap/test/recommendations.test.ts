@@ -27,6 +27,7 @@ describe('duplicationRecommendations', () => {
     expect(duplicationRecommendations([], {
       coverageMatrixCandidateCount: 0,
       recommendedExtractionCount: 0,
+      tableDriveCandidateCount: 0,
       zeroAssertionCount: 0
     })).toEqual([]);
   });
@@ -38,6 +39,7 @@ describe('duplicationRecommendations', () => {
     ], {
       coverageMatrixCandidateCount: 3,
       recommendedExtractionCount: 2,
+      tableDriveCandidateCount: 3,
       zeroAssertionCount: 1
     })).toEqual([
       {
