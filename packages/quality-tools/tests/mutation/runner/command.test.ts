@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createDefaultMutationCliDependencies,
   runMutationCli,
   type MutationCliDependencies
 } from '../../../src/mutation/runner/command';
@@ -52,6 +53,15 @@ function createDependencies(): MutationCliDependencies {
 }
 
 describe('command', () => {
+  it('wires the default mutation CLI dependencies', () => {
+    expect(Object.keys(createDefaultMutationCliDependencies()).sort()).toEqual([
+      'discoverMutationPackageNames',
+      'resolveQualityTarget',
+      'runMutation',
+      'runPreflightTypecheck'
+    ]);
+  });
+
   it('runs a single explicit target', () => {
     const dependencies = createDependencies();
     runMutationCli(['quality-tools/'], dependencies);

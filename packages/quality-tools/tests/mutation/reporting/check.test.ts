@@ -40,6 +40,12 @@ describe('mutation site reporting', () => {
     ]);
   });
 
+  it('does not count report entries with missing mutant arrays', () => {
+    const reportPath = writeReport({ 'missing.ts': undefined });
+
+    expect(findMutationSiteViolations(reportPath, 0)).toEqual([]);
+  });
+
   it('prints a success message when no violations are present', () => {
     const reportPath = writeReport({ 'a.ts': 10 });
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);

@@ -13,8 +13,7 @@ function hasMutationTests(workspacePackage: WorkspacePackage): boolean {
 
 function sortMutationPackageNames(packageNames: string[]): string[] {
   const nonExtensionPackages = packageNames
-    .filter((packageName) => packageName !== 'extension')
-    .sort((left, right) => left.localeCompare(right));
+    .filter((packageName) => packageName !== 'extension');
 
   return packageNames.includes('extension')
     ? [...nonExtensionPackages, 'extension']

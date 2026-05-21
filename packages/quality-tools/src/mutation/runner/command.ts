@@ -12,17 +12,21 @@ export interface MutationCliDependencies {
   runPreflightTypecheck: () => void;
 }
 
-const DEFAULT_DEPENDENCIES: MutationCliDependencies = {
-  discoverMutationPackageNames,
-  resolveQualityTarget,
-  runMutation,
-  runPreflightTypecheck: () => {
-    execFileSync('pnpm', ['run', 'typecheck'], {
-      cwd: REPO_ROOT,
-      stdio: 'inherit',
-    });
-  },
-};
+export function runPreflightTypecheck(): void {
+  execFileSync('pnpm', ['run', 'typecheck'], {
+    cwd: REPO_ROOT,
+    stdio: 'inherit',
+  });
+}
+
+export function createDefaultMutationCliDependencies(): MutationCliDependencies {
+  return {
+    discoverMutationPackageNames,
+    resolveQualityTarget,
+    runMutation,
+    runPreflightTypecheck,
+  };
+}
 
 function resolveCliTargets(
   input: string | undefined,
@@ -56,7 +60,7 @@ function assertMutationTargetsSupported(targets: readonly QualityTarget[]): void
 
 export function runMutationCli(
   rawArgs: string[],
-  dependencies: MutationCliDependencies = DEFAULT_DEPENDENCIES
+  dependencies: MutationCliDependencies = createDefaultMutationCliDependencies()
 ): void {
   const args = cleanCliArgs(rawArgs);
   const targets = resolveCliTargets(

@@ -1,14 +1,11 @@
 import { sharedDetectorTestIncludes, type FileIncludeParts } from './parts';
 
 function ancestorFeatureIncludes(root: string, parts: FileIncludeParts): string[] {
-  const segments = parts.directory.split('/').filter(Boolean);
+  const segments = parts.directory === '.' ? [] : parts.directory.split('/');
 
   return segments.flatMap((_segment, index) => {
     const featureSegments = segments.slice(0, segments.length - index);
-    const featureName = featureSegments.at(-1);
-    if (!featureName) {
-      return [];
-    }
+    const featureName = featureSegments.at(-1)!;
 
     const featureDirectory = featureSegments.slice(0, -1).join('/');
     const prefix = featureDirectory ? `${featureDirectory}/` : '';

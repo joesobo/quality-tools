@@ -1,11 +1,5 @@
 import { dirname, extname, basename } from 'path';
 
-const BROAD_FALLBACK_DISABLED_BASENAMES = new Set([
-  'create',
-  'runtime',
-  'state',
-]);
-
 export interface FileIncludeParts {
   camelName: string;
   directory: string;
@@ -21,6 +15,10 @@ function toCamelCase(value: string): string {
 
 export function normalizeSourcePathForTests(relativeSourcePath: string): string {
   return relativeSourcePath.replace(/^webview\/components\//, 'webview/');
+}
+
+function includeBroadFallback(name: string): boolean {
+  return name !== 'create' && name !== 'runtime' && name !== 'state';
 }
 
 export function sharedDetectorTestIncludes(root: string, directory: string, recursive = false): string[] {
@@ -47,7 +45,7 @@ export function fileIncludeParts(relativeSourceFile: string): FileIncludeParts {
     camelName: toCamelCase(name),
     directory,
     dottedRelativePath: normalizedSourceFile.slice(0, -extension.length).split('/').join('.'),
-    includeBroadFallback: !BROAD_FALLBACK_DISABLED_BASENAMES.has(name),
+    includeBroadFallback: includeBroadFallback(name),
     name,
     relativeTestDirectory: directory === '.' ? '' : `${directory}/`
   };

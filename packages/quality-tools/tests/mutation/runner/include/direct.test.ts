@@ -37,4 +37,18 @@ describe('directIncludes', () => {
       'packages/extension/tests/extension.mutations.test.tsx'
     ]);
   });
+
+  it('does not create ancestor feature includes for root-level files', () => {
+    const includes = directIncludes('packages/example/tests', {
+        camelName: 'index',
+        directory: '.',
+        dottedRelativePath: 'index',
+        includeBroadFallback: true,
+        name: 'index',
+        relativeTestDirectory: ''
+      });
+
+    expect(includes).not.toContain('packages/example/tests/..test.ts');
+    expect(includes.every((pattern) => pattern.includes('index') || pattern.includes('**'))).toBe(true);
+  });
 });

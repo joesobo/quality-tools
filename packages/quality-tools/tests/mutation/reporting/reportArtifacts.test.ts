@@ -5,11 +5,13 @@ import { describe, expect, it } from 'vitest';
 import {
   copySharedMutationReports,
   incrementalReportPath,
-  reportDirectory
+  reportDirectory,
+  rootReportDirectory
 } from '../../../src/mutation/reporting/reportArtifacts';
 
 describe('mutation report artifacts', () => {
   it('builds stable report paths', () => {
+    expect(rootReportDirectory()).toBe('reports/mutation');
     expect(reportDirectory('quality-tools')).toBe('reports/mutation/quality-tools');
     expect(incrementalReportPath('quality-tools')).toBe(
       'reports/mutation/quality-tools/stryker-incremental-quality-tools.json'

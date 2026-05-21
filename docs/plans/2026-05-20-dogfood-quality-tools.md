@@ -208,3 +208,33 @@ folder without broad unrelated redesign.
   13 source files, 20 matching test files, 232 killed reportable mutants, 0
   timed out, 0 survived, 0 no-coverage mutants, 100% mutation score, and no
   files over the 50 mutation-site threshold.
+
+### Tool matrix pass: `mutation`
+
+- `organize packages/quality-tools/src/mutation` reports
+  `No directories found for organize analysis.`
+- `boundaries packages/quality-tools/src/mutation --strict` and
+  `reachability packages/quality-tools/src/mutation --strict` both report 16
+  files, 0 layer violations, 0 dead surfaces, and 0 dead ends.
+- First `scrap packages/quality-tools/src/mutation --strict` pass produced
+  concrete recommendations to extract repeated setup and table-drive repeated
+  include and Vitest-scope tests. Table-drove `mutateGlobs`, include-file,
+  include-parts, include-root, and Vitest include-target examples. Rerun exits
+  0 with no explicit recommendations.
+- First `mutate --mutate packages/quality-tools/src/mutation` pass finished at
+  90.83% with 19 surviving mutants, 12 no-coverage mutants, and
+  `runner/run.ts` above the 50 mutation-site threshold. Split runner argument
+  building, Stryker binary resolution, and Vitest runtime environment shaping
+  into focused modules, then added focused tests for scoped glob expansion,
+  default dependency wiring, preflight typecheck, report root paths, and
+  include-path fallback behavior.
+- `crap packages/quality-tools/src/mutation` runs the full covered test suite
+  with 224 test files and 1,575 tests. It reports all functions have CRAP
+  score <= 8. The mutation source group is at 100% statements, functions, and
+  lines coverage for analysis, reporting, runner, and runner/include; branch
+  coverage is 100% for analysis and runner/include, 96.87% for runner, and
+  88.23% for reporting.
+- Final `mutate --mutate packages/quality-tools/src/mutation` rerun finished
+  with 16 source files, 18 matching test files, 354 killed reportable mutants,
+  0 timed out, 0 survived, 0 no-coverage mutants, 100% mutation score, and no
+  files over the 50 mutation-site threshold.

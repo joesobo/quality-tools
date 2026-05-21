@@ -83,6 +83,7 @@ describe('runMutation', () => {
   beforeEach(() => {
     delete process.env.QUALITY_TOOLS_VITEST_CONFIG;
     delete process.env.QUALITY_TOOLS_VITEST_DIR;
+    delete process.env.QUALITY_TOOLS_VITEST_SCOPE;
     execFileSync.mockClear();
     copySharedMutationReports.mockClear();
     reportMutationSiteViolations.mockClear();
@@ -112,7 +113,7 @@ describe('runMutation', () => {
     expect(execFileSync).toHaveBeenCalledWith(
       process.execPath,
       expect.arrayContaining([
-        expect.stringContaining('@stryker-mutator/core'),
+        expect.stringMatching(/@stryker-mutator\/core.*bin\/stryker\.js$/),
         'run',
         `${REPO_ROOT}/packages/quality-tools/stryker.config.cjs`,
         '--incrementalFile',
@@ -125,6 +126,7 @@ describe('runMutation', () => {
         cwd: REPO_ROOT,
         env: expect.objectContaining({
           ...process.env,
+          QUALITY_TOOLS_VITEST_SCOPE: 'workspace',
           QUALITY_TOOLS_VITEST_CONFIG: `${REPO_ROOT}/packages/quality-tools/vitest.config.ts`,
           QUALITY_TOOLS_VITEST_DIR: 'packages/quality-tools',
         }),
@@ -135,6 +137,7 @@ describe('runMutation', () => {
     const testFiles = strykerArgs[strykerArgs.indexOf('--testFiles') + 1];
 
     expect(testFiles).toContain('packages/quality-tools/tests/mutation/runner/run.effects.test.ts');
+    expect(testFiles).toContain(',');
     expect(testFiles).not.toContain('*');
     expect(copySharedMutationReports).toHaveBeenCalledWith('quality-tools', REPO_ROOT);
     expect(reportMutationSiteViolations).toHaveBeenCalledWith('/repo/reports/mutation.json');
@@ -148,9 +151,37 @@ describe('runMutation', () => {
     runMutation(target());
 
     const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
+    const strykerArgs = execFileSync.mock.calls[0][1] as string[];
 
     expect(options.env.QUALITY_TOOLS_VITEST_CONFIG).toBe('/custom/vitest.config.ts');
     expect(options.env.QUALITY_TOOLS_VITEST_DIR).toBe('custom-package');
+    expect(strykerArgs).not.toContain('--testFiles');
+  });
+
+  it('uses extension vitest scope for extension targets', async () => {
+    const { runMutation } = await import('../../../src/mutation/runner/run');
+
+    runMutation({
+      absolutePath: `${REPO_ROOT}/packages/extension`,
+      kind: 'package',
+      packageName: 'extension',
+      packageRelativePath: '.',
+      packageRoot: `${REPO_ROOT}/packages/extension`,
+      relativePath: 'packages/extension'
+    });
+
+    const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
+    expect(options.env.QUALITY_TOOLS_VITEST_SCOPE).toBe('extension');
+  });
+
+  it('preserves non-extension vitest scope overrides', async () => {
+    const { runMutation } = await import('../../../src/mutation/runner/run');
+    process.env.QUALITY_TOOLS_VITEST_SCOPE = 'package-local';
+
+    runMutation(target());
+
+    const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
+    expect(options.env.QUALITY_TOOLS_VITEST_SCOPE).toBe('package-local');
   });
 
   it('passes scoped vitest includes for file targets', async () => {
