@@ -25,7 +25,7 @@ function parserTarget(repoRoot: string): QualityTarget {
 }
 
 describe('createCoverageProfiles', () => {
-  it('does not assume CodeGraphy package names for package targets', () => {
+  it('does not assume host-specific package names for package targets', () => {
     const repoRoot = createRepo();
 
     expect(createCoverageProfiles(repoRoot, parserTarget(repoRoot))).toEqual([

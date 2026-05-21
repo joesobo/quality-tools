@@ -27,7 +27,17 @@ const DEFAULT_DEPENDENCIES: CrapCliDependencies = {
 };
 
 export function parseThreshold(args: string[]): number {
-  return parseInt(flagValue(args, '--threshold') ?? '8', 10);
+  const rawThreshold = flagValue(args, '--threshold');
+  if (rawThreshold === undefined) {
+    return 8;
+  }
+
+  const threshold = Number(rawThreshold);
+  if (rawThreshold.trim() === '' || !Number.isFinite(threshold)) {
+    throw new Error(`Invalid CRAP threshold: ${rawThreshold}`);
+  }
+
+  return threshold;
 }
 
 export function runCrapCli(

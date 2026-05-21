@@ -8,6 +8,10 @@ describe('parseThreshold', () => {
     expect(parseThreshold(['--threshold', '14'])).toBe(14);
   });
 
+  it('reads decimal threshold values', () => {
+    expect(parseThreshold(['--threshold', '8.5'])).toBe(8.5);
+  });
+
   it('falls back to the default threshold', () => {
     expect(parseThreshold([])).toBe(8);
   });
@@ -15,6 +19,12 @@ describe('parseThreshold', () => {
   it('ignores similar threshold-looking arguments', () => {
     expect(parseThreshold(['--thresh', '99'])).toBe(8);
     expect(parseThreshold(['threshold', '99'])).toBe(8);
+  });
+
+  it.each(['nope', '8abc', '', 'Infinity'])('rejects invalid threshold value %s', (value) => {
+    expect(() => parseThreshold(['--threshold', value])).toThrow(
+      `Invalid CRAP threshold: ${value}`
+    );
   });
 });
 

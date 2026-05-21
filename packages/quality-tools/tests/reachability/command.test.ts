@@ -63,20 +63,20 @@ describe('runReachabilityCli', () => {
   it.each([
     { flag: '--verbose', verbose: true },
     { flag: '--strict', verbose: false }
-  ])('treats a leading $flag flag as a value flag during target parsing', ({ flag, verbose }) => {
+  ])('does not consume the target after a leading $flag flag', ({ flag, verbose }) => {
     const dependencies = runWithReport([flag, 'extension/']);
 
-    expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, undefined);
+    expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, 'extension/');
     expect(dependencies.reportReachability).toHaveBeenCalledWith(createReport(), { verbose });
     expect(dependencies.setExitCode).not.toHaveBeenCalled();
   });
 
-  it('treats a leading --json flag as a value flag during target parsing', () => {
+  it('does not consume the target after a leading --json flag', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
     const dependencies = runWithReport(['--json', 'extension/']);
 
-    expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, undefined);
+    expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, 'extension/');
     expect(log).toHaveBeenCalledWith(JSON.stringify(createReport(), null, 2));
     expect(dependencies.reportReachability).not.toHaveBeenCalled();
 

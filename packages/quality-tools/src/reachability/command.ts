@@ -27,7 +27,7 @@ export function runReachabilityCli(
   const args = cleanCliArgs(rawArgs);
   const target = dependencies.resolveQualityTarget(
     REPO_ROOT,
-    parseTargetArg(args, ['--json', '--strict', '--verbose']),
+    parseTargetArg(args, []),
   );
   const report = dependencies.analyzeReachability(REPO_ROOT, target);
   const verbose = args.includes('--verbose');
