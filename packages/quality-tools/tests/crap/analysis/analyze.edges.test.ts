@@ -1,26 +1,6 @@
-import { mkdtempSync, mkdirSync, writeFileSync } from 'fs';
-import { tmpdir } from 'os';
-import { dirname, join } from 'path';
 import { describe, expect, it } from 'vitest';
 import { analyzeCrap } from '../../../src/crap/analysis/run';
-
-function writeFixture(
-  relativePath: string,
-  source: string
-): { filePath: string; repoRoot: string } {
-  const repoRoot = mkdtempSync(join(tmpdir(), 'quality-tools-crap-edge-'));
-  writeFileSync(join(repoRoot, 'quality.config.json'), JSON.stringify({
-    defaults: {
-      crap: {
-        exclude: ['**/e2e/**', '**/tests/**', '**/*.test.ts', '**/*.test.tsx']
-      }
-    }
-  }));
-  const filePath = join(repoRoot, relativePath);
-  mkdirSync(dirname(filePath), { recursive: true });
-  writeFileSync(filePath, source);
-  return { filePath, repoRoot };
-}
+import { writeFixture } from './support';
 
 describe('analyzeCrap edge cases', () => {
   it('reports zero coverage when a function has no mapped statements', () => {

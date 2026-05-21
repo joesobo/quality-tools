@@ -61,13 +61,18 @@ describe('analyzeCrap aggregation', () => {
     functionsByFile.set(secondFile, [
       { complexity: 3, endLine: 8, file: secondFile, line: 2, name: 'threshold' }
     ]);
+    functionsByFile.set(missingFile, [
+      { complexity: 4, endLine: 5, file: missingFile, line: 1, name: 'missing' }
+    ]);
 
     coverageByFunction.set('low', 67.4);
     coverageByFunction.set('high', 11.1);
     coverageByFunction.set('threshold', 88.8);
+    coverageByFunction.set('missing', 0);
     crapByFunction.set('1', 8.345);
     crapByFunction.set('2', 12.789);
     crapByFunction.set('3', 8);
+    crapByFunction.set('4', 99);
 
     const { analyzeCrap } = await import('../../../src/crap/analysis/run');
     const results = analyzeCrap(

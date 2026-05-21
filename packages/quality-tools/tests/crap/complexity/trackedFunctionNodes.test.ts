@@ -1,20 +1,10 @@
 import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 import { isTrackedFunctionNode } from '../../../src/crap/complexity/trackedFunctionNodes';
+import { findNodes } from './astSupport';
 
 function trackedKinds(source: string): ts.SyntaxKind[] {
-  const sourceFile = ts.createSourceFile('sample.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  const kinds: ts.SyntaxKind[] = [];
-
-  function walk(node: ts.Node): void {
-    if (isTrackedFunctionNode(node)) {
-      kinds.push(node.kind);
-    }
-    ts.forEachChild(node, walk);
-  }
-
-  walk(sourceFile);
-  return kinds;
+  return findNodes(source, isTrackedFunctionNode).map((node) => node.kind);
 }
 
 describe('isTrackedFunctionNode', () => {

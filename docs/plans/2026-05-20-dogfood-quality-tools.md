@@ -179,3 +179,32 @@ folder without broad unrelated redesign.
   98.08% overall mutation score with 82 source files, 98 matching test files,
   1,834 killed mutants, 4 timed out, 29 survived, 7 no-coverage mutants, and no
   files over the 50 mutation-site threshold.
+
+### Tool matrix pass: `crap`
+
+- `organize packages/quality-tools/src/crap` reports
+  `No directories found for organize analysis.`
+- `boundaries packages/quality-tools/src/crap --strict` and
+  `reachability packages/quality-tools/src/crap --strict` both report 9 files,
+  0 layer violations, 0 dead surfaces, and 0 dead ends.
+- First `scrap packages/quality-tools/src/crap --strict` pass exited cleanly
+  but produced concrete setup-extraction recommendations in the CRAP tests.
+  Split `command.test.ts` into behavior-owned command test files, split the
+  repeated `analyzeCrap` examples by scope, moved shared AST and analysis
+  fixtures into non-test support modules, and split `getFunctionName` examples
+  by behavior. Rerun exits 0 with no explicit recommendations.
+- First mutation pass on `packages/quality-tools/src/crap` surfaced surviving
+  mutants around missing coverage files, non-function AST names, workspace
+  package filter lookup, and a redundant `quality-tools` profile branch. Added
+  focused tests for the first three and removed the redundant branch from
+  `createCoverageProfiles`.
+- `crap packages/quality-tools/src/crap` runs the full covered test suite and
+  reports all functions have CRAP score <= 8. The CRAP source group is at 100%
+  statements/functions/lines for `crap`, `crap/analysis`,
+  `crap/complexity`, and `crap/coverage`; branch coverage is 85.71% for the
+  command/report folder, 92.3% for analysis, 94.87% for complexity, and 100%
+  for coverage.
+- Final `mutate --mutate packages/quality-tools/src/crap` rerun finished with
+  13 source files, 20 matching test files, 232 killed reportable mutants, 0
+  timed out, 0 survived, 0 no-coverage mutants, 100% mutation score, and no
+  files over the 50 mutation-site threshold.

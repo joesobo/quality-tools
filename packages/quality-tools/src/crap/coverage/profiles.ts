@@ -13,10 +13,6 @@ import {
 } from './factories';
 
 export function createCoverageProfiles(repoRoot: string, packageName?: string): CoverageProfile[] {
-  if (packageName === 'quality-tools') {
-    return [qualityToolsCoverageProfile(repoRoot)];
-  }
-
   if (packageName === 'extension') {
     return [extensionCoverageProfile(repoRoot)];
   }

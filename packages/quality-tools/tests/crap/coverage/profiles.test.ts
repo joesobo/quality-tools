@@ -4,7 +4,8 @@ import { createCoverageProfiles } from '../../../src/crap/coverage/profiles';
 describe('createCoverageProfiles', () => {
   it('uses the package-local profile for quality-tools', () => {
     const profiles = createCoverageProfiles('/repo', 'quality-tools');
-    expect(profiles).toEqual([
+    expect(profiles).toHaveLength(1);
+    expect(profiles[0]).toEqual(
       {
         args: ['--filter', 'quality-tools', 'exec', 'vitest', 'run', '--config', 'vitest.config.ts', '--coverage'],
         command: 'pnpm',
@@ -18,7 +19,8 @@ describe('createCoverageProfiles', () => {
           QUALITY_TOOLS_VITEST_SCOPE: 'workspace'
         }
       }
-    ]);
+    );
+    expect(profiles[0]?.coveragePath).not.toBe('/repo/coverage/coverage-final.json');
   });
 
   it('uses extension coverage for the extension package', () => {

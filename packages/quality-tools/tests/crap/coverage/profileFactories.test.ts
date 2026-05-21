@@ -1,9 +1,18 @@
+import { mkdtempSync, mkdirSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { describe, expect, it } from 'vitest';
 import {
   extensionCoverageProfile,
   qualityToolsCoverageProfile,
   workspacePackageCoverageProfile
 } from '../../../src/crap/coverage/factories';
+
+function writePackageJson(repoRoot: string, packageName: string, contents: Record<string, unknown>): void {
+  const packageRoot = join(repoRoot, 'packages', packageName);
+  mkdirSync(packageRoot, { recursive: true });
+  writeFileSync(join(packageRoot, 'package.json'), JSON.stringify(contents));
+}
 
 describe('coverageProfileFactories', () => {
   it('builds the extension workspace profile', () => {
@@ -52,5 +61,29 @@ describe('coverageProfileFactories', () => {
         QUALITY_TOOLS_VITEST_SCOPE: 'workspace'
       }
     });
+  });
+
+  it('uses the package.json name when a workspace package declares one', () => {
+    const repoRoot = mkdtempSync(join(tmpdir(), 'quality-tools-crap-profile-'));
+    writePackageJson(repoRoot, 'alpha', { name: '@poleski/alpha' });
+    writePackageJson(repoRoot, 'plugin-godot', { name: '@poleski/plugin-godot' });
+
+    expect(workspacePackageCoverageProfile(repoRoot, 'plugin-godot').args).toEqual([
+      '--filter',
+      '@poleski/plugin-godot',
+      'exec',
+      'vitest',
+      'run',
+      '--config',
+      'vitest.config.ts',
+      '--coverage'
+    ]);
+  });
+
+  it('falls back to the workspace directory name when package.json has no name', () => {
+    const repoRoot = mkdtempSync(join(tmpdir(), 'quality-tools-crap-profile-'));
+    writePackageJson(repoRoot, 'plugin-godot', {});
+
+    expect(workspacePackageCoverageProfile(repoRoot, 'plugin-godot').args[1]).toBe('plugin-godot');
   });
 });
