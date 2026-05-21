@@ -9,10 +9,10 @@ import {
 } from './setup';
 import { analyzeVitestSignals, countTempResourceWork, maxSetupDepth } from './signals';
 import { fixtureStatements } from '../calls/fixture';
-import { analyzeHelperUsage } from '../structure/usage';
+import { analyzeHelperUsage } from '../structure/helpers/usage';
 import { literalShapeFingerprint, statementFeatures, statementFingerprint } from '../calls/normalizedShapes';
 import { analyzeRtlSignals } from '../analysis/rtlSignals';
-import { scoreExample } from '../analysis/score';
+import { scoreExample } from '../analysis/examples/score';
 import { collectStatementSubjectNames, collectSubjectNames } from '../calls/subjectNames';
 import { type ScrapExampleMetric, type ScrapExampleNode } from '../model';
 

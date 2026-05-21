@@ -1,4 +1,4 @@
-import { type ScrapFileMetric } from '../../analysis/metrics';
+import { type ScrapFileMetric } from '../../analysis/pipeline/metrics';
 
 export function recommendationLines(metric: ScrapFileMetric): string[] {
   if ((metric.recommendations?.length ?? 0) === 0) {

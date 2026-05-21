@@ -1,7 +1,7 @@
 import { compareBlockSummaries } from './ordering';
 import { blockPathFromKey, prefixBlockGroups } from './groups';
 import { summarizeBlock } from './metric';
-import { type ScrapBlockSummary, type ScrapExampleMetric } from '../model';
+import { type ScrapBlockSummary, type ScrapExampleMetric } from '../../model';
 
 export function summarizeBlocks(examples: ScrapExampleMetric[]): ScrapBlockSummary[] {
   return [...prefixBlockGroups(examples).entries()]

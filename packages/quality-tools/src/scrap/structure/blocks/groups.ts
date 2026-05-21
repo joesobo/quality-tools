@@ -1,4 +1,4 @@
-import { type ScrapExampleMetric } from '../model';
+import { type ScrapExampleMetric } from '../../model';
 
 const BLOCK_SEPARATOR = '\u001f';
 

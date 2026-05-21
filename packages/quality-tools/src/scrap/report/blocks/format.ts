@@ -1,4 +1,4 @@
-import { type ScrapFileMetric } from '../../analysis/metrics';
+import { type ScrapFileMetric } from '../../analysis/pipeline/metrics';
 
 function formatBlockPath(path: string[]): string {
   return path.join(' > ');

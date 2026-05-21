@@ -2,7 +2,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { describe, expect, it } from 'vitest';
-import { analyzeScrap } from '../../../../src/scrap/analysis/run';
+import { analyzeScrap } from '../../../../src/scrap/analysis/pipeline/run';
 import type { QualityTarget } from '../../../../src/shared/resolve/target';
 
 function createFixture(

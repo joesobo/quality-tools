@@ -14,11 +14,11 @@ vi.mock('fs', () => ({
   readFileSync
 }));
 
-vi.mock('../../../../src/scrap/test/files', () => ({
+vi.mock('../../../../src/scrap/test/discovery/files', () => ({
   discoverTestFiles: vi.fn(() => files)
 }));
 
-vi.mock('../../../../src/scrap/analysis/metrics', () => ({
+vi.mock('../../../../src/scrap/analysis/pipeline/metrics', () => ({
   analyzeScrapFile: vi.fn((sourceFile: ts.SourceFile) => {
     analyzeCalls.push(sourceFile);
     return {
@@ -54,7 +54,7 @@ describe('analyzeScrap script kinds', () => {
   });
 
   it('uses TS for .ts files and TSX for .tsx files', async () => {
-    const { analyzeScrap } = await import('../../../../src/scrap/analysis/run');
+    const { analyzeScrap } = await import('../../../../src/scrap/analysis/pipeline/run');
     const metrics = analyzeScrap(target);
 
     expect(metrics.map((metric) => metric.filePath)).toEqual(files);

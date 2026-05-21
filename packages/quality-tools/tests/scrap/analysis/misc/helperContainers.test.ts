@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   ancestorHelperContainers,
   findHelperContainer
-} from '../../../../src/scrap/structure/containers';
-import { findExamples } from '../../../../src/scrap/analysis/find';
+} from '../../../../src/scrap/structure/helpers/containers';
+import { findExamples } from '../../../../src/scrap/analysis/examples/find';
 
 function parse(source: string): ts.SourceFile {
   return ts.createSourceFile('sample.test.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);

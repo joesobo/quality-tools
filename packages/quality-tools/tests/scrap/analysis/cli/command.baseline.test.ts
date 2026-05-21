@@ -2,7 +2,7 @@ import { join } from 'path';
 import { describe, expect, it, vi } from 'vitest';
 import { runScrapCli } from '../../../../src/scrap/command';
 import { REPO_ROOT } from '../../../../src/shared/resolve/repoRoot';
-import type { ScrapFileMetric } from '../../../../src/scrap/analysis/metrics';
+import type { ScrapFileMetric } from '../../../../src/scrap/analysis/pipeline/metrics';
 import { createDependencies, createMetrics, repoTarget } from '../../test/run/support';
 import { baselinePathFor } from '../../../../src/scrap/baseline';
 

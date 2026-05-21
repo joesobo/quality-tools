@@ -1,7 +1,7 @@
 import { cleanCliArgs, flagValue, parseTargetArg } from '../shared/cliArgs';
 import { REPO_ROOT } from '../shared/resolve/repoRoot';
 import { resolveQualityTarget } from '../shared/resolve/target';
-import { analyzeScrap } from './analysis/run';
+import { analyzeScrap } from './analysis/pipeline/run';
 import { applyBaselineComparison } from './test/compare';
 import { hasPolicyViolations } from './policy/violations';
 import { policyFailureMessage } from './policy/failureMessage';

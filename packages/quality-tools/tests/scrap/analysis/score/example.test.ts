@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scoreExample } from '../../../../src/scrap/analysis/score';
+import { scoreExample } from '../../../../src/scrap/analysis/examples/score';
 
 describe('scoreExample', () => {
   it('adds all pressure sources for a weak example', () => {

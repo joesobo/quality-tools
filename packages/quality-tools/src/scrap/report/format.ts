@@ -1,4 +1,4 @@
-import { type ScrapFileMetric } from '../analysis/metrics';
+import { type ScrapFileMetric } from '../analysis/pipeline/metrics';
 import { hotBlockLines } from './blocks/format';
 import { comparisonLines } from './blocks/comparison';
 import { verboseExampleLines, worstExampleLines } from './blocks/examples';

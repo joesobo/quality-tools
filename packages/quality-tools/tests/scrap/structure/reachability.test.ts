@@ -1,11 +1,11 @@
 import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
-import { collectHelperDefinitions } from '../../../src/scrap/structure/definitions';
+import { collectHelperDefinitions } from '../../../src/scrap/structure/helpers/definitions';
 import {
   directHelperCalls,
   reachableHelpers
-} from '../../../src/scrap/structure/reachability';
-import { findExamples } from '../../../src/scrap/analysis/find';
+} from '../../../src/scrap/structure/helpers/reachability';
+import { findExamples } from '../../../src/scrap/analysis/examples/find';
 
 function parse(source: string): ts.SourceFile {
   return ts.createSourceFile('sample.test.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);

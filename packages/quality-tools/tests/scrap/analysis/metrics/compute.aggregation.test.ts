@@ -1,10 +1,10 @@
 import * as ts from 'typescript';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { analyzeScrapFile, type ScrapExampleMetric, type ScrapBlockSummary } from '../../../../src/scrap/analysis/metrics';
+import { analyzeScrapFile, type ScrapExampleMetric, type ScrapBlockSummary } from '../../../../src/scrap/analysis/pipeline/metrics';
 
 let metrics: ScrapExampleMetric[] = [];
 
-vi.mock('../../../../src/scrap/analysis/scored', () => ({
+vi.mock('../../../../src/scrap/analysis/examples/scored', () => ({
   analyzeFileExamples: vi.fn(() => metrics)
 }));
 

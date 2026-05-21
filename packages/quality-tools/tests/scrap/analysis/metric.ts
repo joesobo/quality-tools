@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { analyzeScrapFile } from '../../../src/scrap/analysis/metrics';
+import { analyzeScrapFile } from '../../../src/scrap/analysis/pipeline/metrics';
 
 function parseTestFile(source: string): ts.SourceFile {
   return ts.createSourceFile(

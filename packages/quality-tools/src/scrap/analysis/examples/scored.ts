@@ -1,10 +1,10 @@
 import * as ts from 'typescript';
-import { analyzeExample } from '../example/metrics';
-import { analyzeExampleSetup } from '../example/setup';
+import { duplicateSetupGroupSizes } from '../../example/calls/duplicates';
+import { analyzeExample } from '../../example/metrics';
+import { analyzeExampleSetup } from '../../example/setup';
 import { findExamples } from './find';
 import { scoreExample } from './score';
-import { duplicateSetupGroupSizes } from '../example/calls/duplicates';
-import { type ScrapExampleMetric } from '../model';
+import { type ScrapExampleMetric } from '../../model';
 
 export function analyzeFileExamples(sourceFile: ts.SourceFile): ScrapExampleMetric[] {
   const examples = findExamples(sourceFile);

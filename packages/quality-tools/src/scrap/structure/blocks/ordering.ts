@@ -1,4 +1,4 @@
-import { type ScrapBlockSummary } from '../model';
+import { type ScrapBlockSummary } from '../../model';
 
 function pathLabel(summary: ScrapBlockSummary): string {
   return summary.path.join(' > ');

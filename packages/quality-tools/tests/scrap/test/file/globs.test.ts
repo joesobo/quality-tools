@@ -25,7 +25,7 @@ describe('discoverPackageTestFiles', () => {
   });
 
   it('uses the configured include and exclude globs with absolute paths', async () => {
-    const { discoverPackageTestFiles } = await import('../../../../src/scrap/test/fileGlobs');
+    const { discoverPackageTestFiles } = await import('../../../../src/scrap/test/discovery/globs');
     expect(discoverPackageTestFiles('quality-tools', '/repo')).toEqual([
       '/repo/packages/quality-tools/tests/a.test.ts',
       '/repo/packages/quality-tools/tests/b.test.ts'

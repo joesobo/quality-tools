@@ -1,11 +1,11 @@
 import { readFileSync } from 'fs';
-import { pathIncludedByTool } from '../../config/quality';
-import { type QualityTarget } from '../../shared/resolve/target';
-import { REPO_ROOT } from '../../shared/resolve/repoRoot';
-import { packageNamesForTarget } from './filePackages';
-import { discoverPackageTestFiles } from './fileGlobs';
-import { hasExplicitTestFileTarget, isInsideTarget } from './fileTargetScope';
-import { type BaselineFileMetric } from './metric';
+import { pathIncludedByTool } from '../../../config/quality';
+import { REPO_ROOT } from '../../../shared/resolve/repoRoot';
+import { type QualityTarget } from '../../../shared/resolve/target';
+import { type BaselineFileMetric } from '../metric';
+import { discoverPackageTestFiles } from './globs';
+import { packageNamesForTarget } from './packages';
+import { hasExplicitTestFileTarget, isInsideTarget } from './targetScope';
 
 function isBaselineMetricWithPath(
   metric: BaselineFileMetric

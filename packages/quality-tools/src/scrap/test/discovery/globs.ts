@@ -1,5 +1,5 @@
 import { globSync } from 'glob';
-import { resolvePackageToolGlobs } from '../../config/quality';
+import { resolvePackageToolGlobs } from '../../../config/quality';
 
 export function discoverPackageTestFiles(packageName: string, repoRoot: string): string[] {
   const patterns = resolvePackageToolGlobs(repoRoot, packageName, 'scrap');

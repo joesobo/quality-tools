@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { policyFailureMessage } from '../../../../src/scrap/policy/failureMessage';
 import { hasPolicyViolations } from '../../../../src/scrap/policy/violations';
 import { resolveScrapPolicy } from '../../../../src/scrap/policy/resolve';
-import type { ScrapFileMetric } from '../../../../src/scrap/analysis/metrics';
+import type { ScrapFileMetric } from '../../../../src/scrap/analysis/pipeline/metrics';
 import { createMetrics } from '../../test/run/support';
 
 function metric(overrides: Partial<ScrapFileMetric> = {}): ScrapFileMetric {

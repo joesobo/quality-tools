@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { isInsideTarget, hasExplicitTestFileTarget } from '../../../../src/scrap/test/fileTargetScope';
+import { hasExplicitTestFileTarget, isInsideTarget } from '../../../../src/scrap/test/discovery/targetScope';
 import { REPO_ROOT } from '../../../../src/shared/resolve/repoRoot';
-import { resolveQualityTarget } from '../../../../src/shared/resolve/target';
+import { type QualityTarget, resolveQualityTarget } from '../../../../src/shared/resolve/target';
 
 describe('hasExplicitTestFileTarget', () => {
   it('only accepts package-backed file targets', () => {
@@ -13,6 +13,40 @@ describe('hasExplicitTestFileTarget', () => {
     )).toBe(false);
     expect(hasExplicitTestFileTarget(resolveQualityTarget(REPO_ROOT, 'quality-tools/'))).toBe(false);
     expect(hasExplicitTestFileTarget(resolveQualityTarget(REPO_ROOT, 'README.md'))).toBe(false);
+  });
+
+  it('rejects file-like targets missing package metadata', () => {
+    const baseTarget: QualityTarget = {
+      absolutePath: '/repo/tests/example.test.ts',
+      kind: 'file',
+      relativePath: 'tests/example.test.ts'
+    };
+
+    expect(hasExplicitTestFileTarget(baseTarget)).toBe(false);
+    expect(hasExplicitTestFileTarget({
+      ...baseTarget,
+      packageName: 'quality-tools'
+    })).toBe(false);
+    expect(hasExplicitTestFileTarget({
+      ...baseTarget,
+      packageRelativePath: 'tests/example.test.ts'
+    })).toBe(false);
+    expect(hasExplicitTestFileTarget({
+      ...baseTarget,
+      packageName: 'quality-tools',
+      packageRelativePath: 'tests'
+    })).toBe(true);
+  });
+
+  it('rejects non-file targets even when they point at package tests', () => {
+    expect(hasExplicitTestFileTarget({
+      absolutePath: '/repo/packages/quality-tools/tests',
+      kind: 'directory',
+      packageName: 'quality-tools',
+      packageRelativePath: 'tests',
+      packageRoot: '/repo/packages/quality-tools',
+      relativePath: 'packages/quality-tools/tests'
+    })).toBe(false);
   });
 });
 
@@ -55,5 +89,17 @@ describe('isInsideTarget', () => {
         reachabilityTestFile
       )
     ).toBe(false);
+  });
+
+  it('matches the mapped test directory itself for source directory targets', () => {
+    const boundaryTestDirectory = `${REPO_ROOT}/packages/quality-tools/tests/boundaries`;
+
+    expect(
+      isInsideTarget(
+        resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/src/boundaries'),
+        REPO_ROOT,
+        boundaryTestDirectory
+      )
+    ).toBe(true);
   });
 });

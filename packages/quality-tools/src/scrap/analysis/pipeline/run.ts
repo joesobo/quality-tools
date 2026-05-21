@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as ts from 'typescript';
-import { type QualityTarget } from '../../shared/resolve/target';
-import { discoverTestFiles } from '../test/files';
+import { type QualityTarget } from '../../../shared/resolve/target';
+import { discoverTestFiles } from '../../test/discovery/files';
 import { analyzeScrapFile, type ScrapFileMetric } from './metrics';
 
 export function analyzeScrap(target: QualityTarget): ScrapFileMetric[] {

@@ -1,4 +1,4 @@
-import { type ScrapExampleMetric } from '../model';
+import { type ScrapExampleMetric } from '../../model';
 import {
   assertionPressure,
   branchPressure,
@@ -7,8 +7,8 @@ import {
   linePressure,
   mockPressure,
   nestingPressure
-} from '../example/calls/pressure';
-import { vitestOperationalPressure } from '../vitest/pressure';
+} from '../../example/calls/pressure';
+import { vitestOperationalPressure } from '../../vitest/pressure';
 
 type ExampleScoreInput = Omit<ScrapExampleMetric, 'score'>;
 

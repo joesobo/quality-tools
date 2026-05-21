@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeDuplicationInsights } from '../../../src/scrap/test/insights';
+import { analyzeDuplicationInsights } from '../../../src/scrap/test/duplication/insights';
 import type { ScrapExampleMetric } from '../../../src/scrap/model';
 
 function example(overrides: Partial<ScrapExampleMetric> = {}): ScrapExampleMetric {

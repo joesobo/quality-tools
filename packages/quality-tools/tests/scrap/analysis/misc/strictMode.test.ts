@@ -5,7 +5,7 @@ import {
   hasStrictViolations,
   STRICT_FAILURE_MESSAGE
 } from '../../policy/strictModeSupport';
-import type { ScrapFileMetric } from '../../../../src/scrap/analysis/metrics';
+import type { ScrapFileMetric } from '../../../../src/scrap/analysis/pipeline/metrics';
 import { createMetrics } from '../../test/run/support';
 
 function metric(overrides: Partial<ScrapFileMetric> = {}): ScrapFileMetric {

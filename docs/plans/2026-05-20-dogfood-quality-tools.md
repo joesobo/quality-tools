@@ -149,3 +149,33 @@ folder without broad unrelated redesign.
   Final rerun: 41 source files, 47 matching test files, 947 killed, 6 timed
   out, 0 survivors, 0 no-coverage mutants, 100% mutation score, and all files
   within the 50 mutation-site threshold.
+
+### Tool matrix pass: `scrap`
+
+- `organize packages/quality-tools/src/scrap` initially reported warning-level
+  clusters in `analysis/`, `structure/`, and `test/`. Split the tool into
+  behavior-owned subfolders:
+  `analysis/examples/`, `analysis/pipeline/`, `structure/blocks/`,
+  `structure/helpers/`, `test/discovery/`, and `test/duplication/`. Rerun now
+  reports `No directories found for organize analysis.`
+- `boundaries packages/quality-tools/src/scrap --strict` reports 82 files, 0
+  layer violations, 0 dead surfaces, and 0 dead ends.
+- `reachability packages/quality-tools/src/scrap --strict` reports 82 files, 0
+  dead surfaces, and 0 dead ends.
+- `scrap packages/quality-tools/src/scrap --strict` initially failed on
+  `tests/scrap/example/clusters.test.ts` as `SPLIT`. Split that suite into
+  focused cluster test files with shared non-test fixture builders. Rerun exits
+  0 with no split or review-first files.
+- `crap packages/quality-tools/src/scrap` runs the full covered test suite and
+  reports all functions have CRAP score <= 8. The scrap source group is at
+  96.55% statements/lines, 93.33% branches, and 75% functions coverage, with
+  the moved `test/discovery` files at 100%.
+- First `mutate --mutate packages/quality-tools/src/scrap` pass finished at
+  97.33% but warned that `test/discovery/targetScope.ts` had 81 mutation
+  sites. Split explicit test-file detection, source-to-test mapping, and test
+  path classification into smaller modules; added direct tests for those
+  behaviors. Focused mutation on `explicitTarget.ts` is 100%.
+- Final full mutation rerun reused the incremental cache and finished at
+  98.08% overall mutation score with 82 source files, 98 matching test files,
+  1,834 killed mutants, 4 timed out, 29 survived, 7 no-coverage mutants, and no
+  files over the 50 mutation-site threshold.

@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
-import { findExamples } from '../../../../src/scrap/analysis/find';
+import { findExamples } from '../../../../src/scrap/analysis/examples/find';
 
 function parse(source: string): ts.SourceFile {
   return ts.createSourceFile('sample.test.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);

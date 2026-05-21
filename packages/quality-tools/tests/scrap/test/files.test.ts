@@ -2,26 +2,26 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { baselineMetricsByPath, readBaselineMetrics, discoverTestFiles } from '../../../src/scrap/test/files';
+import { baselineMetricsByPath, readBaselineMetrics, discoverTestFiles } from '../../../src/scrap/test/discovery/files';
 import type { QualityTarget } from '../../../src/shared/resolve/target';
 import { pathIncludedByTool } from '../../../src/config/quality';
-import { packageNamesForTarget } from '../../../src/scrap/test/filePackages';
-import { discoverPackageTestFiles } from '../../../src/scrap/test/fileGlobs';
-import { hasExplicitTestFileTarget, isInsideTarget } from '../../../src/scrap/test/fileTargetScope';
+import { packageNamesForTarget } from '../../../src/scrap/test/discovery/packages';
+import { discoverPackageTestFiles } from '../../../src/scrap/test/discovery/globs';
+import { hasExplicitTestFileTarget, isInsideTarget } from '../../../src/scrap/test/discovery/targetScope';
 
 vi.mock('../../../src/config/quality', () => ({
   pathIncludedByTool: vi.fn()
 }));
 
-vi.mock('../../../src/scrap/test/filePackages', () => ({
+vi.mock('../../../src/scrap/test/discovery/packages', () => ({
   packageNamesForTarget: vi.fn()
 }));
 
-vi.mock('../../../src/scrap/test/fileGlobs', () => ({
+vi.mock('../../../src/scrap/test/discovery/globs', () => ({
   discoverPackageTestFiles: vi.fn()
 }));
 
-vi.mock('../../../src/scrap/test/fileTargetScope', () => ({
+vi.mock('../../../src/scrap/test/discovery/targetScope', () => ({
   hasExplicitTestFileTarget: vi.fn(),
   isInsideTarget: vi.fn()
 }));

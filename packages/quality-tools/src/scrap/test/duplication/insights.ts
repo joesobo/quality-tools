@@ -1,9 +1,9 @@
-import { coverageMatrixCandidateCount, tableDriveCandidateCount } from '../metrics/matrix/candidates';
+import { coverageMatrixCandidateCount, tableDriveCandidateCount } from '../../metrics/matrix/candidates';
 import { duplicateGroupCount, countedFingerprintGroups } from './groupSizes';
 import { duplicationRecommendations } from './recommendations';
-import { recommendedExtractionCount } from '../report/blocks/extractionCount';
-import { featureGroupSizes } from '../metrics/average/groups';
-import { type ScrapExampleMetric, type ScrapRecommendation } from '../model';
+import { featureGroupSizes } from '../../metrics/average/groups';
+import { type ScrapExampleMetric, type ScrapRecommendation } from '../../model';
+import { recommendedExtractionCount } from '../../report/blocks/extractionCount';
 
 export interface DuplicationInsights {
   assertionDuplicationScore: number;

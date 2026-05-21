@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
-import { collectHelperDefinitions } from '../../../src/scrap/structure/definitions';
+import { collectHelperDefinitions } from '../../../src/scrap/structure/helpers/definitions';
 
 function parse(source: string): ts.SourceFile {
   return ts.createSourceFile('sample.test.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);

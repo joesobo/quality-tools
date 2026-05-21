@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { packageNamesForTarget } from '../../../../src/scrap/test/filePackages';
+import { packageNamesForTarget } from '../../../../src/scrap/test/discovery/packages';
 import { REPO_ROOT } from '../../../../src/shared/resolve/repoRoot';
 import { resolveQualityTarget } from '../../../../src/shared/resolve/target';
 

@@ -1,4 +1,4 @@
-import { type ScrapExampleMetric } from '../model';
+import { type ScrapExampleMetric } from '../../model';
 
 type FingerprintSelector = (example: ScrapExampleMetric) => string | undefined;
 

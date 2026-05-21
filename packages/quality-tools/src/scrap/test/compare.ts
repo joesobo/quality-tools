@@ -1,5 +1,5 @@
 import { type ScrapFileMetric } from '../model';
-import { baselineMetricsByPath, readBaselineMetrics } from './files';
+import { baselineMetricsByPath, readBaselineMetrics } from './discovery/files';
 import { comparisonForMetric } from './metric';
 
 export function applyBaselineComparison(

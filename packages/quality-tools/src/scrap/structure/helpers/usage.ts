@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 import { collectHelperDefinitions } from './definitions';
 import { directHelperCalls, reachableHelpers } from './reachability';
-import { type ScrapExampleNode } from '../model';
+import { type ScrapExampleNode } from '../../model';
 
 export interface HelperUsageMetric {
   helperCallCount: number;

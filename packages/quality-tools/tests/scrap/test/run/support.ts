@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import { REPO_ROOT } from '../../../../src/shared/resolve/repoRoot';
 import type { QualityTarget } from '../../../../src/shared/resolve/target';
-import type { ScrapFileMetric } from '../../../../src/scrap/analysis/metrics';
+import type { ScrapFileMetric } from '../../../../src/scrap/analysis/pipeline/metrics';
 import type { ScrapCliDependencies } from '../../../../src/scrap/command';
 
 export function qualityToolsTarget(): QualityTarget {

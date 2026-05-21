@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blockPathFromKey, blockPathKey, prefixBlockGroups } from '../../../src/scrap/structure/groups';
+import { blockPathFromKey, blockPathKey, prefixBlockGroups } from '../../../src/scrap/structure/blocks/groups';
 import { type ScrapExampleMetric } from '../../../src/scrap/model';
 
 function metric(blockPath: string[], name: string): ScrapExampleMetric {

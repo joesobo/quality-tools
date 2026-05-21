@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 import { analyzeExample } from '../../../../src/scrap/example/metrics';
-import { findExamples } from '../../../../src/scrap/analysis/find';
+import { findExamples } from '../../../../src/scrap/analysis/examples/find';
 
 function parse(source: string, scriptKind = ts.ScriptKind.TS): ts.SourceFile {
   return ts.createSourceFile('sample.test.ts', source, ts.ScriptTarget.Latest, true, scriptKind);
