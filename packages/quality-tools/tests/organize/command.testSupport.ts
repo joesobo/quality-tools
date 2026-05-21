@@ -41,7 +41,6 @@ export function createDependencies(
     mkdirSync: vi.fn(),
     reportOrganize: vi.fn(),
     resolveQualityTarget: vi.fn(() => qualityToolsTarget()),
-    setExitCode: vi.fn(),
     writeFileSync: vi.fn(),
     ...overrides
   };

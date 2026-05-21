@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as ts from 'typescript';
-import { getScriptKind } from '../../../src/organize/cohesion/scriptKind';
+import { getScriptKind } from '../../../src/organize/cohesion/imports/scriptKind';
 
 describe('getScriptKind', () => {
   it('returns JSX for .jsx files', () => {

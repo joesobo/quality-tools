@@ -1,5 +1,5 @@
-import { type OrganizeFileIssue } from '../model';
-import { LOW_INFO_NAME_DETAILS } from './lowInfoDetails';
+import { type OrganizeFileIssue } from '../../model';
+import { LOW_INFO_NAME_DETAILS } from './details';
 import { stripExtension } from './nameStrip';
 
 export interface LowInfoNameConfig {

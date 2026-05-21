@@ -4,10 +4,10 @@ import {
   countFirstTokens,
   findMostCommonToken,
   derivePrefix
-} from '../../../src/organize/cohesion/prefix';
+} from '../../../src/organize/cohesion/cluster/prefix';
 
 // Mock the tokenize function
-vi.mock('../../../src/organize/tokenize', () => ({
+vi.mock('../../../src/organize/naming/tokenize', () => ({
   tokenize: (fileName: string) => {
     // Simple tokenization: split by non-alphanumeric, capitalize-case boundaries
     const parts: string[] = [];
@@ -179,6 +179,13 @@ describe('derivePrefix', () => {
     const result = derivePrefix(fileNames);
 
     expect(result).toBe('report');
+  });
+
+  it('uses the most common token even when it differs from the first file token', () => {
+    const fileNames = ['alphaOne.ts', 'betaOne.ts', 'betaTwo.ts'];
+    const result = derivePrefix(fileNames);
+
+    expect(result).toBe('beta');
   });
 
   it('returns first file token when all tokens appear once', () => {

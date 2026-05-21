@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findCohesionClusters } from '../../../src/organize/cohesion/clusters';
+import { findCohesionClusters } from '../../../src/organize/cohesion/cluster/find';
 import { createImportGraph } from '../testHelpers';
 
 describe('findCohesionClusters - import-based clustering', () => {
@@ -19,6 +19,24 @@ describe('findCohesionClusters - import-based clustering', () => {
       memberCount: 3
     });
     expect(clusters[0]!.members.sort()).toEqual(['bar.ts', 'baz.ts', 'foo.ts']);
+  });
+
+  it('sorts import-only members and lowercases the suggested folder', () => {
+    const fileNames = ['ZetaItem.ts', 'AlphaItem.ts', 'BetaItem.ts'];
+    const graph = createImportGraph({
+      'ZetaItem.ts': ['AlphaItem.ts'],
+      'AlphaItem.ts': ['BetaItem.ts'],
+      'BetaItem.ts': []
+    });
+
+    const clusters = findCohesionClusters(fileNames, graph, 3);
+
+    expect(clusters[0]).toMatchObject({
+      confidence: 'imports-only',
+      members: ['AlphaItem.ts', 'BetaItem.ts', 'ZetaItem.ts'],
+      prefix: 'alpha',
+      suggestedFolder: 'alpha'
+    });
   });
 
   it('marks clusters as prefix+imports when prefix and import signals overlap', () => {

@@ -1,10 +1,6 @@
 import { type OrganizeCohesionCluster } from '../model';
 
 export function clusterLines(clusters: OrganizeCohesionCluster[], directoryPath: string): string[] {
-  if (clusters.length === 0) {
-    return [];
-  }
-
   const lines: string[] = [];
   const indent = '  Clusters:  ';
   const indentAlignment = ' '.repeat(indent.length);

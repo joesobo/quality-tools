@@ -1,5 +1,5 @@
 import { basename } from 'path';
-import { tokenize } from '../tokenize';
+import { tokenize } from '../../naming/tokenize';
 import { stripExtension } from './nameStrip';
 
 export function isConventionalEntryFile(filePath: string, ancestorFolders: string[]): boolean {
@@ -24,10 +24,6 @@ export function isConventionalEntryFile(filePath: string, ancestorFolders: strin
   }
 
   const hookName = fileStem.slice(3);
-  if (hookName.length === 0) {
-    return false;
-  }
-
   const hookTokens = tokenize(hookName);
   return hookTokens.some((hookToken) => ancestorFolders.some((folder) => {
     const folderTokens = tokenize(folder);

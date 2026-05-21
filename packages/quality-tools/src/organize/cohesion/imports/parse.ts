@@ -46,7 +46,7 @@ export function parseFileImports(filePath: string, fileName: string): string[] {
       fileName,
       fileContent,
       ts.ScriptTarget.Latest,
-      true,
+      undefined,
       scriptKind
     );
 

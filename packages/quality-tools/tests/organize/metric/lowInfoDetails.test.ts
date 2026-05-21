@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LOW_INFO_NAME_DETAILS } from '../../../src/organize/metric/lowInfoDetails';
+import { LOW_INFO_NAME_DETAILS } from '../../../src/organize/metric/naming/details';
 
 describe('LOW_INFO_NAME_DETAILS', () => {
   describe('banned name details', () => {

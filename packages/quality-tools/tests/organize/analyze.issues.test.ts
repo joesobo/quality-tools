@@ -1,5 +1,5 @@
 import { describe, expect, it, afterEach } from 'vitest';
-import { analyze } from '../../src/organize/analyze';
+import { analyze } from '../../src/organize/analyze/run';
 import { cleanupTempDirs, createTarget, createFileTree } from './testHelpers';
 
 const tempDirs: string[] = [];
@@ -136,5 +136,30 @@ describe('analyze - file issues and advanced scenarios', () => {
     expect(scrapMetric).toBeDefined();
     const redundancyIssues = scrapMetric!.fileIssues.filter((issue) => issue.kind === 'redundancy');
     expect(redundancyIssues).toHaveLength(0);
+  });
+
+  it('only treats index.ts at the analyzed root as the package entry point', () => {
+    const root = createFileTree(
+      {
+        'index.ts': 'export const root = 1;',
+        'feature/index.ts': 'export const feature = 1;'
+      },
+      tempDirs
+    );
+    const target = createTarget(root);
+
+    const result = analyze(target);
+
+    const rootMetric = result.find((metric) => metric.directoryPath === '.');
+    const featureMetric = result.find((metric) => metric.directoryPath === 'feature');
+
+    expect(rootMetric?.fileIssues).not.toContainEqual(expect.objectContaining({
+      fileName: 'index.ts',
+      kind: 'low-info-banned'
+    }));
+    expect(featureMetric?.fileIssues).toContainEqual(expect.objectContaining({
+      fileName: 'index.ts',
+      kind: 'low-info-banned'
+    }));
   });
 });

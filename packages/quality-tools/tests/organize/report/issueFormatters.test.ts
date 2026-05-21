@@ -29,6 +29,7 @@ describe('formatRedundancyIssues', () => {
 
     expect(result).toContain('types.ts (0.50)');
     expect(result).toContain('command.ts (0.75)');
+    expect(result).toContain('types.ts (0.50), command.ts (0.75)');
   });
 
   it('formats redundancy scores with 2 decimal places', () => {
@@ -103,6 +104,7 @@ describe('formatLowInfoIssues', () => {
 
     expect(result).toContain('banned: banned detail');
     expect(result).toContain('discouraged: discouraged detail');
+    expect(result).toContain('utils.ts (banned: banned detail), types.ts (discouraged: discouraged detail)');
   });
 
   it('maintains correct label alignment', () => {
@@ -144,6 +146,7 @@ describe('formatBarrelIssues', () => {
 
     expect(result).toContain('index.ts');
     expect(result).toContain('barrel.ts');
+    expect(result).toContain('index.ts (test1), barrel.ts (test2)');
   });
 
   it('maintains correct label alignment', () => {

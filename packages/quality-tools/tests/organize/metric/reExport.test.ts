@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as ts from 'typescript';
-import { SUPPORTED_EXTENSIONS, getFileExtension, isReExportStatement } from '../../../src/organize/metric/reExport';
+import { SUPPORTED_EXTENSIONS, getFileExtension, isReExportStatement } from '../../../src/organize/metric/barrel/reExport';
 
 describe('SUPPORTED_EXTENSIONS', () => {
   it('contains TypeScript extensions', () => {
@@ -111,6 +111,28 @@ describe('isReExportStatement', () => {
 
   it('does not identify empty export declaration as re-export', () => {
     const statement = parseStatement('export {};');
+    expect(isReExportStatement(statement)).toBe(false);
+  });
+
+  it('does not identify a synthetic export declaration with no export clause', () => {
+    const statement = ts.factory.createExportDeclaration(
+      undefined,
+      false,
+      undefined,
+      undefined
+    );
+
+    expect(isReExportStatement(statement)).toBe(false);
+  });
+
+  it('does not identify a synthetic namespace export without a module specifier', () => {
+    const statement = ts.factory.createExportDeclaration(
+      undefined,
+      false,
+      ts.factory.createNamespaceExport(ts.factory.createIdentifier('foo')),
+      undefined
+    );
+
     expect(isReExportStatement(statement)).toBe(false);
   });
 

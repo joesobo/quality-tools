@@ -16,7 +16,7 @@ import type { OrganizeDepthVerdict } from '../model';
 export function directoryDepth(directoryPath: string, targetRoot: string): number {
   const relativePath = relative(targetRoot, directoryPath);
 
-  if (relativePath === '' || relativePath === '.') {
+  if (relativePath === '') {
     return 0;
   }
 

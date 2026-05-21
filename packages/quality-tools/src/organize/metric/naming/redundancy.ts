@@ -1,6 +1,6 @@
 import { basename } from 'path';
-import { tokenize } from '../tokenize';
-import { isConventionalEntryFile } from './pathRedundancyConventional';
+import { tokenize } from '../../naming/tokenize';
+import { isConventionalEntryFile } from './conventional';
 
 /**
  * Calculate the redundancy score of a file based on its path.

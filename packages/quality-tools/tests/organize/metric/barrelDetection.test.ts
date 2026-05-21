@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import { describe, expect, it } from 'vitest';
-import { checkBarrelFile, scriptKindForExtension } from '../../../src/organize/metric/barrelDetection';
+import { checkBarrelFile, scriptKindForExtension } from '../../../src/organize/metric/barrel/detection';
 import { BARREL_CODE, TS_CODE } from '../testHelpers';
 
 describe('checkBarrelFile', () => {

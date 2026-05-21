@@ -1,5 +1,5 @@
 import { describe, expect, it, afterEach } from 'vitest';
-import { compareBaseline } from '../../src/organize/baselineCompare';
+import { compareBaseline } from '../../src/organize/compare/baseline';
 import { createMetric, createBaselineFile, cleanupTempDirs } from './testHelpers';
 
 const tempDirs: string[] = [];

@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { type OrganizeDirectoryMetric, type OrganizeComparison } from './model';
+import { type OrganizeDirectoryMetric, type OrganizeComparison } from '../model';
 import { verdictFromDeltas } from './verdict';
 
 function roundedDelta(current: number, previous: number): number {
@@ -9,11 +9,7 @@ function roundedDelta(current: number, previous: number): number {
 function baselineMetricsByPath(
   baseline: OrganizeDirectoryMetric[]
 ): Map<string, OrganizeDirectoryMetric> {
-  return new Map(
-    baseline
-      .filter((metric) => typeof metric.directoryPath === 'string')
-      .map((metric) => [metric.directoryPath, metric])
-  );
+  return new Map(baseline.map((metric) => [metric.directoryPath, metric]));
 }
 
 export function compareBaseline(

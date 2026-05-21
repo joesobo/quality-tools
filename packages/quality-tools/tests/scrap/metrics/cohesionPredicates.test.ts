@@ -25,28 +25,28 @@ describe('cohesionPredicates', () => {
       expect(hasBroadSubjectSpread(cohesion({
         averageSubjectOverlap: 0.1,
         distinctSubjectCount: 4
-      }), 4)).toBe(true);
+      }), 7)).toBe(true);
     });
 
-    it('returns false when example count is less than 4', () => {
+    it('returns false when example count is less than 7', () => {
       expect(hasBroadSubjectSpread(cohesion({
         averageSubjectOverlap: 0.1,
         distinctSubjectCount: 4
-      }), 3)).toBe(false);
+      }), 6)).toBe(false);
     });
 
     it('returns false when distinct subject count is less than 4', () => {
       expect(hasBroadSubjectSpread(cohesion({
         averageSubjectOverlap: 0.1,
         distinctSubjectCount: 3
-      }), 4)).toBe(false);
+      }), 7)).toBe(false);
     });
 
     it('returns false when average subject overlap exceeds 0.1', () => {
       expect(hasBroadSubjectSpread(cohesion({
         averageSubjectOverlap: 0.11,
         distinctSubjectCount: 4
-      }), 4)).toBe(false);
+      }), 7)).toBe(false);
     });
   });
 
@@ -56,15 +56,15 @@ describe('cohesionPredicates', () => {
         averageExampleSimilarity: 0.2,
         exampleShapeDiversity: 3,
         subjectRepetitionScore: 1
-      }), 4)).toBe(true);
+      }), 7)).toBe(true);
     });
 
-    it('returns false when example count is less than 4', () => {
+    it('returns false when example count is less than 7', () => {
       expect(hasShapeDrift(cohesion({
         averageExampleSimilarity: 0.2,
         exampleShapeDiversity: 3,
         subjectRepetitionScore: 1
-      }), 3)).toBe(false);
+      }), 6)).toBe(false);
     });
 
     it('returns false when shape diversity is less than 3', () => {
@@ -72,7 +72,7 @@ describe('cohesionPredicates', () => {
         averageExampleSimilarity: 0.2,
         exampleShapeDiversity: 2,
         subjectRepetitionScore: 1
-      }), 4)).toBe(false);
+      }), 7)).toBe(false);
     });
 
     it('returns false when average example similarity exceeds 0.2', () => {
@@ -80,7 +80,7 @@ describe('cohesionPredicates', () => {
         averageExampleSimilarity: 0.21,
         exampleShapeDiversity: 3,
         subjectRepetitionScore: 1
-      }), 4)).toBe(false);
+      }), 7)).toBe(false);
     });
 
     it('returns false when subject repetition score exceeds 1', () => {
@@ -88,7 +88,7 @@ describe('cohesionPredicates', () => {
         averageExampleSimilarity: 0.2,
         exampleShapeDiversity: 3,
         subjectRepetitionScore: 2
-      }), 4)).toBe(false);
+      }), 7)).toBe(false);
     });
   });
 });

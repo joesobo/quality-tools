@@ -2,10 +2,6 @@ import { type OrganizeFileIssue } from '../model';
 import { formatBarrelIssues, formatLowInfoIssues, formatRedundancyIssues } from './issueFormatters';
 
 export function fileIssueLines(issues: OrganizeFileIssue[]): string[] {
-  if (issues.length === 0) {
-    return [];
-  }
-
   const redundancyIssues = issues.filter((i) => i.kind === 'redundancy');
   const lowInfoIssues = issues.filter((i) => i.kind === 'low-info-banned' || i.kind === 'low-info-discouraged');
   const barrelIssues = issues.filter((i) => i.kind === 'barrel');

@@ -1,4 +1,4 @@
-import { pathRedundancy } from './metric/pathRedundancy';
+import { pathRedundancy } from '../metric/naming/redundancy';
 
 /**
  * Extract ancestor folders from a relative directory path.

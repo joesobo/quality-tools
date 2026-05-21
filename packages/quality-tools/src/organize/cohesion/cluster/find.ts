@@ -1,5 +1,5 @@
-import type { ImportAdjacency } from './importGraph';
-import type { OrganizeCohesionCluster } from '../model';
+import type { ImportAdjacency } from '../imports/graph';
+import type { OrganizeCohesionCluster } from '../../model';
 import { buildPrefixGroups, derivePrefix } from './prefix';
 import { findImportComponents } from './components';
 import { isComponentCovered, addComponentToAssigned, findOverlappingComponent, hasSignificantOverlap } from './overlap';

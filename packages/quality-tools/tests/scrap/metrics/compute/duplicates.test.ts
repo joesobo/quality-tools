@@ -27,12 +27,19 @@ describe('analyzeScrapFile duplicate setup pressure', () => {
     expect(metric.remediationMode).toBe('LOCAL');
   });
 
-  it('raises split pressure when multiple hotspots exist in one file', () => {
+  it('raises split pressure when severe hotspot volume exists in one file', () => {
     const metric = analyzeScrapMetric(`
       describe('suite', () => {
         it('a', () => { if (flag) { vi.mock('./a'); } });
         it('b', () => { if (flag) { vi.mock('./b'); } });
         it('c', () => { if (flag) { vi.mock('./c'); } });
+        it('d', () => { if (flag) { vi.mock('./d'); } });
+        it('e', () => { if (flag) { vi.mock('./e'); } });
+        it('f', () => { if (flag) { vi.mock('./f'); } });
+        it('g', () => { if (flag) { vi.mock('./g'); } });
+        it('h', () => { if (flag) { vi.mock('./h'); } });
+        it('i', () => { if (flag) { vi.mock('./i'); } });
+        it('j', () => { if (flag) { vi.mock('./j'); } });
       });
     `);
 
@@ -61,16 +68,31 @@ describe('analyzeScrapFile duplicate setup pressure', () => {
           renderPanel();
           expect(result).toBeDefined();
         });
+
+        it('exports report', () => {
+          reportWriter.export();
+          expect(result).toBeDefined();
+        });
+
+        it('parses config', () => {
+          configParser.parse();
+          expect(result).toBeDefined();
+        });
+
+        it('runs mutation', () => {
+          mutationRunner.run();
+          expect(result).toBeDefined();
+        });
       });
     `);
 
-    expect(metric.distinctSubjectCount).toBe(4);
+    expect(metric.distinctSubjectCount).toBe(7);
     expect(metric.averageSubjectOverlap).toBe(0);
     expect(metric.exampleShapeDiversity).toBe(1);
     expect(metric.recommendations).toContainEqual({
       confidence: 'LOW',
       kind: 'REVIEW_STRUCTURE',
-      message: 'Examples touch 4 distinct subjects with little overlap. Review whether this file mixes responsibilities.'
+      message: 'Examples touch 7 distinct subjects with little overlap. Review whether this file mixes responsibilities.'
     });
   });
 });

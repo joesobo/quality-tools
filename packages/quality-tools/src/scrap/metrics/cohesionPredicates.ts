@@ -5,7 +5,7 @@ export function hasBroadSubjectSpread(
   exampleCount: number
 ): boolean {
   return (
-    exampleCount >= 4 &&
+    exampleCount >= 7 &&
     cohesion.distinctSubjectCount >= 4 &&
     cohesion.averageSubjectOverlap <= 0.1
   );
@@ -16,7 +16,7 @@ export function hasShapeDrift(
   exampleCount: number
 ): boolean {
   return (
-    exampleCount >= 4 &&
+    exampleCount >= 7 &&
     cohesion.exampleShapeDiversity >= 3 &&
     cohesion.averageExampleSimilarity <= 0.2 &&
     cohesion.subjectRepetitionScore <= 1

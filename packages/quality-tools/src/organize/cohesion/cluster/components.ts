@@ -1,4 +1,4 @@
-import type { ImportAdjacency } from './importGraph';
+import type { ImportAdjacency } from '../imports/graph';
 
 /**
  * Find connected components in the import graph (treating it as undirected).
@@ -33,8 +33,8 @@ export function bfsComponent(
   visited.add(startFile);
   component.add(startFile);
 
-  for (let index = 0; index < queue.length; index++) {
-    const current = queue[index];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
     // Forward edges: files that current imports
     const importedFiles = importGraph.get(current) ?? new Set();
     for (const imported of importedFiles) {

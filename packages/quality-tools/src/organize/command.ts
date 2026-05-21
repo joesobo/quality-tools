@@ -4,8 +4,8 @@ import { cleanCliArgs, flagValue, parseTargetArg } from '../shared/cliArgs';
 import { REPO_ROOT } from '../shared/resolve/repoRoot';
 import { resolveQualityTarget } from '../shared/resolve/target';
 import { sanitizeReportKey } from '../shared/util/reportKey';
-import { analyze } from './analyze';
-import { compareBaseline } from './baselineCompare';
+import { analyze } from './analyze/run';
+import { compareBaseline } from './compare/baseline';
 import { reportOrganize } from './report/format';
 import type { OrganizeDirectoryMetric } from './model';
 
@@ -15,7 +15,6 @@ export interface OrganizeCliDependencies {
   mkdirSync: typeof mkdirSync;
   reportOrganize: typeof reportOrganize;
   resolveQualityTarget: typeof resolveQualityTarget;
-  setExitCode: (code: number) => void;
   writeFileSync: typeof writeFileSync;
 }
 
@@ -25,9 +24,6 @@ const DEFAULT_DEPENDENCIES: OrganizeCliDependencies = {
   mkdirSync,
   reportOrganize,
   resolveQualityTarget,
-  setExitCode: (code) => {
-    process.exitCode = code;
-  },
   writeFileSync
 };
 

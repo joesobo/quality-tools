@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   findImportComponents,
   bfsComponent
-} from '../../../src/organize/cohesion/components';
-import type { ImportAdjacency } from '../../../src/organize/cohesion/importGraph';
+} from '../../../src/organize/cohesion/cluster/components';
+import type { ImportAdjacency } from '../../../src/organize/cohesion/imports/graph';
 
 describe('findImportComponents', () => {
   it('finds single isolated file as a component', () => {

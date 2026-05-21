@@ -70,7 +70,6 @@ describe('command - flags', () => {
     expect(dependencies.analyze).toBeDefined();
     expect(dependencies.reportOrganize).toBeDefined();
     expect(dependencies.resolveQualityTarget).toBeDefined();
-    expect(dependencies.setExitCode).toBeDefined();
     expect(typeof dependencies.analyze).toBe('function');
   });
 

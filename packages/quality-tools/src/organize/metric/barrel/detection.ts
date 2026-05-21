@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { type OrganizeFileIssue } from '../model';
+import { type OrganizeFileIssue } from '../../model';
 import { SUPPORTED_EXTENSIONS, getFileExtension, isReExportStatement } from './reExport';
 
 export function scriptKindForExtension(ext: string): ts.ScriptKind {
@@ -28,7 +28,7 @@ export function checkBarrelFile(fileName: string, fileContent: string): Organize
     fileName,
     fileContent,
     ts.ScriptTarget.Latest,
-    true,
+    undefined,
     scriptKindForExtension(ext)
   );
 
@@ -48,13 +48,9 @@ export function checkBarrelFile(fileName: string, fileContent: string): Organize
     }
   }
 
-  if (totalStatements === 0) {
-    return undefined;
-  }
-
   const reExportRatio = reExportCount / totalStatements;
 
-  // Flag if 80% or more statements are re-exports
+  // Flag if 80% or more statements are re-exports. 0 / 0 is NaN and does not flag.
   if (reExportRatio >= 0.8) {
     const detail = `80% of statements are re-exports (${reExportCount} of ${totalStatements})`;
     return {

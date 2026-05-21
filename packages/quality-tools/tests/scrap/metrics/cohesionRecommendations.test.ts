@@ -24,7 +24,7 @@ describe('cohesionRecommendations', () => {
     expect(cohesionRecommendations(cohesion({
       averageSubjectOverlap: 0.1,
       distinctSubjectCount: 4
-    }), 4)).toEqual([{
+    }), 7)).toEqual([{
       confidence: 'LOW',
       kind: 'REVIEW_STRUCTURE',
       message: 'Examples touch 4 distinct subjects with little overlap. Review whether this file mixes responsibilities.'
@@ -36,7 +36,7 @@ describe('cohesionRecommendations', () => {
       averageExampleSimilarity: 0.2,
       exampleShapeDiversity: 3,
       subjectRepetitionScore: 1
-    }), 4)).toEqual([{
+    }), 7)).toEqual([{
       confidence: 'LOW',
       kind: 'REVIEW_STRUCTURE',
       message: 'Examples vary structurally (diversity 3) with low similarity (0.2). Review whether this file mixes responsibilities.'

@@ -1,5 +1,5 @@
 import { basename } from 'path';
-import { parseFileImports } from '../../organize/cohesion/parse';
+import { parseFileImports } from '../../organize/cohesion/imports/parse';
 import type { QualityTarget } from '../../shared/resolve/target';
 import type { WorkspacePackage } from '../../shared/util/workspacePackages';
 import { resolveImportTarget } from './imports';

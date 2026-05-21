@@ -55,7 +55,14 @@ describe('analyzeScrapFile aggregation', () => {
     metrics = [
       { assertionCount: 1, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 5, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'a', score: 8, setupLineCount: 0, startLine: 1 },
       { assertionCount: 1, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 10, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'b', score: 8, setupLineCount: 0, startLine: 6 },
-      { assertionCount: 2, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 15, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'c', score: 8, setupLineCount: 0, startLine: 11 }
+      { assertionCount: 2, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 15, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'c', score: 8, setupLineCount: 0, startLine: 11 },
+      { assertionCount: 2, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 20, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'd', score: 8, setupLineCount: 0, startLine: 16 },
+      { assertionCount: 2, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 25, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'e', score: 8, setupLineCount: 0, startLine: 21 },
+      { assertionCount: 2, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 30, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'f', score: 8, setupLineCount: 0, startLine: 26 },
+      { assertionCount: 2, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 35, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'g', score: 8, setupLineCount: 0, startLine: 31 },
+      { assertionCount: 2, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 40, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'h', score: 8, setupLineCount: 0, startLine: 36 },
+      { assertionCount: 2, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 45, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'i', score: 8, setupLineCount: 0, startLine: 41 },
+      { assertionCount: 2, blockPath: ['suite'], branchCount: 0, describeDepth: 1, duplicateSetupGroupSize: 0, endLine: 50, helperCallCount: 0, helperHiddenLineCount: 0, lineCount: 3, mockCount: 0, name: 'j', score: 8, setupLineCount: 0, startLine: 46 }
     ];
 
     const result = analyzeScrapFile(sourceFile());

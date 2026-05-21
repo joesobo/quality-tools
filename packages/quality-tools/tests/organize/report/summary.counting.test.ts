@@ -68,6 +68,7 @@ describe('summaryLines - counting', () => {
     const metric = createMetric({
       directoryPath: 'src/test/',
       fileIssues: [
+        createFileIssue({ fileName: 'srcTest.ts', kind: 'redundancy' }),
         createFileIssue({ fileName: 'utils.ts', kind: 'low-info-banned' }),
         createFileIssue({ fileName: 'helpers.ts', kind: 'low-info-discouraged' }),
         createFileIssue({ fileName: 'index.ts', kind: 'barrel' })
@@ -75,6 +76,7 @@ describe('summaryLines - counting', () => {
     });
 
     const line = summaryLines(metric)[0];
+    expect(line).toContain('redundant: 1');
     expect(line).toContain('low-info: 2');
     expect(line).toContain('barrels: 1');
   });

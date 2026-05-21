@@ -1,16 +1,16 @@
 import { relative } from 'path';
-import { REPO_ROOT } from '../shared/resolve/repoRoot';
-import { loadOrganizeConfig } from './rules';
-import { walkDirectories } from './metric/directoryWalk';
-import { fileFanOutVerdict } from './metric/fileFanOut';
-import { folderFanOutVerdict } from './metric/folderFanOut';
-import { directoryDepth, depthVerdict } from './metric/directoryDepth';
-import { buildImportGraph } from './cohesion/importGraph';
-import { findCohesionClusters } from './cohesion/clusters';
+import { REPO_ROOT } from '../../shared/resolve/repoRoot';
+import { loadOrganizeConfig } from '../rules';
+import { walkDirectories } from '../metric/directoryWalk';
+import { fileFanOutVerdict } from '../metric/fileFanOut';
+import { folderFanOutVerdict } from '../metric/folderFanOut';
+import { directoryDepth, depthVerdict } from '../metric/directoryDepth';
+import { buildImportGraph } from '../cohesion/imports/graph';
+import { findCohesionClusters } from '../cohesion/cluster/find';
 import { extractAncestorFolders, computeAverageRedundancy } from './ancestors';
 import { collectFileIssues } from './issues';
-import type { QualityTarget } from '../shared/resolve/target';
-import type { OrganizeDirectoryMetric } from './model';
+import type { QualityTarget } from '../../shared/resolve/target';
+import type { OrganizeDirectoryMetric } from '../model';
 
 export function analyze(target: QualityTarget): OrganizeDirectoryMetric[] {
   const config = loadOrganizeConfig(REPO_ROOT, target.packageName);
@@ -39,7 +39,14 @@ export function analyze(target: QualityTarget): OrganizeDirectoryMetric[] {
     const averageRedundancy = computeAverageRedundancy(entry.files, ancestorFolders);
 
     // File issues: path redundancy, low-info names, and barrel files
-    const fileIssues = collectFileIssues(entry.files, entry.directoryPath, ancestorFolders, config.lowInfoNames, config.redundancyThreshold);
+    const fileIssues = collectFileIssues(
+      entry.files,
+      entry.directoryPath,
+      ancestorFolders,
+      config.lowInfoNames,
+      config.redundancyThreshold,
+      entry.directoryPath === target.absolutePath
+    );
 
     // Build import graph and find clusters
     const importGraph = buildImportGraph(entry.directoryPath, entry.files);

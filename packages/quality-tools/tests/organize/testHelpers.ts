@@ -6,9 +6,9 @@
 import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { buildImportGraph } from '../../src/organize/cohesion/importGraph';
+import { buildImportGraph } from '../../src/organize/cohesion/imports/graph';
 import type { OrganizeDirectoryMetric } from '../../src/organize/model';
-import type { ImportAdjacency } from '../../src/organize/cohesion/importGraph';
+import type { ImportAdjacency } from '../../src/organize/cohesion/imports/graph';
 import type { QualityTarget } from '../../src/shared/resolve/target';
 
 // ============================================================================

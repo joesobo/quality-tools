@@ -1,35 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { isConventionalEntryFile } from '../../../src/organize/metric/pathRedundancyConventional';
+import { isConventionalEntryFile } from '../../../src/organize/metric/naming/conventional';
 
 describe('isConventionalEntryFile', () => {
-  it('treats index files as conventional', () => {
-    expect(isConventionalEntryFile('webview/settings/index.ts', ['webview', 'settings'])).toBe(true);
-  });
-
-  it('treats app and export entry files as conventional only in matching folders', () => {
-    expect(isConventionalEntryFile('webview/app/App.tsx', ['webview', 'app'])).toBe(true);
-    expect(isConventionalEntryFile('webview/export/export.ts', ['webview', 'export'])).toBe(true);
-    expect(isConventionalEntryFile('webview/export/export.ts', ['webview', 'reports'])).toBe(false);
-    expect(isConventionalEntryFile('webview/app/router.ts', ['webview', 'app'])).toBe(false);
-    expect(isConventionalEntryFile('webview/export/report.ts', ['webview', 'export'])).toBe(false);
-  });
-
-  it('treats matching hook-style files as conventional', () => {
-    expect(isConventionalEntryFile('features/editor/useEditorState.ts', ['features', 'editor'])).toBe(true);
-  });
-
-  it('rejects non-matching hook-style files', () => {
-    expect(isConventionalEntryFile('features/theme/useEditorState.ts', ['features', 'theme'])).toBe(false);
-    expect(isConventionalEntryFile('features/theme/use.ts', ['features', 'theme'])).toBe(false);
-    expect(isConventionalEntryFile('features/editorPanel/getEditorState.ts', ['features', 'editorPanel'])).toBe(false);
-    expect(isConventionalEntryFile('features/use/useEditorState.ts', ['features', 'use'])).toBe(false);
-  });
-
-  it('treats a hook file as conventional when any folder token matches', () => {
-    expect(isConventionalEntryFile('features/editor-panel/useEditorState.ts', ['features', 'editorPanel'])).toBe(true);
-  });
-
-  it('rejects export files outside export folders even when another folder token matches', () => {
-    expect(isConventionalEntryFile('reports/export.ts', ['reports', 'editor'])).toBe(false);
+  it.each([
+    ['webview/settings/index.ts', ['webview', 'settings'], true],
+    ['webview/app/App.tsx', ['webview', 'app'], true],
+    ['webview/export/export.ts', ['webview', 'export'], true],
+    ['webview/export/export.ts', ['webview', 'reports'], false],
+    ['webview/app/router.ts', ['webview', 'app'], false],
+    ['webview/export/report.ts', ['webview', 'export'], false],
+    ['features/editor/useEditorState.ts', ['features', 'editor'], true],
+    ['features/theme/useEditorState.ts', ['features', 'theme'], false],
+    ['features/theme/use.ts', ['features', 'theme'], false],
+    ['features/editorPanel/getEditorState.ts', ['features', 'editorPanel'], false],
+    ['features/use/useEditorState.ts', ['features', 'use'], false],
+    ['features/editor-panel/useEditorState.ts', ['features', 'editorPanel'], true],
+    ['reports/export.ts', ['reports', 'editor'], false]
+  ] as const)('returns %s for %s', (fileName, folders, expected) => {
+    expect(isConventionalEntryFile(fileName, [...folders])).toBe(expected);
   });
 });

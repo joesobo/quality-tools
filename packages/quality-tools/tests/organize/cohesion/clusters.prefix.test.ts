@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findCohesionClusters } from '../../../src/organize/cohesion/clusters';
+import { findCohesionClusters } from '../../../src/organize/cohesion/cluster/find';
 import { createImportGraph } from '../testHelpers';
 
 describe('findCohesionClusters - prefix-based clustering', () => {

@@ -1,9 +1,8 @@
 import { readFileSync } from 'fs';
-import { checkLowInfoName, type LowInfoNameConfig } from './metric/lowInfoNames';
-import { checkBarrelFile } from './metric/barrelDetection';
-import { pathRedundancy } from './metric/pathRedundancy';
-import { stripExtension } from './metric/nameStrip';
-import type { OrganizeFileIssue } from './model';
+import { checkLowInfoName, type LowInfoNameConfig } from '../metric/naming/lowInfo';
+import { checkBarrelFile } from '../metric/barrel/detection';
+import { pathRedundancy } from '../metric/naming/redundancy';
+import type { OrganizeFileIssue } from '../model';
 
 /**
  * Collect all file issues (low-info names, barrel files, and path redundancy) for a directory.
@@ -13,7 +12,8 @@ export function collectFileIssues(
   directoryPath: string,
   ancestorFolders: string[],
   lowInfoNames: LowInfoNameConfig,
-  redundancyThreshold: number
+  redundancyThreshold: number,
+  isPackageEntryDirectory = true
 ): OrganizeFileIssue[] {
   const issues: OrganizeFileIssue[] = [];
 
@@ -30,7 +30,7 @@ export function collectFileIssues(
     }
 
     // Check low-info name
-    const lowInfoIssue = checkLowInfoName(fileName, lowInfoNames, stripExtension(fileName).toLowerCase() === 'index');
+    const lowInfoIssue = checkLowInfoName(fileName, lowInfoNames, isPackageEntryDirectory);
     if (lowInfoIssue) {
       issues.push(lowInfoIssue);
     }

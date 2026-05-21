@@ -4,7 +4,7 @@ import {
   addComponentToAssigned,
   findOverlappingComponent,
   hasSignificantOverlap
-} from '../../../src/organize/cohesion/overlap';
+} from '../../../src/organize/cohesion/cluster/overlap';
 
 describe('isComponentCovered', () => {
   it('returns true when component has a member in assigned set', () => {

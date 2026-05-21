@@ -1,5 +1,5 @@
 import { describe, expect, it, afterEach } from 'vitest';
-import { analyze } from '../../src/organize/analyze';
+import { analyze } from '../../src/organize/analyze/run';
 import { cleanupTempDirs, createTarget, createFileTree } from './testHelpers';
 
 const tempDirs: string[] = [];

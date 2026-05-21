@@ -38,11 +38,11 @@ export function findOverlappingComponent(members: Set<string>, components: Set<s
  * Calculated as: (intersection size) / (smaller set size) >= 50%
  */
 export function hasSignificantOverlap(set1: Set<string>, set2: Set<string>): boolean {
-  const smaller = set1.size <= set2.size ? set1 : set2;
-  const threshold = Math.ceil((smaller.size * 50) / 100);
+  const smallerSize = Math.min(set1.size, set2.size);
+  const threshold = Math.ceil((smallerSize * 50) / 100);
 
   let overlapCount = 0;
-  for (const item of smaller) {
+  for (const item of set1) {
     // Check if item is in both sets
     if (set1.has(item) && set2.has(item)) {
       overlapCount++;

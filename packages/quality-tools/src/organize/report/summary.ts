@@ -1,17 +1,8 @@
 import { type OrganizeDirectoryMetric } from '../model';
 
 function worstVerdict(metric: OrganizeDirectoryMetric): string {
-  const verdicts: string[] = [];
-
-  // Add depth verdict (DEEP counts as SPLIT level)
-  if (metric.depthVerdict === 'DEEP') {
-    verdicts.push('SPLIT');
-  } else {
-    verdicts.push(metric.depthVerdict);
-  }
-
-  verdicts.push(metric.fileFanOutVerdict);
-  verdicts.push(metric.folderFanOutVerdict);
+  const depthVerdict = metric.depthVerdict === 'DEEP' ? 'SPLIT' : metric.depthVerdict;
+  const verdicts = [depthVerdict, metric.fileFanOutVerdict, metric.folderFanOutVerdict];
 
   // SPLIT > WARNING > STABLE
   if (verdicts.includes('SPLIT')) {

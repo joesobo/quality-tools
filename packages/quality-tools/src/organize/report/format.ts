@@ -36,11 +36,6 @@ export function reportOrganize(
   metrics: OrganizeDirectoryMetric[],
   options: OrganizeReportOptions = {}
 ): void {
-  if (metrics.length === 0) {
-    console.log('No directories found for organize analysis.');
-    return;
-  }
-
   const metricsToShow = metrics.filter((metric) => shouldShowDirectory(metric, options.verbose ?? false));
 
   if (metricsToShow.length === 0) {

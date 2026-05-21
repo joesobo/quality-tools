@@ -1,4 +1,4 @@
-import { tokenize } from '../tokenize';
+import { tokenize } from '../../naming/tokenize';
 
 /**
  * Group files by their first token (prefix).
@@ -52,7 +52,7 @@ export function findMostCommonToken(tokenCounts: Map<string, number>): string {
 
 /**
  * Derive a prefix from a list of filenames.
- * Tries to find the most common first token, or uses the first file's first token.
+ * Tries to find the most common first token, or uses the first filename when no tokens exist.
  */
 export function derivePrefix(fileNames: string[]): string {
   if (fileNames.length === 0) {
@@ -61,12 +61,9 @@ export function derivePrefix(fileNames: string[]): string {
 
   const tokenCounts = countFirstTokens(fileNames);
   const mostCommonToken = findMostCommonToken(tokenCounts);
-
-  if (mostCommonToken) {
+  if (mostCommonToken.length > 0) {
     return mostCommonToken;
   }
 
-  // Fallback: use the first file's first token
-  const tokens = tokenize(fileNames[0]);
-  return tokens.length > 0 ? tokens[0] : fileNames[0];
+  return fileNames[0];
 }

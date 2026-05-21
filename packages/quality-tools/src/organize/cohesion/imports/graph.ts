@@ -21,10 +21,7 @@ function addImportsToAdjacency(
   for (const importSpecifier of imports) {
     const resolvedFileName = resolveImportToFile(importSpecifier, availableFiles);
     if (resolvedFileName) {
-      const importingFileSet = adjacency.get(fileName);
-      if (importingFileSet) {
-        importingFileSet.add(resolvedFileName);
-      }
+      adjacency.get(fileName)!.add(resolvedFileName);
     }
   }
 }
