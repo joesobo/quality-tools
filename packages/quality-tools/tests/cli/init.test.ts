@@ -23,6 +23,7 @@ describe('runInitCli', () => {
     const config = JSON.parse(readFileSync(join(cwd, 'quality.config.json'), 'utf-8')) as {
       reportsDir?: string;
       defaults?: {
+        crap?: { coverage?: { coveragePath?: string } };
         mutation?: { include?: string[] };
         organize?: { lowInfoNames?: { banned?: string[] } };
       };
@@ -30,6 +31,7 @@ describe('runInitCli', () => {
     };
 
     expect(config.reportsDir).toBe('reports/quality-tools');
+    expect(config.defaults?.crap?.coverage?.coveragePath).toBe('coverage/coverage-final.json');
     expect(config.defaults?.mutation?.include).toEqual(['src/**/*.ts', 'src/**/*.tsx']);
     expect(config.defaults?.organize?.lowInfoNames?.banned).toContain('utils');
     expect(config.packages).toEqual({});

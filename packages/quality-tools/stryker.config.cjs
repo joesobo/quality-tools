@@ -4,6 +4,8 @@ const packageRoot = __dirname;
 const hostRoot = process.cwd();
 const vitestConfig = process.env.QUALITY_TOOLS_VITEST_CONFIG ?? 'vitest.config.ts';
 const vitestDir = process.env.QUALITY_TOOLS_VITEST_DIR;
+const reportsDir = process.env.QUALITY_TOOLS_REPORTS_DIR ?? 'reports/quality-tools';
+const mutationReportsDir = path.join(reportsDir, 'mutation');
 
 module.exports = {
   $schema: 'https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/core/schema/stryker-core.schema.json',
@@ -24,10 +26,10 @@ module.exports = {
     'html',
   ],
   jsonReporter: {
-    fileName: 'reports/mutation/mutation.json',
+    fileName: path.join(mutationReportsDir, 'mutation.json'),
   },
   htmlReporter: {
-    fileName: 'reports/mutation/mutation.html',
+    fileName: path.join(mutationReportsDir, 'mutation.html'),
   },
   concurrency: 1,
   coverageAnalysis: 'perTest',
@@ -37,7 +39,7 @@ module.exports = {
   ],
   dryRunTimeoutMinutes: 30,
   incremental: true,
-  incrementalFile: 'reports/mutation/stryker-incremental.json',
+  incrementalFile: path.join(mutationReportsDir, 'stryker-incremental.json'),
   ignorePatterns: [
     '/coverage',
     '/.vscode-test',

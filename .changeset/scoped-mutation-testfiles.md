@@ -2,4 +2,4 @@
 "@poleski/quality-tools": patch
 ---
 
-Fix scoped mutation runs so package-local Vitest config and concrete related test files are passed to Stryker.
+Generalize CRAP coverage config, report output, workspace discovery, and mutation Stryker integration for non-CodeGraphy projects.

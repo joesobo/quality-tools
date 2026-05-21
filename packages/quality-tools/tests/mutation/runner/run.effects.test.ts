@@ -3,7 +3,7 @@ import type { QualityTarget } from '../../../src/shared/resolve/target';
 import { REPO_ROOT } from '../../../src/shared/resolve/repoRoot';
 
 const execFileSync = vi.fn();
-const copySharedMutationReports = vi.fn(() => '/repo/reports/mutation.json');
+const copySharedMutationReports = vi.fn(() => '/repo/reports/quality-tools/mutation.json');
 const reportMutationSiteViolations = vi.fn();
 const resolvePackageToolGlobs = vi.fn(() => ({
   include: ['packages/quality-tools/src/**/*.ts'],
@@ -17,7 +17,6 @@ const resolveMutationProfile = vi.fn(() => ({
   configPath: `${REPO_ROOT}/packages/quality-tools/stryker.config.cjs`,
   packageName: 'quality-tools'
 }));
-const resolveScopedVitestIncludes = vi.fn<(target: QualityTarget) => string[] | undefined>(() => undefined);
 
 vi.mock('child_process', async (importOriginal) => {
   const actual = await importOriginal<typeof import('child_process')>();
@@ -34,7 +33,9 @@ vi.mock('child_process', async (importOriginal) => {
 
 vi.mock('../../../src/mutation/reporting/reportArtifacts', () => ({
   copySharedMutationReports,
-  incrementalReportPath: vi.fn((reportKey: string) => `reports/mutation/${reportKey}/stryker-incremental-${reportKey}.json`)
+  incrementalReportPath: vi.fn((reportKey: string) => (
+    `reports/quality-tools/mutation/${reportKey}/stryker-incremental-${reportKey}.json`
+  ))
 }));
 
 vi.mock('../../../src/mutation/reporting/check', () => ({
@@ -42,6 +43,7 @@ vi.mock('../../../src/mutation/reporting/check', () => ({
 }));
 
 vi.mock('../../../src/config/quality', () => ({
+  relativeReportsDir: vi.fn(() => 'reports/quality-tools'),
   resolvePackageToolGlobs
 }));
 
@@ -51,10 +53,6 @@ vi.mock('../../../src/mutation/analysis/mutateGlobs', () => ({
 
 vi.mock('../../../src/mutation/analysis/profile', () => ({
   resolveMutationProfile
-}));
-
-vi.mock('../../../src/mutation/runner/include/vitest', () => ({
-  resolveScopedVitestIncludes
 }));
 
 function target(): QualityTarget {
@@ -68,40 +66,18 @@ function target(): QualityTarget {
   };
 }
 
-function fileTarget(): QualityTarget {
-  return {
-    absolutePath: `${REPO_ROOT}/packages/quality-tools/src/mutation/runner/run.ts`,
-    kind: 'file',
-    packageName: 'quality-tools',
-    packageRelativePath: 'src/mutation/runner/run.ts',
-    packageRoot: `${REPO_ROOT}/packages/quality-tools`,
-    relativePath: 'packages/quality-tools/src/mutation/runner/run.ts'
-  };
-}
-
 describe('runMutation', () => {
   beforeEach(() => {
-    delete process.env.QUALITY_TOOLS_VITEST_CONFIG;
-    delete process.env.QUALITY_TOOLS_VITEST_DIR;
-    delete process.env.QUALITY_TOOLS_VITEST_SCOPE;
     execFileSync.mockClear();
     copySharedMutationReports.mockClear();
     reportMutationSiteViolations.mockClear();
     resolvePackageToolGlobs.mockClear();
     buildMutateGlobs.mockClear();
     resolveMutationProfile.mockClear();
-    resolveScopedVitestIncludes.mockReset();
-    resolveScopedVitestIncludes.mockReturnValue(undefined);
   });
 
-  it('runs stryker and reports site violations for the copied report', async () => {
+  it('runs Stryker with mutate globs and the shared report directory environment', async () => {
     const { runMutation } = await import('../../../src/mutation/runner/run');
-    resolveScopedVitestIncludes.mockReturnValue([
-      'packages/quality-tools/tests/**/*.test.ts',
-      'packages/quality-tools/tests/**/*.test.tsx',
-      'packages/quality-tools/tests/**/*.test.ts',
-      'packages/quality-tools/tests/**/*.test.tsx',
-    ]);
 
     runMutation(target());
 
@@ -117,122 +93,22 @@ describe('runMutation', () => {
         'run',
         `${REPO_ROOT}/packages/quality-tools/stryker.config.cjs`,
         '--incrementalFile',
-        'reports/mutation/quality-tools/stryker-incremental-quality-tools.json',
+        'reports/quality-tools/mutation/quality-tools/stryker-incremental-quality-tools.json',
         '-m',
-        'packages/quality-tools/src/**/*.ts,!packages/quality-tools/src/cli/**/*.ts',
-        '--testFiles',
+        'packages/quality-tools/src/**/*.ts,!packages/quality-tools/src/cli/**/*.ts'
       ]),
       expect.objectContaining({
         cwd: REPO_ROOT,
         env: expect.objectContaining({
-          ...process.env,
-          QUALITY_TOOLS_VITEST_SCOPE: 'workspace',
-          QUALITY_TOOLS_VITEST_CONFIG: `${REPO_ROOT}/packages/quality-tools/vitest.config.ts`,
-          QUALITY_TOOLS_VITEST_DIR: 'packages/quality-tools',
+          QUALITY_TOOLS_REPORTS_DIR: 'reports/quality-tools'
         }),
         stdio: 'inherit',
       }),
     );
     const strykerArgs = execFileSync.mock.calls[0][1] as string[];
-    const testFiles = strykerArgs[strykerArgs.indexOf('--testFiles') + 1];
 
-    expect(testFiles).toContain('packages/quality-tools/tests/mutation/runner/run.effects.test.ts');
-    expect(testFiles).toContain(',');
-    expect(testFiles).not.toContain('*');
-    expect(copySharedMutationReports).toHaveBeenCalledWith('quality-tools', REPO_ROOT);
-    expect(reportMutationSiteViolations).toHaveBeenCalledWith('/repo/reports/mutation.json');
-  });
-
-  it('preserves an explicit vitest config override', async () => {
-    const { runMutation } = await import('../../../src/mutation/runner/run');
-    process.env.QUALITY_TOOLS_VITEST_CONFIG = '/custom/vitest.config.ts';
-    process.env.QUALITY_TOOLS_VITEST_DIR = 'custom-package';
-
-    runMutation(target());
-
-    const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
-    const strykerArgs = execFileSync.mock.calls[0][1] as string[];
-
-    expect(options.env.QUALITY_TOOLS_VITEST_CONFIG).toBe('/custom/vitest.config.ts');
-    expect(options.env.QUALITY_TOOLS_VITEST_DIR).toBe('custom-package');
     expect(strykerArgs).not.toContain('--testFiles');
-  });
-
-  it('uses extension vitest scope for extension targets', async () => {
-    const { runMutation } = await import('../../../src/mutation/runner/run');
-
-    runMutation({
-      absolutePath: `${REPO_ROOT}/packages/extension`,
-      kind: 'package',
-      packageName: 'extension',
-      packageRelativePath: '.',
-      packageRoot: `${REPO_ROOT}/packages/extension`,
-      relativePath: 'packages/extension'
-    });
-
-    const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
-    expect(options.env.QUALITY_TOOLS_VITEST_SCOPE).toBe('extension');
-  });
-
-  it('preserves non-extension vitest scope overrides', async () => {
-    const { runMutation } = await import('../../../src/mutation/runner/run');
-    process.env.QUALITY_TOOLS_VITEST_SCOPE = 'package-local';
-
-    runMutation(target());
-
-    const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
-    expect(options.env.QUALITY_TOOLS_VITEST_SCOPE).toBe('package-local');
-  });
-
-  it('passes scoped vitest includes for file targets', async () => {
-    const { runMutation } = await import('../../../src/mutation/runner/run');
-    resolveScopedVitestIncludes.mockReturnValue([
-      'packages/quality-tools/tests/mutation/runner/run.test.ts',
-      'packages/quality-tools/tests/mutation/runner/run.test.tsx',
-    ]);
-
-    runMutation(fileTarget());
-
-    const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
-    const strykerArgs = execFileSync.mock.calls[0][1] as string[];
-    const testFiles = strykerArgs[strykerArgs.indexOf('--testFiles') + 1];
-
-    expect(options.env.QUALITY_TOOLS_VITEST_DIR).toBe('packages/quality-tools');
-    expect(testFiles).toBe('packages/quality-tools/tests/mutation/runner/run.test.ts');
-  });
-
-  it('passes scoped vitest includes for directory targets', async () => {
-    const { runMutation } = await import('../../../src/mutation/runner/run');
-    resolveScopedVitestIncludes.mockReturnValue([
-      'packages/quality-tools/tests/mutation/**/*.test.ts',
-      'packages/quality-tools/tests/mutation/**/*.test.tsx',
-    ]);
-
-    runMutation({
-      absolutePath: `${REPO_ROOT}/packages/quality-tools/src/mutation`,
-      kind: 'directory',
-      packageName: 'quality-tools',
-      packageRelativePath: 'src/mutation',
-      packageRoot: `${REPO_ROOT}/packages/quality-tools`,
-      relativePath: 'packages/quality-tools/src/mutation',
-    });
-
-    const strykerArgs = execFileSync.mock.calls[0][1] as string[];
-    const testFiles = strykerArgs[strykerArgs.indexOf('--testFiles') + 1];
-
-    expect(testFiles).toContain('packages/quality-tools/tests/mutation/runner/run.effects.test.ts');
-    expect(testFiles).not.toContain('*');
-
-    expect(execFileSync).toHaveBeenCalledWith(
-      process.execPath,
-      expect.any(Array),
-      expect.objectContaining({
-        cwd: REPO_ROOT,
-        env: expect.objectContaining({
-          QUALITY_TOOLS_VITEST_DIR: 'packages/quality-tools',
-        }),
-        stdio: 'inherit',
-      }),
-    );
+    expect(copySharedMutationReports).toHaveBeenCalledWith('quality-tools', REPO_ROOT);
+    expect(reportMutationSiteViolations).toHaveBeenCalledWith('/repo/reports/quality-tools/mutation.json');
   });
 });

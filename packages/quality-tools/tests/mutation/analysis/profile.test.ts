@@ -18,8 +18,6 @@ describe('mutation profiles', () => {
   afterEach(() => {
     delete process.env.QUALITY_TOOLS_VITEST_CONFIG;
     delete process.env.QUALITY_TOOLS_VITEST_DIR;
-    delete process.env.QUALITY_TOOLS_VITEST_SCOPE;
-    delete process.env.QUALITY_TOOLS_VITEST_INCLUDE_JSON;
     vi.resetModules();
   });
 

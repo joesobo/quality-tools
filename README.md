@@ -3,7 +3,8 @@
 Standalone repository for `@poleski/quality-tools`.
 
 The npm package lives in `packages/quality-tools` and exposes a `quality-tools`
-CLI for running quality checks against host-project folders and files.
+CLI for project-agnostic structure, complexity, mutation, reachability, and
+test-shape checks.
 
 ## Local Development
 
@@ -12,23 +13,28 @@ pnpm install
 pnpm run ci
 ```
 
-The CI check runs the same core gates:
+The CI check runs:
 
 ```bash
-pnpm run build
-pnpm run test
-pnpm run lint
 pnpm run typecheck
+pnpm run lint
+pnpm run test
+pnpm run build
 ```
 
-For local development in a host project before the package is published, build
-the CLI and link the package:
+Before the package is published, test it from another project with a local link:
 
 ```bash
 pnpm run build
-pnpm add -D link:/Users/poleski/Desktop/Projects/quality-tools/packages/quality-tools
+pnpm add -D link:/absolute/path/to/quality-tools/packages/quality-tools
 pnpm exec quality-tools --help
 ```
+
+## Package Usage
+
+See [packages/quality-tools/README.md](packages/quality-tools/README.md) for
+host-project setup, configuration, report output, CRAP coverage wiring, and
+mutation/Stryker integration.
 
 ## Changesets
 

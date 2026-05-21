@@ -11,26 +11,27 @@ import {
 
 describe('mutation report artifacts', () => {
   it('builds stable report paths', () => {
-    expect(rootReportDirectory()).toBe('reports/mutation');
-    expect(reportDirectory('quality-tools')).toBe('reports/mutation/quality-tools');
+    expect(rootReportDirectory()).toBe('reports/quality-tools/mutation');
+    expect(reportDirectory('quality-tools')).toBe('reports/quality-tools/mutation/quality-tools');
     expect(incrementalReportPath('quality-tools')).toBe(
-      'reports/mutation/quality-tools/stryker-incremental-quality-tools.json'
+      'reports/quality-tools/mutation/quality-tools/stryker-incremental-quality-tools.json'
     );
   });
 
   it('copies shared reports into the package-specific directory', () => {
     const directory = mkdtempSync(join(tmpdir(), 'quality-tools-artifacts-'));
-    mkdirSync(join(directory, 'reports/mutation'), { recursive: true });
-    writeFileSync(join(directory, 'reports/mutation/mutation.json'), '{"ok":true}');
-    writeFileSync(join(directory, 'reports/mutation/mutation.html'), '<html />');
+    writeFileSync(join(directory, 'quality.config.json'), '{"reportsDir":"artifacts/quality"}');
+    mkdirSync(join(directory, 'artifacts/quality/mutation'), { recursive: true });
+    writeFileSync(join(directory, 'artifacts/quality/mutation/mutation.json'), '{"ok":true}');
+    writeFileSync(join(directory, 'artifacts/quality/mutation/mutation.html'), '<html />');
 
     const reportPath = copySharedMutationReports('quality-tools', directory);
     expect(JSON.parse(readFileSync(reportPath, 'utf-8'))).toEqual({ ok: true });
-    expect(readFileSync(join(directory, 'reports/mutation/quality-tools/mutation.html'), 'utf-8')).toBe('<html />');
+    expect(readFileSync(join(directory, 'artifacts/quality/mutation/quality-tools/mutation.html'), 'utf-8')).toBe('<html />');
     expect(
       JSON.parse(
         readFileSync(
-          join(directory, 'reports/mutation/quality-tools/stryker-incremental-quality-tools.json'),
+          join(directory, 'artifacts/quality/mutation/quality-tools/stryker-incremental-quality-tools.json'),
           'utf-8',
         ),
       ),
@@ -39,12 +40,12 @@ describe('mutation report artifacts', () => {
 
   it('creates the target directory recursively and skips missing shared artifacts', () => {
     const directory = mkdtempSync(join(tmpdir(), 'quality-tools-artifacts-empty-'));
-    mkdirSync(join(directory, 'reports/mutation'), { recursive: true });
+    mkdirSync(join(directory, 'reports/quality-tools/mutation'), { recursive: true });
 
     const reportPath = copySharedMutationReports('quality-tools/nested', directory);
 
-    expect(reportPath).toBe(join(directory, 'reports/mutation/quality-tools/nested/mutation.json'));
+    expect(reportPath).toBe(join(directory, 'reports/quality-tools/mutation/quality-tools/nested/mutation.json'));
     expect(existsSync(reportPath)).toBe(false);
-    expect(existsSync(join(directory, 'reports/mutation/quality-tools/nested/mutation.html'))).toBe(false);
+    expect(existsSync(join(directory, 'reports/quality-tools/mutation/quality-tools/nested/mutation.html'))).toBe(false);
   });
 });

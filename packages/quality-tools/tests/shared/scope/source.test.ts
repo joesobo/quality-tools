@@ -4,8 +4,8 @@ import { assertSourceScope, resolveSourceScope } from '../../../src/shared/scope
 import { resolveQualityTarget } from '../../../src/shared/resolve/target';
 
 describe('resolveSourceScope', () => {
-  it('returns packages for repo targets', () => {
-    expect(resolveSourceScope(resolveQualityTarget(REPO_ROOT))).toBe('packages');
+  it('does not constrain repo targets to a hardcoded workspace folder', () => {
+    expect(resolveSourceScope(resolveQualityTarget(REPO_ROOT))).toBeUndefined();
   });
 
   it('returns the src root for package targets', () => {
@@ -43,6 +43,10 @@ describe('resolveSourceScope', () => {
 });
 
 describe('assertSourceScope', () => {
+  it('allows repo-wide source analysis without a path prefix', () => {
+    expect(assertSourceScope(resolveQualityTarget(REPO_ROOT))).toBeUndefined();
+  });
+
   it('throws for non-source targets', () => {
     expect(() => assertSourceScope(resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/tests'))).toThrow(
       'This command expects a package root or a path inside a package src/ tree.'

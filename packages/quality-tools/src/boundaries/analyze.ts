@@ -15,17 +15,25 @@ function analyzePackageRoot(
 }
 
 export function analyzeBoundaries(repoRoot: string, target: QualityTarget): BoundaryReport {
+  const workspacePackages = listWorkspacePackages(repoRoot);
+
   if (target.kind === 'repo') {
     return mergeReports(
       'packages',
-      listWorkspacePackages(repoRoot).map((workspacePackage) => analyzePackageRoot(repoRoot, workspacePackage))
+      workspacePackages.map((workspacePackage) => analyzePackageRoot(repoRoot, workspacePackage))
     );
   }
 
   if (target.packageName) {
+    const workspacePackage = workspacePackages.find((entry) => (
+      entry.name === target.packageName ||
+      entry.manifestName === target.packageName
+    ));
+
     return analyzePackageRoot(repoRoot, {
       name: target.packageName,
-      root: target.packageRoot ?? join(repoRoot, 'packages', target.packageName)
+      root: target.packageRoot ?? workspacePackage?.root ?? join(repoRoot, target.packageName),
+      relativeRoot: workspacePackage?.relativeRoot
     }, target);
   }
 
@@ -34,7 +42,7 @@ export function analyzeBoundaries(repoRoot: string, target: QualityTarget): Boun
       name: basename(target.absolutePath),
       root: target.absolutePath
     };
-    return analyzePackageRoot(repoRoot, workspacePackage);
+    return analyzePackageRoot(repoRoot, workspacePackage, target);
   }
 
   return {

@@ -6,9 +6,11 @@ import { pathKind, resolveExistingPath } from '../../../src/shared/resolve/path'
 
 function createRepo(): { filePath: string; packageRoot: string; repoRoot: string } {
   const repoRoot = mkdtempSync(join(tmpdir(), 'quality-tools-resolve-path-'));
+  writeFileSync(join(repoRoot, 'pnpm-workspace.yaml'), "packages:\n  - 'packages/*'\n");
   const packageRoot = join(repoRoot, 'packages/example');
   const filePath = join(packageRoot, 'src/file.ts');
   mkdirSync(join(packageRoot, 'src'), { recursive: true });
+  writeFileSync(join(packageRoot, 'package.json'), '{"name":"example"}');
   writeFileSync(filePath, 'export const value = 1;');
   return { filePath, packageRoot, repoRoot };
 }

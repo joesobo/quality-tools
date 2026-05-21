@@ -11,12 +11,12 @@ import type { OrganizeComparison } from '../../src/organize/model';
 
 describe('organize command baseline helpers', () => {
   it('uses repo.json for the repo target baseline path', () => {
-    expect(baselinePathFor('.')).toBe(join(REPO_ROOT, 'reports', 'organize', 'repo.json'));
+    expect(baselinePathFor('.')).toBe(join(REPO_ROOT, 'reports', 'quality-tools', 'organize', 'repo.json'));
   });
 
   it('uses the sanitized target path for package baselines', () => {
     expect(baselinePathFor('packages/quality-tools')).toBe(
-      join(REPO_ROOT, 'reports', 'organize', 'packages-quality-tools.json')
+      join(REPO_ROOT, 'reports', 'quality-tools', 'organize', 'packages-quality-tools.json')
     );
   });
 
@@ -43,7 +43,7 @@ describe('organize command baseline helpers', () => {
 });
 
 describe('runOrganizeCli write-baseline behavior', () => {
-  it('writes the repo baseline to reports/organize/repo.json when the flag is present', () => {
+  it('writes the repo baseline to the shared reports folder when the flag is present', () => {
     const mkdirSync = vi.fn();
     const writeFileSync = vi.fn();
     const comparison: OrganizeComparison = {
@@ -76,11 +76,11 @@ describe('runOrganizeCli write-baseline behavior', () => {
     runOrganizeCli(['--write-baseline', '.'], dependencies);
 
     expect(mkdirSync).toHaveBeenCalledWith(
-      join(REPO_ROOT, 'reports', 'organize'),
+      join(REPO_ROOT, 'reports', 'quality-tools', 'organize'),
       { recursive: true }
     );
     expect(writeFileSync).toHaveBeenCalledWith(
-      join(REPO_ROOT, 'reports', 'organize', 'repo.json'),
+      join(REPO_ROOT, 'reports', 'quality-tools', 'organize', 'repo.json'),
       JSON.stringify([createMetrics()[0]], null, 2)
     );
     expect(dependencies.reportOrganize).toHaveBeenCalledWith(metrics, { verbose: false });

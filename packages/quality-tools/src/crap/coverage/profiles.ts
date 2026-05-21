@@ -6,20 +6,9 @@ export interface CoverageProfile {
   command: string;
 }
 
-import {
-  extensionCoverageProfile,
-  qualityToolsCoverageProfile,
-  workspacePackageCoverageProfile
-} from './factories';
+import { coverageProfilesForTarget } from './factories';
+import { type QualityTarget } from '../../shared/resolve/target';
 
-export function createCoverageProfiles(repoRoot: string, packageName?: string): CoverageProfile[] {
-  if (packageName === 'extension') {
-    return [extensionCoverageProfile(repoRoot)];
-  }
-
-  if (packageName) {
-    return [workspacePackageCoverageProfile(repoRoot, packageName)];
-  }
-
-  return [extensionCoverageProfile(repoRoot), qualityToolsCoverageProfile(repoRoot)];
+export function createCoverageProfiles(repoRoot: string, target: QualityTarget): CoverageProfile[] {
+  return coverageProfilesForTarget(repoRoot, target);
 }

@@ -6,15 +6,15 @@ function isInsideSourceTree(target: QualityTarget): boolean {
 
 export function resolveSourceScope(target: QualityTarget): string | undefined {
   if (target.kind === 'repo') {
-    return 'packages';
+    return undefined;
   }
 
-  if (!target.packageName) {
+  if (!target.packageRoot) {
     return undefined;
   }
 
   if (target.kind === 'package') {
-    return `packages/${target.packageName}/src`;
+    return target.relativePath === '.' ? 'src' : `${target.relativePath}/src`;
   }
 
   if (!isInsideSourceTree(target)) {
@@ -24,9 +24,9 @@ export function resolveSourceScope(target: QualityTarget): string | undefined {
   return target.relativePath;
 }
 
-export function assertSourceScope(target: QualityTarget): string {
+export function assertSourceScope(target: QualityTarget): string | undefined {
   const scope = resolveSourceScope(target);
-  if (!scope) {
+  if (!scope && target.kind !== 'repo') {
     throw new Error(
       'This command expects a package root or a path inside a package src/ tree.'
     );

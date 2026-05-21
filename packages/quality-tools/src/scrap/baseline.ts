@@ -1,12 +1,13 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { resolveReportPath } from '../config/quality';
 import { sanitizeReportKey } from '../shared/util/reportKey';
 import { REPO_ROOT } from '../shared/resolve/repoRoot';
 import { type ScrapFileMetric } from './model';
 
 export function baselinePathFor(targetRelativePath: string): string {
   const reportKey = sanitizeReportKey(targetRelativePath === '.' ? 'repo' : targetRelativePath);
-  return join(REPO_ROOT, 'reports', 'scrap', `${reportKey}.json`);
+  return resolveReportPath(REPO_ROOT, 'scrap', `${reportKey}.json`);
 }
 
 export function baseline(

@@ -6,6 +6,7 @@ import { discoverMutationPackageNames } from '../../../src/mutation/analysis/pac
 
 function createRepo(): string {
   const repoRoot = mkdtempSync(join(tmpdir(), 'quality-tools-mutation-packages-'));
+  writeFileSync(join(repoRoot, 'pnpm-workspace.yaml'), "packages:\n  - 'packages/*'\n");
   for (const packageName of ['extension', 'plugin-a', 'plugin-b', 'no-src', 'no-tests', 'tests-only']) {
     mkdirSync(join(repoRoot, 'packages', packageName), { recursive: true });
     writeFileSync(join(repoRoot, 'packages', packageName, 'package.json'), '{}');
@@ -23,11 +24,10 @@ function createRepo(): string {
 }
 
 describe('discoverMutationPackageNames', () => {
-  it('includes source packages with tests and keeps extension last', () => {
+  it('includes source packages with tests without special package ordering', () => {
     expect(discoverMutationPackageNames(createRepo())).toEqual([
       'plugin-a',
-      'plugin-b',
-      'extension'
+      'plugin-b'
     ]);
   });
 });

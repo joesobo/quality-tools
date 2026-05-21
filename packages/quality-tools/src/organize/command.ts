@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { resolveReportPath } from '../config/quality';
 import { cleanCliArgs, flagValue, parseTargetArg } from '../shared/cliArgs';
 import { REPO_ROOT } from '../shared/resolve/repoRoot';
 import { resolveQualityTarget } from '../shared/resolve/target';
@@ -37,7 +38,7 @@ function baselineReportTarget(targetRelativePath: string): string {
 
 export function baselinePathFor(targetRelativePath: string): string {
   const reportKey = sanitizeReportKey(baselineReportTarget(targetRelativePath));
-  return join(REPO_ROOT, 'reports', 'organize', `${reportKey}.json`);
+  return resolveReportPath(REPO_ROOT, 'organize', `${reportKey}.json`);
 }
 
 export function stripComparisonsForBaseline(

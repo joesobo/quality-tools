@@ -33,6 +33,15 @@ describe('buildMutateGlobs', () => {
       exclude: ['packages/quality-tools/src/cli/**/*.ts'],
       name: 'package targets',
       targetPath: 'quality-tools/'
+    },
+    {
+      expected: [
+        'packages/quality-tools/src/**/*.ts',
+        '!packages/quality-tools/src/cli/**/*.ts'
+      ],
+      exclude: ['packages/quality-tools/src/cli/**/*.ts'],
+      name: 'repo targets with configured includes',
+      targetPath: undefined
     }
   ])('builds mutation globs for $name', ({ expected, exclude, targetPath }) => {
     const globs = buildMutateGlobs(
@@ -44,5 +53,13 @@ describe('buildMutateGlobs', () => {
     );
 
     expect(globs).toEqual(expected);
+  });
+
+  it('uses generic TypeScript globs for repo targets without configured includes', () => {
+    expect(buildMutateGlobs(resolveQualityTarget(REPO_ROOT), { include: [], exclude: ['**/*.d.ts'] })).toEqual([
+      '**/*.ts',
+      '**/*.tsx',
+      '!**/*.d.ts'
+    ]);
   });
 });

@@ -37,6 +37,6 @@ export function createScopedReport(
     deadSurfaces: deadSurfaces(files),
     files,
     layerViolations: selectedViolations(violations, files),
-    target: scope?.relativePath ?? `packages/${workspacePackage.name}`
+    target: scope?.relativePath ?? workspacePackage.relativeRoot ?? workspacePackage.name
   };
 }

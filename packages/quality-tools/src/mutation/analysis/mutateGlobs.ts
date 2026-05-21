@@ -11,6 +11,13 @@ function buildScopeIncludes(scope: string, kind: QualityTarget['kind']): string[
 }
 
 export function buildMutateGlobs(target: QualityTarget, patterns: ResolvedToolPatterns): string[] {
+  if (target.kind === 'repo') {
+    return [
+      ...(patterns.include.length > 0 ? patterns.include : ['**/*.ts', '**/*.tsx']),
+      ...patterns.exclude.map((pattern) => `!${pattern}`)
+    ];
+  }
+
   if (target.kind === 'package') {
     return [
       ...patterns.include,
@@ -19,6 +26,10 @@ export function buildMutateGlobs(target: QualityTarget, patterns: ResolvedToolPa
   }
 
   const scope = assertSourceScope(target);
+  if (!scope) {
+    throw new Error('This command expects a package root or a path inside a package src/ tree.');
+  }
+
   return [
     ...buildScopeIncludes(scope, target.kind),
     ...patterns.exclude.map((pattern) => `!${pattern}`)

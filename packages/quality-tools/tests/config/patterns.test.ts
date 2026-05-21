@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   mergeBoundaryPatterns,
-  mergeToolPatterns,
-  packagePattern
+  mergeToolPatterns
 } from '../../src/config/patterns';
 
 describe('mergeToolPatterns', () => {
@@ -71,11 +70,5 @@ describe('mergeBoundaryPatterns', () => {
       include: [],
       layers: []
     });
-  });
-});
-
-describe('packagePattern', () => {
-  it('expands package-relative patterns into repo-relative globs', () => {
-    expect(packagePattern('extension', 'src/**/*.ts')).toBe('packages/extension/src/**/*.ts');
   });
 });

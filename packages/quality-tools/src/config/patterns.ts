@@ -36,10 +36,6 @@ export function mergeBoundaryPatterns(
   };
 }
 
-export function packagePattern(packageName: string, pattern: string): string {
-  return toPosix(join('packages', packageName, pattern));
-}
-
 export function packageRootPattern(packageRelativeRoot: string, pattern: string): string {
   if (packageRelativeRoot === '.') {
     return toPosix(pattern);

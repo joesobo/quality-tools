@@ -1,4 +1,5 @@
 {
+  "reportsDir": "reports/quality-tools",
   "defaults": {
     "mutation": {
       "include": [
@@ -41,6 +42,22 @@
   },
   "packages": {
     "quality-tools": {
+      "crap": {
+        "coverage": {
+          "command": "pnpm",
+          "args": [
+            "--filter",
+            "@poleski/quality-tools",
+            "exec",
+            "vitest",
+            "run",
+            "--config",
+            "vitest.config.ts",
+            "--coverage"
+          ],
+          "coveragePath": "coverage/quality-tools/coverage-final.json"
+        }
+      },
       "mutation": {
         "exclude": [
           "src/cli/**/*.ts"

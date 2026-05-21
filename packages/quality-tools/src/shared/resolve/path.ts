@@ -1,14 +1,21 @@
 import { existsSync, statSync } from 'fs';
 import { isAbsolute, resolve } from 'path';
+import { listWorkspacePackages } from '../util/workspacePackages';
 
 export function resolveExistingPath(repoRoot: string, input?: string): string {
   if (!input) {
     return repoRoot;
   }
 
+  const packageShorthand = input.replace(/\/+$/, '');
+  const workspacePackages = listWorkspacePackages(repoRoot);
+  const shorthandPackage = workspacePackages.find((workspacePackage) => (
+    workspacePackage.name === packageShorthand ||
+    workspacePackage.manifestName === packageShorthand
+  ));
   const candidates = [
     isAbsolute(input) ? input : resolve(repoRoot, input),
-    resolve(repoRoot, 'packages', input)
+    ...(shorthandPackage ? [shorthandPackage.root] : [])
   ];
 
   const found = candidates.find((candidate) => existsSync(candidate));

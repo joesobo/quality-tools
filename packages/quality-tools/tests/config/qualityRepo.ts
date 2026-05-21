@@ -3,12 +3,19 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 
 export const DEFAULT_QUALITY_CONFIG = {
+  reportsDir: 'artifacts/quality',
   defaults: {
     mutation: {
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.d.ts', '**/index.ts']
+      exclude: ['src/**/*.d.ts', '**/index.ts'],
+      strykerConfig: 'config/stryker.base.cjs'
     },
     crap: {
+      coverage: {
+        args: ['exec', 'vitest', 'run', '--coverage'],
+        command: 'pnpm',
+        coveragePath: 'coverage/coverage-final.json'
+      },
       exclude: ['**/*.test.ts', 'src/generated/**']
     },
     scrap: {
@@ -19,7 +26,15 @@ export const DEFAULT_QUALITY_CONFIG = {
   packages: {
     example: {
       mutation: {
-        exclude: ['src/ignored.ts']
+        exclude: ['src/ignored.ts'],
+        strykerConfig: 'config/stryker.example.cjs'
+      },
+      crap: {
+        coverage: {
+          args: ['--filter', '{packageJsonName}', 'exec', 'vitest', 'run', '--coverage'],
+          command: 'pnpm',
+          coveragePath: '{reportsDir}/coverage/{packageName}/coverage-final.json'
+        }
       },
       scrap: {
         exclude: ['tests/legacy/**']

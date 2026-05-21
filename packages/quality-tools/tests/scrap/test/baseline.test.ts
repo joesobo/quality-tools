@@ -20,12 +20,12 @@ vi.mock('fs', async () => {
 
 describe('baseline', () => {
   it('builds a repo baseline path for the repo target', () => {
-    expect(baselinePathFor('.')).toBe(join(REPO_ROOT, 'reports', 'scrap', 'repo.json'));
+    expect(baselinePathFor('.')).toBe(join(REPO_ROOT, 'reports', 'quality-tools', 'scrap', 'repo.json'));
   });
 
   it('builds a sanitized baseline path for nested targets', () => {
     expect(baselinePathFor('packages/quality-tools/tests')).toBe(
-      join(REPO_ROOT, 'reports', 'scrap', 'packages-quality-tools-tests.json')
+      join(REPO_ROOT, 'reports', 'quality-tools', 'scrap', 'packages-quality-tools-tests.json')
     );
   });
 

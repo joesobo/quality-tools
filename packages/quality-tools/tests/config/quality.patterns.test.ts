@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  pathIncludedByDefaultTool,
   resolvePackageBoundaryConfig,
+  resolveDefaultToolPatterns,
   resolvePackageToolGlobs,
   resolvePackageToolPatterns
 } from '../../src/config/quality';
@@ -34,14 +36,32 @@ describe('resolvePackageToolPatterns', () => {
   });
 });
 
+describe('resolveDefaultToolPatterns', () => {
+  it('returns default patterns without requiring package metadata', () => {
+    expect(resolveDefaultToolPatterns(createQualityConfigRepo(DEFAULT_QUALITY_CONFIG), 'crap')).toEqual({
+      include: [],
+      exclude: ['**/*.test.ts', 'src/generated/**']
+    });
+  });
+});
+
+describe('pathIncludedByDefaultTool', () => {
+  it('applies default patterns to repo-relative paths', () => {
+    const repoRoot = createQualityConfigRepo(DEFAULT_QUALITY_CONFIG);
+
+    expect(pathIncludedByDefaultTool(repoRoot, 'crap', 'tools/report.ts')).toBe(true);
+    expect(pathIncludedByDefaultTool(repoRoot, 'crap', 'tools/report.test.ts')).toBe(false);
+  });
+});
+
 describe('resolvePackageToolGlobs', () => {
   it('expands package-relative patterns into repo-relative globs', () => {
     expect(resolvePackageToolGlobs(createQualityConfigRepo(DEFAULT_QUALITY_CONFIG), 'example', 'mutation')).toEqual({
-      include: ['packages/example/src/**/*.ts'],
+      include: ['example/src/**/*.ts'],
       exclude: [
-        'packages/example/src/**/*.d.ts',
-        'packages/example/**/index.ts',
-        'packages/example/src/ignored.ts'
+        'example/src/**/*.d.ts',
+        'example/**/index.ts',
+        'example/src/ignored.ts'
       ]
     });
   });

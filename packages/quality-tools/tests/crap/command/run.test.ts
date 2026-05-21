@@ -13,7 +13,12 @@ describe('runCrapCli', () => {
     runCrapCli(['--', 'quality-tools/', '--threshold', '12'], dependencies);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, 'quality-tools/');
-    expect(dependencies.createCoverageProfiles).toHaveBeenCalledWith(REPO_ROOT, 'quality-tools');
+    expect(dependencies.createCoverageProfiles).toHaveBeenCalledWith(
+      REPO_ROOT,
+      expect.objectContaining({
+        packageName: 'quality-tools'
+      })
+    );
     expect(dependencies.runCommand).toHaveBeenCalledWith('pnpm', ['vitest'], REPO_ROOT);
     expect(dependencies.readCoverageReport).toHaveBeenCalledWith('/coverage/a.json');
     expect(dependencies.analyzeCrap).toHaveBeenCalledWith(
@@ -30,7 +35,7 @@ describe('runCrapCli', () => {
       profiles: [
         coverageProfile({
           env: {
-            QUALITY_TOOLS_VITEST_SCOPE: 'workspace'
+            COVERAGE_MODE: 'workspace'
           }
         })
       ]
@@ -42,7 +47,7 @@ describe('runCrapCli', () => {
       'pnpm',
       ['vitest'],
       REPO_ROOT,
-      { QUALITY_TOOLS_VITEST_SCOPE: 'workspace' }
+      { COVERAGE_MODE: 'workspace' }
     );
   });
 

@@ -3,28 +3,18 @@ import { REPO_ROOT } from '../../shared/resolve/repoRoot';
 import { resolveQualityTarget, type QualityTarget } from '../../shared/resolve/target';
 import { discoverMutationPackageNames } from '../analysis/profile';
 import { runMutation } from './run';
-import { execFileSync } from 'child_process';
 
 export interface MutationCliDependencies {
   discoverMutationPackageNames: typeof discoverMutationPackageNames;
   resolveQualityTarget: typeof resolveQualityTarget;
   runMutation: typeof runMutation;
-  runPreflightTypecheck: () => void;
-}
-
-export function runPreflightTypecheck(): void {
-  execFileSync('pnpm', ['run', 'typecheck'], {
-    cwd: REPO_ROOT,
-    stdio: 'inherit',
-  });
 }
 
 export function createDefaultMutationCliDependencies(): MutationCliDependencies {
   return {
     discoverMutationPackageNames,
     resolveQualityTarget,
-    runMutation,
-    runPreflightTypecheck,
+    runMutation
   };
 }
 
@@ -53,7 +43,7 @@ function assertMutationTargetsSupported(targets: readonly QualityTarget[]): void
     }
 
     throw new Error(
-      'Mutation requires a workspace package, directory, or file inside one. Example: `pnpm run mutate -- extension/` or `pnpm run mutate -- --mutate packages/extension/src/foo.ts`.',
+      'Mutation requires a workspace package, directory, or file inside one. Example: `quality-tools mutate my-package` or `quality-tools mutate -- --mutate path/to/src/foo.ts`.',
     );
   }
 }
@@ -69,7 +59,6 @@ export function runMutationCli(
     dependencies,
   );
   assertMutationTargetsSupported(targets);
-  dependencies.runPreflightTypecheck();
   targets.forEach((target) => {
     dependencies.runMutation(target);
   });

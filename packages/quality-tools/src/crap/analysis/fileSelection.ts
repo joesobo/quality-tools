@@ -1,8 +1,10 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import * as ts from 'typescript';
-import { pathIncludedByTool } from '../../config/quality';
-import { packagePathParts, toPosix } from '../../shared/util/pathUtils';
+import { pathIncludedByDefaultTool, pathIncludedByTool } from '../../config/quality';
+import { toPosix } from '../../shared/util/pathUtils';
+import { findContainingPackage } from '../../shared/util/packageTarget';
+import { listWorkspacePackages } from '../../shared/util/workspacePackages';
 
 function matchesFilterScope(relativePath: string, filterScope: string | undefined): boolean {
   if (!filterScope) {
@@ -26,12 +28,17 @@ export function shouldIncludeFile(
     return false;
   }
 
-  const { packageName, packageRelativePath } = packagePathParts(relativePath);
-  if (packageRelativePath === undefined) {
-    return true;
+  const workspacePackage = findContainingPackage(filePath, listWorkspacePackages(repoRoot));
+  if (!workspacePackage) {
+    return pathIncludedByDefaultTool(repoRoot, 'crap', relativePath);
   }
 
-  return pathIncludedByTool(repoRoot, packageName!, 'crap', packageRelativePath);
+  return pathIncludedByTool(
+    repoRoot,
+    workspacePackage.name,
+    'crap',
+    toPosix(path.relative(workspacePackage.root, filePath))
+  );
 }
 
 export function createSourceFile(filePath: string): ts.SourceFile {

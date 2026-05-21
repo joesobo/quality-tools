@@ -5,14 +5,13 @@ import { copySharedMutationReports } from '../reporting/reportArtifacts';
 import { reportMutationSiteViolations } from '../reporting/check';
 import { buildMutationArgs, buildMutationArgsForTest } from './args';
 import { strykerBinPath } from './strykerBinary';
-import { appendScopedVitestFiles, buildMutationEnv } from './vitestRuntime';
+import { buildMutationEnv } from './environment';
 
 export function runMutation(target: QualityTarget): void {
   const { args, reportKey } = buildMutationArgs(target);
-  appendScopedVitestFiles(args, target);
   execFileSync(process.execPath, [strykerBinPath(), ...args], {
     cwd: REPO_ROOT,
-    env: buildMutationEnv(target),
+    env: buildMutationEnv(),
     stdio: 'inherit'
   });
   const reportPath = copySharedMutationReports(reportKey, REPO_ROOT);

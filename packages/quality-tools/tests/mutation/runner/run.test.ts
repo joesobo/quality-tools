@@ -9,7 +9,7 @@ describe('buildMutationArgsForTest', () => {
     const args = buildMutationArgsForTest(resolveQualityTarget(REPO_ROOT, 'quality-tools/'));
     expect(args[0]).toBe('run');
     expect(args[1]).toBe(`${REPO_ROOT}/packages/quality-tools/stryker.config.cjs`);
-    expect(args[3]).toBe('reports/mutation/quality-tools/stryker-incremental-quality-tools.json');
+    expect(args[3]).toBe('reports/quality-tools/mutation/quality-tools/stryker-incremental-quality-tools.json');
     expect(args).toContain('-m');
     expect(args.join(' ')).toContain('packages/quality-tools/src/**/*.ts');
     expect(args.join(' ')).toContain('!packages/quality-tools/src/cli/**/*.ts');
@@ -27,7 +27,7 @@ describe('buildMutationArgsForTest', () => {
 
     expect(args[0]).toBe('run');
     expect(args[3]).toBe(
-      'reports/mutation/packages-quality-tools-src-mutation-weird-file.ts/stryker-incremental-packages-quality-tools-src-mutation-weird-file.ts.json'
+      'reports/quality-tools/mutation/packages-quality-tools-src-mutation-weird-file.ts/stryker-incremental-packages-quality-tools-src-mutation-weird-file.ts.json'
     );
     expect(args).toContain('-m');
     expect(args.join(' ')).toContain('packages/quality-tools/src/mutation/Weird File.TS');

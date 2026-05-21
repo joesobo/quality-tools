@@ -7,22 +7,12 @@ function hasSourceDirectory(workspacePackage: WorkspacePackage): boolean {
 }
 
 function hasMutationTests(workspacePackage: WorkspacePackage): boolean {
-  return existsSync(join(workspacePackage.root, 'tests')) ||
-    workspacePackage.name === 'extension';
-}
-
-function sortMutationPackageNames(packageNames: string[]): string[] {
-  const nonExtensionPackages = packageNames
-    .filter((packageName) => packageName !== 'extension');
-
-  return packageNames.includes('extension')
-    ? [...nonExtensionPackages, 'extension']
-    : nonExtensionPackages;
+  return existsSync(join(workspacePackage.root, 'tests'));
 }
 
 export function discoverMutationPackageNames(repoRoot: string): string[] {
-  return sortMutationPackageNames(listWorkspacePackages(repoRoot)
+  return listWorkspacePackages(repoRoot)
     .filter(hasSourceDirectory)
     .filter(hasMutationTests)
-    .map((workspacePackage): string => workspacePackage.name));
+    .map((workspacePackage): string => workspacePackage.name);
 }

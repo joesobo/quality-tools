@@ -1,68 +1,70 @@
+import { mkdtempSync, mkdirSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { describe, expect, it } from 'vitest';
 import { createCoverageProfiles } from '../../../src/crap/coverage/profiles';
+import type { QualityTarget } from '../../../src/shared/resolve/target';
+
+function createRepo(): string {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'quality-tools-crap-profiles-'));
+  writeFileSync(join(repoRoot, 'pnpm-workspace.yaml'), "packages:\n  - 'modules/*'\n");
+  mkdirSync(join(repoRoot, 'modules/parser'), { recursive: true });
+  writeFileSync(join(repoRoot, 'modules/parser/package.json'), '{"name":"@scope/parser"}');
+  return repoRoot;
+}
+
+function parserTarget(repoRoot: string): QualityTarget {
+  return {
+    absolutePath: join(repoRoot, 'modules/parser'),
+    kind: 'package',
+    packageName: 'parser',
+    packageRelativePath: '.',
+    packageRoot: join(repoRoot, 'modules/parser'),
+    relativePath: 'modules/parser'
+  };
+}
 
 describe('createCoverageProfiles', () => {
-  it('uses the package-local profile for quality-tools', () => {
-    const profiles = createCoverageProfiles('/repo', 'quality-tools');
-    expect(profiles).toHaveLength(1);
-    expect(profiles[0]).toEqual(
-      {
-        args: ['--filter', 'quality-tools', 'exec', 'vitest', 'run', '--config', 'vitest.config.ts', '--coverage'],
-        command: 'pnpm',
-        coveragePath: '/repo/coverage/quality-tools/coverage-final.json',
-        cwd: '/repo',
-        env: {
-          QUALITY_TOOLS_VITEST_INCLUDE_JSON: JSON.stringify([
-            'packages/quality-tools/tests/**/*.test.ts',
-            'packages/quality-tools/tests/**/*.test.tsx'
-          ]),
-          QUALITY_TOOLS_VITEST_SCOPE: 'workspace'
-        }
-      }
-    );
-    expect(profiles[0]?.coveragePath).not.toBe('/repo/coverage/coverage-final.json');
-  });
+  it('does not assume CodeGraphy package names for package targets', () => {
+    const repoRoot = createRepo();
 
-  it('uses extension coverage for the extension package', () => {
-    const profiles = createCoverageProfiles('/repo', 'extension');
-    expect(profiles).toEqual([
+    expect(createCoverageProfiles(repoRoot, parserTarget(repoRoot))).toEqual([
       {
-        args: ['--filter', 'extension', 'exec', 'vitest', 'run', '--config', 'vitest.config.ts', '--coverage'],
+        args: ['--filter', '@scope/parser', 'exec', 'vitest', 'run', '--coverage'],
         command: 'pnpm',
-        coveragePath: '/repo/coverage/coverage-final.json',
-        cwd: '/repo',
-        env: {
-          QUALITY_TOOLS_VITEST_INCLUDE_JSON: JSON.stringify([
-            'packages/extension/tests/**/*.test.ts',
-            'packages/extension/tests/**/*.test.tsx'
-          ]),
-          QUALITY_TOOLS_VITEST_SCOPE: 'workspace'
-        }
+        coveragePath: join(repoRoot, 'modules/parser/coverage/coverage-final.json'),
+        cwd: repoRoot
       }
     ]);
   });
 
-  it('uses workspace-scoped coverage for other packages', () => {
-    const profiles = createCoverageProfiles('/repo', 'plugin-godot');
-    expect(profiles).toEqual([
-      {
-        args: ['--filter', 'plugin-godot', 'exec', 'vitest', 'run', '--config', 'vitest.config.ts', '--coverage'],
-        command: 'pnpm',
-        coveragePath: '/repo/coverage/plugin-godot/coverage-final.json',
-        cwd: '/repo',
-        env: {
-          QUALITY_TOOLS_VITEST_INCLUDE_JSON: JSON.stringify([
-            'packages/plugin-godot/tests/**/*.test.ts',
-            'packages/plugin-godot/tests/**/*.test.tsx'
-          ]),
-          QUALITY_TOOLS_VITEST_SCOPE: 'workspace'
+  it('uses configured repo-wide coverage profiles', () => {
+    const repoRoot = createRepo();
+    writeFileSync(join(repoRoot, 'quality.config.json'), JSON.stringify({
+      defaults: {
+        crap: {
+          coverage: [
+            {
+              command: 'npm',
+              args: ['run', 'coverage'],
+              coveragePath: 'custom/coverage-final.json'
+            }
+          ]
         }
       }
-    ]);
-  });
+    }));
 
-  it('includes both profiles for repo-wide runs', () => {
-    const profiles = createCoverageProfiles('/repo');
-    expect(profiles).toHaveLength(2);
+    expect(createCoverageProfiles(repoRoot, {
+      absolutePath: repoRoot,
+      kind: 'repo',
+      relativePath: '.'
+    })).toEqual([
+      {
+        args: ['run', 'coverage'],
+        command: 'npm',
+        coveragePath: join(repoRoot, 'custom/coverage-final.json'),
+        cwd: repoRoot
+      }
+    ]);
   });
 });

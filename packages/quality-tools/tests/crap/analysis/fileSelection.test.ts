@@ -17,6 +17,11 @@ function createFile(
 ): { filePath: string; repoRoot: string } {
   const repoRoot = mkdtempSync(join(tmpdir(), 'quality-tools-file-selection-'));
   writeFileSync(join(repoRoot, 'quality.config.json'), JSON.stringify(config));
+  writeFileSync(join(repoRoot, 'pnpm-workspace.yaml'), "packages:\n  - 'packages/*'\n");
+  if (relativePath.startsWith('packages/example/')) {
+    mkdirSync(join(repoRoot, 'packages/example'), { recursive: true });
+    writeFileSync(join(repoRoot, 'packages/example/package.json'), '{"name":"example"}');
+  }
   const filePath = join(repoRoot, relativePath);
   mkdirSync(join(filePath, '..'), { recursive: true });
   writeFileSync(filePath, source);
@@ -40,9 +45,13 @@ describe('shouldIncludeFile', () => {
     expect(shouldIncludeFile(filePath, 'packages/other/src', repoRoot)).toBe(false);
   });
 
-  it('returns true for non-package files after the filter scope matches', () => {
+  it('uses default patterns for non-package files after the filter scope matches', () => {
     const { filePath, repoRoot } = createFile('tools/file.ts');
+    const testFilePath = join(repoRoot, 'tools/file.test.ts');
+    writeFileSync(testFilePath, 'export const ignored = true;');
+
     expect(shouldIncludeFile(filePath, undefined, repoRoot)).toBe(true);
+    expect(shouldIncludeFile(testFilePath, undefined, repoRoot)).toBe(false);
   });
 
   it('uses the unified config include and exclude sources for package files', () => {
