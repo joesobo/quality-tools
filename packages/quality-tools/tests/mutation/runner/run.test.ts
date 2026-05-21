@@ -43,4 +43,10 @@ describe('buildMutationArgsForTest', () => {
     expect(args).toContain('-m');
     expect(args.join(' ')).toContain('src/**/*.ts');
   });
+
+  it('passes --force to Stryker when requested', () => {
+    const args = buildMutationArgsForTest(resolveQualityTarget(REPO_ROOT, 'quality-tools/'), { force: true });
+
+    expect(args).toContain('--force');
+  });
 });

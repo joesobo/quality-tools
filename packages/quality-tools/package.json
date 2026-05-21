@@ -28,6 +28,7 @@
     "boundaries": "tsx src/cli/boundaries.ts",
     "reachability": "tsx src/cli/reachability.ts",
     "crap": "tsx src/cli/crap.ts",
+    "list-mutation-packages": "tsx src/cli/listMutationPackages.ts",
     "mutate": "tsx src/cli/mutate.ts",
     "scrap": "tsx src/cli/scrap.ts",
     "organize": "tsx src/cli/organize.ts",

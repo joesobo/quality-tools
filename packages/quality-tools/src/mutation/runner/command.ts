@@ -1,18 +1,15 @@
 import { cleanCliArgs, flagValue, parseBareTargetArg } from '../../shared/cliArgs';
 import { REPO_ROOT } from '../../shared/resolve/repoRoot';
 import { resolveQualityTarget, type QualityTarget } from '../../shared/resolve/target';
-import { discoverMutationPackageNames } from '../analysis/profile';
-import { runMutation } from './run';
+import { runMutation, type MutationRunOptions } from './run';
 
 export interface MutationCliDependencies {
-  discoverMutationPackageNames: typeof discoverMutationPackageNames;
   resolveQualityTarget: typeof resolveQualityTarget;
-  runMutation: typeof runMutation;
+  runMutation: (target: QualityTarget, options?: MutationRunOptions) => Promise<void>;
 }
 
 export function createDefaultMutationCliDependencies(): MutationCliDependencies {
   return {
-    discoverMutationPackageNames,
     resolveQualityTarget,
     runMutation
   };
@@ -31,22 +28,27 @@ function resolveCliTargets(
     return [dependencies.resolveQualityTarget(REPO_ROOT, input)];
   }
 
-  return dependencies.discoverMutationPackageNames(REPO_ROOT).map((packageName) => (
-    dependencies.resolveQualityTarget(REPO_ROOT, packageName)
-  ));
-} 
+  throw new Error(
+    'Mutation requires an explicit package, directory, file, or repo target. ' +
+    'Example: `quality-tools mutate .` or `quality-tools mutate packages/foo/src/bar.ts`.'
+  );
+}
 
-export function runMutationCli(
+export async function runMutationCli(
   rawArgs: string[],
   dependencies: MutationCliDependencies = createDefaultMutationCliDependencies()
-): void {
+): Promise<void> {
   const args = cleanCliArgs(rawArgs);
   const targets = resolveCliTargets(
     parseBareTargetArg(args),
     flagValue(args, '--mutate'),
     dependencies,
   );
-  targets.forEach((target) => {
-    dependencies.runMutation(target);
-  });
+  const options = {
+    force: args.includes('--force')
+  };
+
+  for (const target of targets) {
+    await dependencies.runMutation(target, options);
+  }
 }

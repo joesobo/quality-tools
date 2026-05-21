@@ -6,6 +6,14 @@ const vitestConfig = process.env.QUALITY_TOOLS_VITEST_CONFIG ?? 'vitest.config.t
 const vitestDir = process.env.QUALITY_TOOLS_VITEST_DIR;
 const reportsDir = process.env.QUALITY_TOOLS_REPORTS_DIR ?? 'reports/quality-tools';
 const mutationReportsDir = path.join(reportsDir, 'mutation');
+const numberFromEnv = (name, fallback) => {
+  const rawValue = process.env[name];
+  if (!rawValue) {
+    return fallback;
+  }
+  const parsed = Number(rawValue);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
 
 module.exports = {
   $schema: 'https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/core/schema/stryker-core.schema.json',
@@ -31,9 +39,9 @@ module.exports = {
   htmlReporter: {
     fileName: path.join(mutationReportsDir, 'mutation.html'),
   },
-  concurrency: 1,
+  concurrency: numberFromEnv('QUALITY_TOOLS_STRYKER_CONCURRENCY', 2),
   coverageAnalysis: 'perTest',
-  maxTestRunnerReuse: 1,
+  maxTestRunnerReuse: numberFromEnv('QUALITY_TOOLS_STRYKER_MAX_TEST_RUNNER_REUSE', 0),
   testRunnerNodeArgs: [
     '--max-old-space-size=8192',
   ],

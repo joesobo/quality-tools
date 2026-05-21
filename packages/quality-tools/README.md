@@ -29,7 +29,9 @@ pnpm exec quality-tools reachability . --strict
 pnpm exec quality-tools scrap ./tests
 pnpm exec quality-tools crap ./src
 pnpm exec quality-tools mutate .
+pnpm exec quality-tools mutate ./src/parser.ts --force
 pnpm exec quality-tools mutate -- --mutate ./src/parser.ts
+pnpm exec quality-tools list-mutation-packages --json
 ```
 
 Targets can be the repo root, a package shorthand, a package root, a directory,
@@ -129,20 +131,20 @@ all artifacts stay together:
 {
   "defaults": {
     "crap": {
-        "coverage": {
-          "command": "pnpm",
-          "args": [
-            "exec",
-            "vitest",
-            "run",
-            "--coverage",
-            "--coverage.reportsDirectory",
-            "{repoRoot}/{reportsDir}/crap/{reportKey}"
-          ],
-          "coveragePath": "{repoRoot}/{reportsDir}/crap/{reportKey}/coverage-final.json"
-        }
+      "coverage": {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "vitest",
+          "run",
+          "--coverage",
+          "--coverage.reportsDirectory",
+          "{repoRoot}/{reportsDir}/crap/{reportKey}"
+        ],
+        "coveragePath": "{repoRoot}/{reportsDir}/crap/{reportKey}/coverage-final.json"
       }
-    },
+    }
+  },
   "packages": {
     "parser": {
       "crap": {
@@ -184,8 +186,15 @@ typecheck first and does not assume any package is special.
 ```bash
 pnpm exec quality-tools mutate .
 pnpm exec quality-tools mutate parser
+pnpm exec quality-tools mutate ./src/parser.ts --force
 pnpm exec quality-tools mutate -- --mutate ./src/parser.ts
 ```
+
+`mutate` requires an explicit target. Use `.` for a repo-wide run, a package
+shorthand for a workspace package, or a file/folder path for a narrower run.
+Bare `quality-tools mutate` is intentionally invalid so host projects can own
+their own all-package wrappers. `--force` is passed through to Stryker when you
+need to ignore incremental mutation state.
 
 The CLI passes Stryker:
 
@@ -194,6 +203,12 @@ The CLI passes Stryker:
 - an incremental file path under `reportsDir/mutation/<target>/`
 - `QUALITY_TOOLS_REPORTS_DIR`, so the bundled base config writes to the shared
   report root
+
+Long mutation runs print a progress heartbeat once per minute. The bundled base
+config also accepts these environment knobs:
+
+- `QUALITY_TOOLS_STRYKER_CONCURRENCY`, default `2`
+- `QUALITY_TOOLS_STRYKER_MAX_TEST_RUNNER_REUSE`, default `0`
 
 Use a project Stryker config when you need custom Vitest wiring:
 
@@ -226,6 +241,14 @@ Then reference it in `quality.config.json`:
 If `strykerConfig` is omitted, the tool looks for `stryker.config.cjs`,
 `stryker.config.mjs`, `stryker.config.js`, or `stryker.conf.js` in the repo
 root, then falls back to the bundled base config.
+
+Host projects that want an all-package wrapper can discover mutation-capable
+workspace packages with:
+
+```bash
+pnpm exec quality-tools list-mutation-packages
+pnpm exec quality-tools list-mutation-packages --json
+```
 
 ## Other Tools
 

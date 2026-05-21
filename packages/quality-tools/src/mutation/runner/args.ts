@@ -6,7 +6,14 @@ import { buildMutateGlobs } from '../analysis/mutateGlobs';
 import { resolveMutationProfile } from '../analysis/profile';
 import { incrementalReportPath } from '../reporting/reportArtifacts';
 
-export function buildMutationArgs(target: QualityTarget): { args: string[]; reportKey: string } {
+export interface MutationRunOptions {
+  force?: boolean;
+}
+
+export function buildMutationArgs(
+  target: QualityTarget,
+  options: MutationRunOptions = {}
+): { args: string[]; reportKey: string } {
   const profile = resolveMutationProfile(target);
   const reportKey = target.kind === 'repo'
     ? 'repo'
@@ -14,6 +21,9 @@ export function buildMutationArgs(target: QualityTarget): { args: string[]; repo
     ? profile.packageName
     : sanitizeReportKey(target.relativePath);
   const args = ['run', profile.configPath, '--incrementalFile', incrementalReportPath(reportKey)];
+  if (options.force) {
+    args.push('--force');
+  }
   const configPatterns = profile.packageName
     ? resolvePackageToolGlobs(REPO_ROOT, profile.packageName, 'mutation')
     : resolveDefaultToolPatterns(REPO_ROOT, 'mutation');
@@ -22,6 +32,9 @@ export function buildMutationArgs(target: QualityTarget): { args: string[]; repo
   return { args, reportKey };
 }
 
-export function buildMutationArgsForTest(target: QualityTarget): string[] {
-  return buildMutationArgs(target).args;
+export function buildMutationArgsForTest(
+  target: QualityTarget,
+  options: MutationRunOptions = {}
+): string[] {
+  return buildMutationArgs(target, options).args;
 }

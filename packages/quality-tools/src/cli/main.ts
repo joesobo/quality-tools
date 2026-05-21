@@ -3,6 +3,7 @@
 import { runBoundariesCli } from '../boundaries/command';
 import { runCrapCli } from '../crap/command';
 import { runInitCli } from './init';
+import { runListMutationPackagesCli } from '../mutation/analysis/listPackagesCommand';
 import { runMutationCli } from '../mutation/runner/command';
 import { runOrganizeCli } from '../organize/command';
 import { runReachabilityCli } from '../reachability/command';
@@ -13,6 +14,7 @@ const COMMANDS = {
   boundaries: runBoundariesCli,
   crap: runCrapCli,
   init: runInitCli,
+  'list-mutation-packages': runListMutationPackagesCli,
   mutate: runMutationCli,
   organize: runOrganizeCli,
   reachability: runReachabilityCli,
@@ -28,6 +30,8 @@ Commands:
   boundaries   Check package/layer boundaries
   reachability Check dead surfaces and dead ends
   crap         Check complexity and coverage risk
+  list-mutation-packages
+               Print mutation-capable package names
   mutate       Run mutation testing through the configured runner
   scrap        Check test structure and refactor pressure
 `);
@@ -48,4 +52,9 @@ if (!run) {
   process.exit(1);
 }
 
-run(args);
+try {
+  await run(args);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}

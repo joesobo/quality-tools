@@ -39,7 +39,6 @@ function repoTarget(): QualityTarget {
 
 function createDependencies(): MutationCliDependencies {
   return {
-    discoverMutationPackageNames: vi.fn(() => ['plugin-godot', 'quality-tools']),
     resolveQualityTarget: vi.fn((_repoRoot: string, input?: string) => (
       input === '.'
         ? repoTarget()
@@ -47,41 +46,39 @@ function createDependencies(): MutationCliDependencies {
         ? fileTarget(input)
         : packageTarget(input ?? 'quality-tools')
     )),
-    runMutation: vi.fn()
+    runMutation: vi.fn(async () => undefined)
   };
 }
 
 describe('command', () => {
   it('wires the default mutation CLI dependencies', () => {
     expect(Object.keys(createDefaultMutationCliDependencies()).sort()).toEqual([
-      'discoverMutationPackageNames',
       'resolveQualityTarget',
       'runMutation'
     ]);
   });
 
-  it('runs a single explicit target', () => {
+  it('runs a single explicit target', async () => {
     const dependencies = createDependencies();
-    runMutationCli(['quality-tools/'], dependencies);
+    await runMutationCli(['quality-tools/'], dependencies);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, 'quality-tools/');
     expect(dependencies.runMutation).toHaveBeenCalledTimes(1);
   });
 
-  it('runs all discovered packages when no target is provided', () => {
+  it('requires an explicit mutation target', async () => {
     const dependencies = createDependencies();
-    runMutationCli([], dependencies);
 
-    expect(dependencies.discoverMutationPackageNames).toHaveBeenCalledWith(REPO_ROOT);
-    expect(dependencies.resolveQualityTarget).toHaveBeenNthCalledWith(1, REPO_ROOT, 'plugin-godot');
-    expect(dependencies.resolveQualityTarget).toHaveBeenNthCalledWith(2, REPO_ROOT, 'quality-tools');
-    expect(dependencies.runMutation).toHaveBeenCalledTimes(2);
+    await expect(runMutationCli([], dependencies)).rejects.toThrow(
+      'Mutation requires an explicit package, directory, file, or repo target.'
+    );
+    expect(dependencies.runMutation).not.toHaveBeenCalled();
   });
 
-  it('uses --mutate as the effective mutation target', () => {
+  it('uses --mutate as the effective mutation target', async () => {
     const dependencies = createDependencies();
 
-    runMutationCli([
+    await runMutationCli([
       'extension/',
       '--mutate',
       'packages/extension/src/webview/components/Graph.tsx',
@@ -96,20 +93,36 @@ describe('command', () => {
         kind: 'file',
         relativePath: 'packages/extension/src/webview/components/Graph.tsx',
       }),
+      { force: false }
     );
   });
 
-  it('runs a repo-wide target when explicitly requested', () => {
+  it('passes --force through to the mutation runner', async () => {
     const dependencies = createDependencies();
 
-    runMutationCli(['.'], dependencies);
+    await runMutationCli(['quality-tools', '--force'], dependencies);
+
+    expect(dependencies.runMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'package',
+        relativePath: 'packages/quality-tools'
+      }),
+      { force: true }
+    );
+  });
+
+  it('runs a repo-wide target when explicitly requested', async () => {
+    const dependencies = createDependencies();
+
+    await runMutationCli(['.'], dependencies);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, '.');
     expect(dependencies.runMutation).toHaveBeenCalledWith(
       expect.objectContaining({
         kind: 'repo',
         relativePath: '.'
-      })
+      }),
+      { force: false }
     );
   });
 });

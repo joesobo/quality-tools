@@ -1,8 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { EventEmitter } from 'events';
 import type { QualityTarget } from '../../../src/shared/resolve/target';
 import { REPO_ROOT } from '../../../src/shared/resolve/repoRoot';
 
-const execFileSync = vi.fn();
+const spawn = vi.fn((_command: string, _args: string[], _options: object) => {
+  const child = new EventEmitter();
+  setTimeout(() => child.emit('exit', 0), 0);
+  return child;
+});
 const copySharedMutationReports = vi.fn(() => '/repo/reports/quality-tools/mutation.json');
 const reportMutationSiteViolations = vi.fn();
 const resolvePackageToolGlobs = vi.fn(() => ({
@@ -25,9 +30,9 @@ vi.mock('child_process', async (importOriginal) => {
     ...actual,
     default: {
       ...actual,
-      execFileSync,
+      spawn,
     },
-    execFileSync,
+    spawn,
   };
 });
 
@@ -68,7 +73,7 @@ function target(): QualityTarget {
 
 describe('runMutation', () => {
   beforeEach(() => {
-    execFileSync.mockClear();
+    spawn.mockClear();
     copySharedMutationReports.mockClear();
     reportMutationSiteViolations.mockClear();
     resolvePackageToolGlobs.mockClear();
@@ -79,14 +84,14 @@ describe('runMutation', () => {
   it('runs Stryker with mutate globs and the shared report directory environment', async () => {
     const { runMutation } = await import('../../../src/mutation/runner/run');
 
-    runMutation(target());
+    await runMutation(target());
 
     expect(resolvePackageToolGlobs).toHaveBeenCalledWith(REPO_ROOT, 'quality-tools', 'mutation');
     expect(buildMutateGlobs).toHaveBeenCalledWith(target(), {
       include: ['packages/quality-tools/src/**/*.ts'],
       exclude: ['packages/quality-tools/src/cli/**/*.ts']
     });
-    expect(execFileSync).toHaveBeenCalledWith(
+    expect(spawn).toHaveBeenCalledWith(
       process.execPath,
       expect.arrayContaining([
         expect.stringMatching(/@stryker-mutator\/core.*bin\/stryker\.js$/),
@@ -105,10 +110,21 @@ describe('runMutation', () => {
         stdio: 'inherit',
       }),
     );
-    const strykerArgs = execFileSync.mock.calls[0][1] as string[];
+    const strykerArgs = (spawn.mock.calls[0]?.[1] ?? []) as unknown as string[];
 
     expect(strykerArgs).not.toContain('--testFiles');
     expect(copySharedMutationReports).toHaveBeenCalledWith('quality-tools', REPO_ROOT);
     expect(reportMutationSiteViolations).toHaveBeenCalledWith('/repo/reports/quality-tools/mutation.json');
+  });
+
+  it('rejects when Stryker exits unsuccessfully', async () => {
+    spawn.mockImplementationOnce(() => {
+      const child = new EventEmitter();
+      setTimeout(() => child.emit('exit', 1), 0);
+      return child;
+    });
+    const { runMutation } = await import('../../../src/mutation/runner/run');
+
+    await expect(runMutation(target())).rejects.toThrow('Stryker exited with code 1.');
   });
 });
