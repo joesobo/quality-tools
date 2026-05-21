@@ -60,7 +60,7 @@ folder without broad unrelated redesign.
   `reachability packages/quality-tools/src/boundaries --strict` initially
   reported the entire package instead of the selected tool folder. Fixed
   directory/file target scoping so the package graph is still used for edges,
-  while reports are limited to the selected scope. Rerun reports 12 files, 0
+  while reports are limited to the selected scope. Rerun reports 13 files, 0
   layer violations, 0 dead surfaces, and 0 dead ends.
 - `scrap packages/quality-tools/src/boundaries` initially could not find tests
   for a source-folder target. Added source-to-test folder mapping, then fixed a
@@ -101,3 +101,23 @@ folder without broad unrelated redesign.
   both report 169 files, 0 layer violations, 0 dead surfaces, and 0 dead ends.
 - Final CRAP gate: 212 test files, 1,539 tests, 98.32% statement coverage, and
   all functions have CRAP score <= 8.
+
+### Tool matrix pass: `reachability`
+
+- `organize packages/quality-tools/src/reachability` reports
+  `No directories found for organize analysis.`
+- `boundaries packages/quality-tools/src/reachability --strict` and
+  `reachability packages/quality-tools/src/reachability --strict` both report
+  4 files, 0 layer violations, 0 dead surfaces, and 0 dead ends.
+- `scrap packages/quality-tools/src/reachability` initially reported
+  `tests/reachability/command.test.ts` as `SPLIT` with an `EXTRACT_SETUP`
+  recommendation. Extracted the CLI report setup into `runWithReport` and
+  table-drove the repeated flag and failure-mode examples. Rerun reports
+  `LOCAL` with no recommendations for the reachability tests.
+- `crap packages/quality-tools/src/reachability` reports all functions have
+  CRAP score <= 8, with 100% statements/lines/functions coverage and 95% branch
+  coverage for the reachability source group.
+- `mutate --mutate packages/quality-tools/src/reachability` finished with 4
+  source files, 4 matching test files, 72/73 mutants killed, 0 survivors, 1
+  no-coverage string-literal mutant in optional report label formatting, 98.63%
+  mutation score, and all files within the 50 mutation-site threshold.

@@ -44,11 +44,15 @@ function createDependencies(report: ReachabilityReport = createReport()): Reacha
   };
 }
 
+function runWithReport(args: string[], report: ReachabilityReport = createReport()): ReachabilityCliDependencies {
+  const dependencies = createDependencies(report);
+  runReachabilityCli(args, dependencies);
+  return dependencies;
+}
+
 describe('runReachabilityCli', () => {
   it('passes the resolved target into the analyzer and reports the summary', () => {
-    const dependencies = createDependencies();
-
-    runReachabilityCli(['extension/'], dependencies);
+    const dependencies = runWithReport(['extension/']);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, 'extension/');
     expect(dependencies.analyzeReachability).toHaveBeenCalledWith(REPO_ROOT, createTarget());
@@ -56,21 +60,21 @@ describe('runReachabilityCli', () => {
     expect(dependencies.setExitCode).not.toHaveBeenCalled();
   });
 
-  it('treats a leading --verbose flag as a value flag during target parsing and still reports verbose output', () => {
-    const dependencies = createDependencies();
-
-    runReachabilityCli(['--verbose', 'extension/'], dependencies);
+  it.each([
+    { flag: '--verbose', verbose: true },
+    { flag: '--strict', verbose: false }
+  ])('treats a leading $flag flag as a value flag during target parsing', ({ flag, verbose }) => {
+    const dependencies = runWithReport([flag, 'extension/']);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, undefined);
-    expect(dependencies.reportReachability).toHaveBeenCalledWith(createReport(), { verbose: true });
+    expect(dependencies.reportReachability).toHaveBeenCalledWith(createReport(), { verbose });
     expect(dependencies.setExitCode).not.toHaveBeenCalled();
   });
 
   it('treats a leading --json flag as a value flag during target parsing', () => {
-    const dependencies = createDependencies();
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-    runReachabilityCli(['--json', 'extension/'], dependencies);
+    const dependencies = runWithReport(['--json', 'extension/']);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, undefined);
     expect(log).toHaveBeenCalledWith(JSON.stringify(createReport(), null, 2));
@@ -79,65 +83,57 @@ describe('runReachabilityCli', () => {
     log.mockRestore();
   });
 
-  it('treats a leading --strict flag as a value flag during target parsing', () => {
-    const dependencies = createDependencies();
-
-    runReachabilityCli(['--strict', 'extension/'], dependencies);
-
-    expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, undefined);
-    expect(dependencies.reportReachability).toHaveBeenCalledWith(createReport(), { verbose: false });
-    expect(dependencies.setExitCode).not.toHaveBeenCalled();
-  });
-
-  it('sets a failure exit code for dead ends', () => {
-    const dependencies = createDependencies({
-      ...createReport(),
-      deadEnds: [createFile('packages/extension/src/shared/isolated.ts', 0, 0)]
-    });
-
-    runReachabilityCli(['extension/'], dependencies);
-
-    expect(dependencies.setExitCode).toHaveBeenCalledWith(1);
-  });
-
-  it('fails in strict mode when only dead surfaces are present', () => {
-    const dependencies = createDependencies({
-      ...createReport(),
-      deadSurfaces: [createFile('packages/extension/src/shared/orphan.ts', 0, 1)],
-    });
-
-    runReachabilityCli(['extension/', '--strict'], dependencies);
+  it.each([
+    {
+      name: 'dead ends',
+      args: ['extension/'],
+      report: {
+        ...createReport(),
+        deadEnds: [createFile('packages/extension/src/shared/isolated.ts', 0, 0)]
+      }
+    },
+    {
+      name: 'strict dead surfaces',
+      args: ['extension/', '--strict'],
+      report: {
+        ...createReport(),
+        deadSurfaces: [createFile('packages/extension/src/shared/orphan.ts', 0, 1)]
+      }
+    }
+  ] satisfies Array<{ args: string[]; name: string; report: ReachabilityReport }>)('sets a failure exit code for $name', ({ args, report }) => {
+    const dependencies = runWithReport(args, report);
 
     expect(dependencies.setExitCode).toHaveBeenCalledWith(1);
   });
 
-  it('does not fail in strict mode when dead surfaces are absent', () => {
-    const dependencies = createDependencies();
-
-    runReachabilityCli(['extension/', '--strict'], dependencies);
-
-    expect(dependencies.setExitCode).not.toHaveBeenCalled();
-  });
-
-  it('does not fail for dead surfaces when strict mode is absent', () => {
-    const dependencies = createDependencies({
-      ...createReport(),
-      deadSurfaces: [createFile('packages/extension/src/shared/orphan.ts', 0, 1)],
-    });
-
-    runReachabilityCli(['extension/'], dependencies);
+  it.each([
+    {
+      name: 'strict mode without dead surfaces',
+      args: ['extension/', '--strict'],
+      report: createReport()
+    },
+    {
+      name: 'dead surfaces without strict mode',
+      args: ['extension/'],
+      report: {
+        ...createReport(),
+        deadSurfaces: [createFile('packages/extension/src/shared/orphan.ts', 0, 1)]
+      }
+    }
+  ] satisfies Array<{ args: string[]; name: string; report: ReachabilityReport }>)('does not fail for $name', ({ args, report }) => {
+    const dependencies = runWithReport(args, report);
 
     expect(dependencies.setExitCode).not.toHaveBeenCalled();
   });
 
   it('prints JSON and fails in strict mode for dead surfaces', () => {
-    const dependencies = createDependencies({
+    const report = {
       ...createReport(),
       deadSurfaces: [createFile('packages/extension/src/shared/orphan.ts', 0, 1)]
-    });
+    };
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-    runReachabilityCli(['--json', '--strict', 'extension/'], dependencies);
+    const dependencies = runWithReport(['--json', '--strict', 'extension/'], report);
 
     expect(log).toHaveBeenCalledTimes(1);
     expect(dependencies.reportReachability).not.toHaveBeenCalled();
