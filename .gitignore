@@ -1,6 +1,10 @@
 node_modules/
 dist/
 coverage/
+!packages/quality-tools/src/crap/coverage/
+!packages/quality-tools/src/crap/coverage/**
+!packages/quality-tools/tests/crap/coverage/
+!packages/quality-tools/tests/crap/coverage/**
 reports/
 .stryker-tmp/
 *.tsbuildinfo
