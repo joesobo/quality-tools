@@ -13,8 +13,15 @@ const DEFAULT_CONFIG = {
     crap: {
       coverage: {
         command: 'pnpm',
-        args: ['exec', 'vitest', 'run', '--coverage'],
-        coveragePath: 'coverage/coverage-final.json'
+        args: [
+          'exec',
+          'vitest',
+          'run',
+          '--coverage',
+          '--coverage.reportsDirectory',
+          '{repoRoot}/{reportsDir}/crap/{reportKey}'
+        ],
+        coveragePath: '{repoRoot}/{reportsDir}/crap/{reportKey}/coverage-final.json'
       },
       exclude: ['**/*.test.ts', '**/*.test.tsx', '**/*.d.ts']
     },

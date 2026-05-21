@@ -8,7 +8,7 @@ export default defineConfig({
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'html', 'json'],
-      reportsDirectory: resolve(__dirname, '../../coverage/quality-tools'),
+      reportsDirectory: resolve(__dirname, '../../reports/quality-tools/crap/quality-tools'),
       include: ['src/**/*.ts'],
       exclude: ['tests/**/*.ts']
     }

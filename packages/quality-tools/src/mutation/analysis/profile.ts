@@ -6,7 +6,7 @@ import { PACKAGE_ROOT, REPO_ROOT } from '../../shared/resolve/repoRoot';
 
 export interface MutationProfile {
   configPath: string;
-  packageName: string;
+  packageName?: string;
 }
 
 export { discoverMutationPackageNames } from './packages';
@@ -23,12 +23,11 @@ function defaultHostStrykerConfig(repoRoot: string): string | undefined {
 }
 
 export function resolveMutationProfile(target: QualityTarget): MutationProfile {
-  if (!target.packageName) {
-    throw new Error('Mutation targets must resolve to a workspace package.');
-  }
-
   const packageConfig = resolveMutationStrykerConfig(REPO_ROOT, target.packageName) ??
     defaultHostStrykerConfig(REPO_ROOT) ??
     `${PACKAGE_ROOT}/stryker.config.cjs`;
-  return { configPath: packageConfig, packageName: target.packageName };
+  return {
+    configPath: packageConfig,
+    ...(target.packageName ? { packageName: target.packageName } : {})
+  };
 }

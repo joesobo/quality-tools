@@ -99,12 +99,17 @@ describe('command', () => {
     );
   });
 
-  it('fails fast for repo-wide targets before running mutation', () => {
+  it('runs a repo-wide target when explicitly requested', () => {
     const dependencies = createDependencies();
 
-    expect(() => runMutationCli(['.'], dependencies)).toThrow(
-      'Mutation requires a workspace package, directory, or file inside one.',
+    runMutationCli(['.'], dependencies);
+
+    expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, '.');
+    expect(dependencies.runMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'repo',
+        relativePath: '.'
+      })
     );
-    expect(dependencies.runMutation).not.toHaveBeenCalled();
   });
 });

@@ -53,9 +53,11 @@
             "run",
             "--config",
             "vitest.config.ts",
-            "--coverage"
+            "--coverage",
+            "--coverage.reportsDirectory",
+            "{repoRoot}/{reportsDir}/crap/{reportKey}"
           ],
-          "coveragePath": "coverage/quality-tools/coverage-final.json"
+          "coveragePath": "{repoRoot}/{reportsDir}/crap/{reportKey}/coverage-final.json"
         }
       },
       "mutation": {

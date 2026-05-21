@@ -45,11 +45,13 @@ describe('mutation profiles', () => {
     expect(rootStrykerConfig.plugins?.join(' ')).toContain('quality-tools-vitest-runner.mjs');
   });
 
-  it('throws when the target does not resolve to a workspace package', () => {
-    expect(() => resolveMutationProfile({
+  it('uses the shared Stryker config for repo or non-package targets', () => {
+    expect(resolveMutationProfile({
       absolutePath: `${REPO_ROOT}/docs`,
       kind: 'directory',
       relativePath: 'docs'
-    })).toThrow('Mutation targets must resolve to a workspace package.');
+    })).toMatchObject({
+      configPath: `${REPO_ROOT}/packages/quality-tools/stryker.config.cjs`
+    });
   });
 });

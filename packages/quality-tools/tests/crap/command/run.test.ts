@@ -24,7 +24,7 @@ describe('runCrapCli', () => {
     expect(dependencies.analyzeCrap).toHaveBeenCalledWith(
       [{ '/coverage/a.json': { path: '/coverage/a.json', s: {}, statementMap: {} } }],
       REPO_ROOT,
-      'packages/quality-tools/src',
+      'packages/quality-tools',
       12
     );
     expect(dependencies.reportCrap).toHaveBeenCalledWith([], 12);

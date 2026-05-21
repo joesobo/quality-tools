@@ -8,9 +8,9 @@ describe('resolveSourceScope', () => {
     expect(resolveSourceScope(resolveQualityTarget(REPO_ROOT))).toBeUndefined();
   });
 
-  it('returns the src root for package targets', () => {
+  it('returns the package root for package targets', () => {
     expect(resolveSourceScope(resolveQualityTarget(REPO_ROOT, 'quality-tools/'))).toBe(
-      'packages/quality-tools/src'
+      'packages/quality-tools'
     );
   });
 
@@ -26,19 +26,28 @@ describe('resolveSourceScope', () => {
     ).toBe('packages/quality-tools/src');
   });
 
-  it('returns undefined for test-tree targets', () => {
+  it('returns explicit test-tree targets', () => {
     expect(
       resolveSourceScope(resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/tests'))
-    ).toBeUndefined();
+    ).toBe('packages/quality-tools/tests');
   });
 
-  it('returns undefined when package metadata is missing', () => {
+  it('returns non-src package paths without treating src as special', () => {
+    expect(resolveSourceScope({
+      absolutePath: `${REPO_ROOT}/packages/example/lib/parser.ts`,
+      kind: 'file',
+      packageRelativePath: 'lib/parser.ts',
+      packageRoot: `${REPO_ROOT}/packages/example`,
+      relativePath: 'packages/example/lib/parser.ts'
+    })).toBe('packages/example/lib/parser.ts');
+  });
+
+  it('returns non-package paths as explicit scopes', () => {
     expect(resolveSourceScope({
       absolutePath: `${REPO_ROOT}/docs`,
       kind: 'directory',
-      packageRelativePath: 'src',
       relativePath: 'docs'
-    })).toBeUndefined();
+    })).toBe('docs');
   });
 });
 
@@ -47,9 +56,9 @@ describe('assertSourceScope', () => {
     expect(assertSourceScope(resolveQualityTarget(REPO_ROOT))).toBeUndefined();
   });
 
-  it('throws for non-source targets', () => {
-    expect(() => assertSourceScope(resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/tests'))).toThrow(
-      'This command expects a package root or a path inside a package src/ tree.'
+  it('allows non-source-looking targets because tool includes define source policy', () => {
+    expect(assertSourceScope(resolveQualityTarget(REPO_ROOT, 'packages/quality-tools/tests'))).toBe(
+      'packages/quality-tools/tests'
     );
   });
 });

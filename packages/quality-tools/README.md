@@ -28,12 +28,15 @@ pnpm exec quality-tools boundaries . --strict
 pnpm exec quality-tools reachability . --strict
 pnpm exec quality-tools scrap ./tests
 pnpm exec quality-tools crap ./src
+pnpm exec quality-tools mutate .
 pnpm exec quality-tools mutate -- --mutate ./src/parser.ts
 ```
 
 Targets can be the repo root, a package shorthand, a package root, a directory,
 or a file. Package shorthand is resolved from workspace package names, not from
-hardcoded folder names.
+hardcoded folder names. The starter config uses `src` as a conventional default,
+but the tools scope from the target path plus your configured include/exclude
+globs.
 
 ## Reports
 
@@ -49,11 +52,12 @@ Current outputs:
 
 - `reportsDir/organize/*.json` for organize baselines
 - `reportsDir/scrap/*.json` for scrap baselines
+- `reportsDir/crap/<target>/coverage-final.json` for CRAP coverage input
 - `reportsDir/mutation/mutation.json` and `mutation.html` from Stryker
 - `reportsDir/mutation/<target>/mutation.json` copied per mutation target
 
-CRAP reads the coverage report path you configure. It does not write coverage
-itself; your test command does.
+CRAP reads the coverage report path you configure. The starter Vitest command
+writes that coverage under `reportsDir/crap/<target>/`.
 
 ## Config
 
@@ -66,8 +70,15 @@ Run `quality-tools init` to create a starter `quality.config.json`.
     "crap": {
       "coverage": {
         "command": "pnpm",
-        "args": ["exec", "vitest", "run", "--coverage"],
-        "coveragePath": "coverage/coverage-final.json"
+        "args": [
+          "exec",
+          "vitest",
+          "run",
+          "--coverage",
+          "--coverage.reportsDirectory",
+          "{repoRoot}/{reportsDir}/crap/{reportKey}"
+        ],
+        "coveragePath": "{repoRoot}/{reportsDir}/crap/{reportKey}/coverage-final.json"
       },
       "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/*.d.ts"]
     },
@@ -111,26 +122,43 @@ pnpm exec quality-tools crap parser --threshold 10
 ```
 
 CRAP needs Istanbul `coverage-final.json`. Configure the command and report path
-for your project:
+for your project. Put generated coverage under `{reportsDir}` when possible so
+all artifacts stay together:
 
 ```json
 {
   "defaults": {
     "crap": {
-      "coverage": {
-        "command": "pnpm",
-        "args": ["exec", "vitest", "run", "--coverage"],
-        "coveragePath": "coverage/coverage-final.json"
+        "coverage": {
+          "command": "pnpm",
+          "args": [
+            "exec",
+            "vitest",
+            "run",
+            "--coverage",
+            "--coverage.reportsDirectory",
+            "{repoRoot}/{reportsDir}/crap/{reportKey}"
+          ],
+          "coveragePath": "{repoRoot}/{reportsDir}/crap/{reportKey}/coverage-final.json"
+        }
       }
-    }
-  },
+    },
   "packages": {
     "parser": {
       "crap": {
         "coverage": {
           "command": "pnpm",
-          "args": ["--filter", "{packageJsonName}", "exec", "vitest", "run", "--coverage"],
-          "coveragePath": "{packageRoot}/coverage/coverage-final.json"
+          "args": [
+            "--filter",
+            "{packageJsonName}",
+            "exec",
+            "vitest",
+            "run",
+            "--coverage",
+            "--coverage.reportsDirectory",
+            "{repoRoot}/{reportsDir}/crap/{reportKey}"
+          ],
+          "coveragePath": "{repoRoot}/{reportsDir}/crap/{reportKey}/coverage-final.json"
         }
       }
     }
@@ -144,6 +172,7 @@ Supported template values in CRAP coverage command fields:
 - `{packageRoot}`
 - `{packageName}`
 - `{packageJsonName}`
+- `{reportKey}`
 - `{target}` or `{targetPath}`
 - `{reportsDir}`
 
@@ -153,6 +182,7 @@ Mutation runs Stryker against the selected source target. The CLI does not run
 typecheck first and does not assume any package is special.
 
 ```bash
+pnpm exec quality-tools mutate .
 pnpm exec quality-tools mutate parser
 pnpm exec quality-tools mutate -- --mutate ./src/parser.ts
 ```

@@ -36,18 +36,6 @@ function resolveCliTargets(
   ));
 } 
 
-function assertMutationTargetsSupported(targets: readonly QualityTarget[]): void {
-  for (const target of targets) {
-    if (target.packageName) {
-      continue;
-    }
-
-    throw new Error(
-      'Mutation requires a workspace package, directory, or file inside one. Example: `quality-tools mutate my-package` or `quality-tools mutate -- --mutate path/to/src/foo.ts`.',
-    );
-  }
-}
-
 export function runMutationCli(
   rawArgs: string[],
   dependencies: MutationCliDependencies = createDefaultMutationCliDependencies()
@@ -58,7 +46,6 @@ export function runMutationCli(
     flagValue(args, '--mutate'),
     dependencies,
   );
-  assertMutationTargetsSupported(targets);
   targets.forEach((target) => {
     dependencies.runMutation(target);
   });

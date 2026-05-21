@@ -4,6 +4,15 @@ import { REPO_ROOT } from '../../../src/shared/resolve/repoRoot';
 import { resolveQualityTarget } from '../../../src/shared/resolve/target';
 
 describe('buildMutateGlobs', () => {
+  const libTarget = {
+    absolutePath: `${REPO_ROOT}/packages/example/lib/parser`,
+    kind: 'directory' as const,
+    packageName: 'example',
+    packageRelativePath: 'lib/parser',
+    packageRoot: `${REPO_ROOT}/packages/example`,
+    relativePath: 'packages/example/lib/parser'
+  };
+
   it.each([
     {
       expected: [
@@ -60,6 +69,14 @@ describe('buildMutateGlobs', () => {
       '**/*.ts',
       '**/*.tsx',
       '!**/*.d.ts'
+    ]);
+  });
+
+  it('scopes directory targets without requiring a src folder', () => {
+    expect(buildMutateGlobs(libTarget, { include: [], exclude: ['packages/example/**/*.test.ts'] })).toEqual([
+      'packages/example/lib/parser/**/*.ts',
+      'packages/example/lib/parser/**/*.tsx',
+      '!packages/example/**/*.test.ts'
     ]);
   });
 });

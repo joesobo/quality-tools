@@ -1,5 +1,4 @@
 import { type QualityTarget } from '../../shared/resolve/target';
-import { assertSourceScope } from '../../shared/scope/source';
 import { type ResolvedToolPatterns } from '../../config/quality';
 
 function buildScopeIncludes(scope: string, kind: QualityTarget['kind']): string[] {
@@ -20,18 +19,15 @@ export function buildMutateGlobs(target: QualityTarget, patterns: ResolvedToolPa
 
   if (target.kind === 'package') {
     return [
-      ...patterns.include,
+      ...(patterns.include.length > 0
+        ? patterns.include
+        : [`${target.relativePath}/**/*.ts`, `${target.relativePath}/**/*.tsx`]),
       ...patterns.exclude.map((pattern) => `!${pattern}`)
     ];
   }
 
-  const scope = assertSourceScope(target);
-  if (!scope) {
-    throw new Error('This command expects a package root or a path inside a package src/ tree.');
-  }
-
   return [
-    ...buildScopeIncludes(scope, target.kind),
+    ...buildScopeIncludes(target.relativePath, target.kind),
     ...patterns.exclude.map((pattern) => `!${pattern}`)
   ];
 }

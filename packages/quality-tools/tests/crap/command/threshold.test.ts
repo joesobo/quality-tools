@@ -24,7 +24,7 @@ describe('runCrapCli threshold parsing', () => {
 
     runCrapCli(['quality-tools/'], dependencies);
 
-    expect(dependencies.analyzeCrap).toHaveBeenCalledWith([], REPO_ROOT, 'packages/quality-tools/src', 8);
+    expect(dependencies.analyzeCrap).toHaveBeenCalledWith([], REPO_ROOT, 'packages/quality-tools', 8);
   });
 
   it('uses only the exact threshold flag spelling', () => {

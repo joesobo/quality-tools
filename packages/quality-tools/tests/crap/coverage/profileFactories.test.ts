@@ -32,9 +32,18 @@ describe('coverageProfileFactories', () => {
     const repoRoot = createRepo();
 
     expect(defaultCoverageProfile(repoRoot, packageTarget(repoRoot))).toEqual({
-      args: ['--filter', '@scope/web', 'exec', 'vitest', 'run', '--coverage'],
+      args: [
+        '--filter',
+        '@scope/web',
+        'exec',
+        'vitest',
+        'run',
+        '--coverage',
+        '--coverage.reportsDirectory',
+        join(repoRoot, 'reports/quality-tools/crap/web')
+      ],
       command: 'pnpm',
-      coveragePath: join(repoRoot, 'apps/web/coverage/coverage-final.json'),
+      coveragePath: join(repoRoot, 'reports/quality-tools/crap/web/coverage-final.json'),
       cwd: repoRoot
     });
   });
@@ -47,9 +56,16 @@ describe('coverageProfileFactories', () => {
       kind: 'repo',
       relativePath: '.'
     })).toEqual({
-      args: ['exec', 'vitest', 'run', '--coverage'],
+      args: [
+        'exec',
+        'vitest',
+        'run',
+        '--coverage',
+        '--coverage.reportsDirectory',
+        join(repoRoot, 'reports/quality-tools/crap/repo')
+      ],
       command: 'pnpm',
-      coveragePath: join(repoRoot, 'coverage/coverage-final.json'),
+      coveragePath: join(repoRoot, 'reports/quality-tools/crap/repo/coverage-final.json'),
       cwd: repoRoot
     });
   });

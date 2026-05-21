@@ -30,9 +30,18 @@ describe('createCoverageProfiles', () => {
 
     expect(createCoverageProfiles(repoRoot, parserTarget(repoRoot))).toEqual([
       {
-        args: ['--filter', '@scope/parser', 'exec', 'vitest', 'run', '--coverage'],
+        args: [
+          '--filter',
+          '@scope/parser',
+          'exec',
+          'vitest',
+          'run',
+          '--coverage',
+          '--coverage.reportsDirectory',
+          join(repoRoot, 'reports/quality-tools/crap/parser')
+        ],
         command: 'pnpm',
-        coveragePath: join(repoRoot, 'modules/parser/coverage/coverage-final.json'),
+        coveragePath: join(repoRoot, 'reports/quality-tools/crap/parser/coverage-final.json'),
         cwd: repoRoot
       }
     ]);

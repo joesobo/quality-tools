@@ -33,4 +33,14 @@ describe('buildMutationArgsForTest', () => {
     expect(args.join(' ')).toContain('packages/quality-tools/src/mutation/Weird File.TS');
     expect(args.join(' ')).toContain('!packages/quality-tools/src/cli/**/*.ts');
   });
+
+  it('builds repo-wide mutation arguments for dot targets', () => {
+    const args = buildMutationArgsForTest(resolveQualityTarget(REPO_ROOT));
+
+    expect(args[0]).toBe('run');
+    expect(args[1]).toBe(`${REPO_ROOT}/packages/quality-tools/stryker.config.cjs`);
+    expect(args[3]).toBe('reports/quality-tools/mutation/repo/stryker-incremental-repo.json');
+    expect(args).toContain('-m');
+    expect(args.join(' ')).toContain('src/**/*.ts');
+  });
 });

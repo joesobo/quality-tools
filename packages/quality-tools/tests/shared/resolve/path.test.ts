@@ -36,6 +36,11 @@ describe('resolveExistingPath', () => {
     expect(resolveExistingPath(repoRoot, 'example///')).toBe(packageRoot);
   });
 
+  it('resolves package shorthand subpaths', () => {
+    const { filePath, repoRoot } = createRepo();
+    expect(resolveExistingPath(repoRoot, 'example/src/file.ts')).toBe(filePath);
+  });
+
   it('throws for missing targets', () => {
     const { repoRoot } = createRepo();
     expect(() => resolveExistingPath(repoRoot, 'missing')).toThrow('Target not found: missing');

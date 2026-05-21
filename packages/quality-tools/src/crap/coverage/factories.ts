@@ -1,7 +1,13 @@
 import { isAbsolute, join, relative, resolve } from 'path';
-import { type CrapCoverageConfig, relativeReportsDir, resolvePackageCrapCoverage } from '../../config/quality';
+import {
+  type CrapCoverageConfig,
+  relativeReportsDir,
+  resolvePackageCrapCoverage,
+  resolveReportPath
+} from '../../config/quality';
 import { type QualityTarget } from '../../shared/resolve/target';
 import { relativeTo, toPosix } from '../../shared/util/pathUtils';
+import { sanitizeReportKey } from '../../shared/util/reportKey';
 import { listWorkspacePackages } from '../../shared/util/workspacePackages';
 import { type CoverageProfile } from './profiles';
 
@@ -9,6 +15,7 @@ interface CoverageTemplateValues {
   packageJsonName: string;
   packageName: string;
   packageRoot: string;
+  reportKey: string;
   reportsDir: string;
   repoRoot: string;
   target: string;
@@ -28,6 +35,14 @@ function targetPackageRoot(repoRoot: string, target: QualityTarget): string {
   return target.packageRoot ?? repoRoot;
 }
 
+function reportKeyForTarget(target: QualityTarget): string {
+  if (target.kind === 'repo') {
+    return 'repo';
+  }
+
+  return target.packageName ?? sanitizeReportKey(target.relativePath);
+}
+
 function templateValues(repoRoot: string, target: QualityTarget): CoverageTemplateValues {
   const packageName = target.packageName ?? '';
   const packageRoot = targetPackageRoot(repoRoot, target);
@@ -36,6 +51,7 @@ function templateValues(repoRoot: string, target: QualityTarget): CoverageTempla
     packageJsonName: workspacePackageName(repoRoot, target.packageName) ?? packageName,
     packageName,
     packageRoot,
+    reportKey: reportKeyForTarget(target),
     reportsDir: relativeReportsDir(repoRoot),
     repoRoot,
     target: target.relativePath,
@@ -82,22 +98,31 @@ function configuredCoverageProfile(
 }
 
 export function defaultCoverageProfile(repoRoot: string, target: QualityTarget): CoverageProfile {
-  const packageRoot = targetPackageRoot(repoRoot, target);
   const packageJsonName = workspacePackageName(repoRoot, target.packageName);
+  const reportDirectory = resolveReportPath(repoRoot, 'crap', reportKeyForTarget(target));
 
   if (target.packageName && packageJsonName) {
     return {
-      args: ['--filter', packageJsonName, 'exec', 'vitest', 'run', '--coverage'],
+      args: [
+        '--filter',
+        packageJsonName,
+        'exec',
+        'vitest',
+        'run',
+        '--coverage',
+        '--coverage.reportsDirectory',
+        reportDirectory
+      ],
       command: 'pnpm',
-      coveragePath: join(packageRoot, 'coverage/coverage-final.json'),
+      coveragePath: join(reportDirectory, 'coverage-final.json'),
       cwd: repoRoot
     };
   }
 
   return {
-    args: ['exec', 'vitest', 'run', '--coverage'],
+    args: ['exec', 'vitest', 'run', '--coverage', '--coverage.reportsDirectory', reportDirectory],
     command: 'pnpm',
-    coveragePath: join(repoRoot, 'coverage/coverage-final.json'),
+    coveragePath: join(reportDirectory, 'coverage-final.json'),
     cwd: repoRoot
   };
 }
