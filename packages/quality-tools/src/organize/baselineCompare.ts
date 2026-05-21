@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { type OrganizeDirectoryMetric, type OrganizeComparison } from './types';
+import { type OrganizeDirectoryMetric, type OrganizeComparison } from './model';
 import { verdictFromDeltas } from './verdict';
 
 function roundedDelta(current: number, previous: number): number {

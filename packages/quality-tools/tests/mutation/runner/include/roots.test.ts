@@ -3,7 +3,7 @@ import {
   baseTestRoots,
   directoryIncludes,
   packageIncludes
-} from '../../../src/mutation/runner/includeRoots';
+} from '../../../../src/mutation/runner/include/roots';
 
 describe('baseTestRoots', () => {
   it('returns the package test root', () => {

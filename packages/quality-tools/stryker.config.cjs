@@ -3,6 +3,7 @@ const path = require('node:path');
 const packageRoot = __dirname;
 const hostRoot = process.cwd();
 const vitestConfig = process.env.QUALITY_TOOLS_VITEST_CONFIG ?? 'vitest.config.ts';
+const vitestDir = process.env.QUALITY_TOOLS_VITEST_DIR;
 
 module.exports = {
   $schema: 'https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/core/schema/stryker-core.schema.json',
@@ -14,6 +15,7 @@ module.exports = {
   ],
   vitest: {
     configFile: path.isAbsolute(vitestConfig) ? vitestConfig : path.join(hostRoot, vitestConfig),
+    dir: vitestDir,
     related: false,
   },
   reporters: [

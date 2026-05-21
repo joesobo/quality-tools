@@ -1,4 +1,4 @@
-import { type ScrapFileMetric } from '../types';
+import { type ScrapFileMetric } from '../model';
 import { baselineMetricsByPath, readBaselineMetrics } from './files';
 import { comparisonForMetric } from './metric';
 

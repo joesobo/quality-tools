@@ -1,5 +1,5 @@
 import { matchesGlob } from 'path';
-import type { BoundaryFileNode, BoundaryLayerRule } from './types';
+import type { BoundaryFileNode, BoundaryLayerRule } from './model';
 
 function layerForPath(
   packageRelativePath: string,

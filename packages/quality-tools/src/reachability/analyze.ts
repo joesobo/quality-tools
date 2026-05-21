@@ -1,6 +1,6 @@
 import { analyzeBoundaries } from '../boundaries/analyze';
 import type { QualityTarget } from '../shared/resolve/target';
-import type { ReachabilityReport } from './types';
+import type { ReachabilityReport } from './model';
 
 export function analyzeReachability(repoRoot: string, target: QualityTarget): ReachabilityReport {
   const report = analyzeBoundaries(repoRoot, target);

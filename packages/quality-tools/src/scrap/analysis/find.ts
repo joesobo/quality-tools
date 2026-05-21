@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import { callInfo, callbackArgument, literalName } from '../calls/names';
-import { type ScrapExampleNode } from '../types';
+import { type ScrapExampleNode } from '../model';
 
 interface DescribeBlock {
   body: ts.ArrowFunction | ts.FunctionExpression;

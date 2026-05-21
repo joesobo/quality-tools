@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatRedundancyIssues, formatLowInfoIssues, formatBarrelIssues } from '../../../src/organize/report/issueFormatters';
-import type { OrganizeFileIssue } from '../../../src/organize/types';
+import type { OrganizeFileIssue } from '../../../src/organize/model';
 
 describe('formatRedundancyIssues', () => {
   it('returns undefined for empty list', () => {

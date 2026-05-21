@@ -1,4 +1,4 @@
-import { type OrganizeFileIssue } from '../types';
+import { type OrganizeFileIssue } from '../model';
 
 export function formatRedundancyIssues(issues: OrganizeFileIssue[]): string | undefined {
   if (issues.length === 0) {

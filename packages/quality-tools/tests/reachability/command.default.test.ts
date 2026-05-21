@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { REPO_ROOT } from '../../src/shared/resolve/repoRoot';
-import type { ReachabilityReport } from '../../src/reachability/types';
+import type { ReachabilityReport } from '../../src/reachability/model';
 
 function createTarget() {
   return {

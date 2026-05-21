@@ -1,4 +1,4 @@
-import { type OrganizeComparison } from './types';
+import { type OrganizeComparison } from './model';
 
 export function verdictFromDeltas(
   fileFanOutDelta: number,

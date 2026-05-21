@@ -3,7 +3,7 @@ import { checkLowInfoName, type LowInfoNameConfig } from './metric/lowInfoNames'
 import { checkBarrelFile } from './metric/barrelDetection';
 import { pathRedundancy } from './metric/pathRedundancy';
 import { stripExtension } from './metric/nameStrip';
-import type { OrganizeFileIssue } from './types';
+import type { OrganizeFileIssue } from './model';
 
 /**
  * Collect all file issues (low-info names, barrel files, and path redundancy) for a directory.

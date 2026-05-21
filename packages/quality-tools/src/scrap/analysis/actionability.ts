@@ -1,4 +1,4 @@
-import { type ScrapAiActionability, type ScrapFileMetric } from '../types';
+import { type ScrapAiActionability, type ScrapFileMetric } from '../model';
 
 function hasValidationIssues(metric: ScrapFileMetric): boolean {
   return (metric.validationIssues?.length ?? 0) > 0;

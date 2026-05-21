@@ -1,4 +1,4 @@
-import type { BoundaryFileNode, BoundaryReport, BoundaryViolation } from './types';
+import type { BoundaryFileNode, BoundaryReport, BoundaryViolation } from './model';
 
 export function mergeReports(target: string, reports: BoundaryReport[]): BoundaryReport {
   const files: BoundaryFileNode[] = [];

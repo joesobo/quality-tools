@@ -1,4 +1,4 @@
-import type { BoundaryFileNode, BoundaryReport, BoundaryViolation } from './types';
+import type { BoundaryFileNode, BoundaryReport, BoundaryViolation } from './model';
 
 function formatLayerLabel(layer?: string): string {
   return layer ? ` [${layer}]` : '';

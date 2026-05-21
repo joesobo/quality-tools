@@ -1,4 +1,4 @@
-import { type OrganizeFileIssue } from '../types';
+import { type OrganizeFileIssue } from '../model';
 import { LOW_INFO_NAME_DETAILS } from './lowInfoDetails';
 import { stripExtension } from './nameStrip';
 

@@ -1,5 +1,5 @@
 import { type ScrapCohesionMetrics } from './compute';
-import { type ScrapRecommendation } from '../types';
+import { type ScrapRecommendation } from '../model';
 import { hasBroadSubjectSpread, hasShapeDrift } from './cohesionPredicates';
 
 function buildReasonMessage(

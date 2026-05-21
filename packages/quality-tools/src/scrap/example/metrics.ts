@@ -14,7 +14,7 @@ import { literalShapeFingerprint, statementFeatures, statementFingerprint } from
 import { analyzeRtlSignals } from '../analysis/rtlSignals';
 import { scoreExample } from '../analysis/score';
 import { collectStatementSubjectNames, collectSubjectNames } from '../calls/subjectNames';
-import { type ScrapExampleMetric, type ScrapExampleNode } from '../types';
+import { type ScrapExampleMetric, type ScrapExampleNode } from '../model';
 
 export function analyzeExample(
   sourceFile: ts.SourceFile,

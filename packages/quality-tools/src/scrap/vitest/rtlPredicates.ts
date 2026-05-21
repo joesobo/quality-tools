@@ -1,4 +1,4 @@
-import { type ScrapExampleMetric } from '../types';
+import { type ScrapExampleMetric } from '../model';
 
 export function hasRtlMutation(ex: ScrapExampleMetric): boolean {
   return (ex.rtlMutationCount ?? 0) > 0;

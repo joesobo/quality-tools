@@ -1,4 +1,4 @@
-import { type ScrapExampleMetric } from '../../types';
+import { type ScrapExampleMetric } from '../../model';
 
 function uniqueNonEmptyValues(values: string[]): string[] {
   return [...new Set(values)].filter((value) => value.length > 0);

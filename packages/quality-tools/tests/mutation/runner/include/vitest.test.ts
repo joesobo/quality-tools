@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { resolveScopedVitestIncludes } from '../../../src/mutation/runner/vitestIncludes';
-import type { QualityTarget } from '../../../src/shared/resolve/target';
+import { resolveScopedVitestIncludes } from '../../../../src/mutation/runner/include/vitest';
+import type { QualityTarget } from '../../../../src/shared/resolve/target';
 
 function target(overrides: Partial<QualityTarget>): QualityTarget {
   return {

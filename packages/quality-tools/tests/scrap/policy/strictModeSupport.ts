@@ -1,4 +1,4 @@
-import type { ScrapFileMetric } from '../../../src/scrap/types';
+import type { ScrapFileMetric } from '../../../src/scrap/model';
 import { policyFailureMessage } from '../../../src/scrap/policy/failureMessage';
 import {
   hasPolicyViolations,

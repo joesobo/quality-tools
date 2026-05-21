@@ -1,6 +1,6 @@
 import { remediationMode } from '../policy/remediationMode';
 import { duplicateSetupExampleCount } from '../example/calls/duplicates';
-import { type ScrapBlockSummary, type ScrapExampleMetric } from '../types';
+import { type ScrapBlockSummary, type ScrapExampleMetric } from '../model';
 
 function averageScore(examples: ScrapExampleMetric[]): number {
   const total = examples.reduce((sum, example) => sum + example.score, 0);

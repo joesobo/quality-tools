@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { REPO_ROOT } from '../../src/shared/resolve/repoRoot';
-import type { BoundaryReport } from '../../src/boundaries/types';
+import type { BoundaryReport } from '../../src/boundaries/model';
 
 function createTarget() {
   return {

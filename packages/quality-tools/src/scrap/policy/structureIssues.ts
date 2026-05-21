@@ -2,7 +2,7 @@ import * as ts from 'typescript';
 import { baseCallName, callbackArgument } from '../calls/names';
 import { isExampleCallName, nextInsideExampleState } from '../example/calls/callKinds';
 import { isHookOrStructureCallName } from '../calls/structureCallKinds';
-import { type ScrapValidationIssue } from '../types';
+import { type ScrapValidationIssue } from '../model';
 
 function issueLine(sourceFile: ts.SourceFile, node: ts.Node): number {
   return sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;

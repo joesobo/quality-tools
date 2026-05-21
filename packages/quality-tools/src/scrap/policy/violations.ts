@@ -1,4 +1,4 @@
-import { type ScrapFileMetric } from '../types';
+import { type ScrapFileMetric } from '../model';
 import { type ScrapPolicyPreset } from './resolve';
 
 export function hasSplitViolation(metric: ScrapFileMetric): boolean {

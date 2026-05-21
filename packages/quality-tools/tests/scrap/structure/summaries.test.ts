@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { summarizeBlocks } from '../../../src/scrap/structure/summaries';
-import { type ScrapExampleMetric } from '../../../src/scrap/types';
+import { type ScrapExampleMetric } from '../../../src/scrap/model';
 
 function metric(overrides: Partial<ScrapExampleMetric>): ScrapExampleMetric {
   return {

@@ -11,9 +11,9 @@ import { summarizeVitestSignals } from '../vitest/signalSummary';
 import { remediationMode } from '../policy/remediationMode';
 import { duplicateSetupExampleCount } from '../example/calls/duplicates';
 import { validateScrapFile } from '../policy/issues';
-import { type ScrapFileMetric } from '../types';
+import { type ScrapFileMetric } from '../model';
 
-export type { ScrapBlockSummary, ScrapExampleMetric, ScrapFileMetric } from '../types';
+export type { ScrapBlockSummary, ScrapExampleMetric, ScrapFileMetric } from '../model';
 
 export function analyzeScrapFile(sourceFile: ts.SourceFile): ScrapFileMetric {
   const examples = analyzeFileExamples(sourceFile);

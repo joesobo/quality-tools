@@ -7,7 +7,7 @@ import {
   hasFakeTimer,
   hasModuleMock
 } from '../../../src/scrap/vitest/predicates';
-import type { ScrapExampleMetric } from '../../../src/scrap/types';
+import type { ScrapExampleMetric } from '../../../src/scrap/model';
 
 function example(overrides: Partial<ScrapExampleMetric> = {}): ScrapExampleMetric {
   return {

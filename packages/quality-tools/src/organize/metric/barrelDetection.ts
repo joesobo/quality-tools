@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { type OrganizeFileIssue } from '../types';
+import { type OrganizeFileIssue } from '../model';
 import { SUPPORTED_EXTENSIONS, getFileExtension, isReExportStatement } from './reExport';
 
 export function scriptKindForExtension(ext: string): ts.ScriptKind {

@@ -1,4 +1,4 @@
-import type { ReachabilityReport } from './types';
+import type { ReachabilityReport } from './model';
 
 export interface ReachabilityReportOptions {
   verbose?: boolean;

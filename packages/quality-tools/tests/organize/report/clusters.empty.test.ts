@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { clusterLines } from '../../../src/organize/report/clusters';
-import type { OrganizeCohesionCluster } from '../../../src/organize/types';
+import type { OrganizeCohesionCluster } from '../../../src/organize/model';
 
 describe('clusterLines - empty and single', () => {
   it('returns empty array when no clusters', () => {

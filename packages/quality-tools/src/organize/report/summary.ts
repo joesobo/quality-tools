@@ -1,4 +1,4 @@
-import { type OrganizeDirectoryMetric } from '../types';
+import { type OrganizeDirectoryMetric } from '../model';
 
 function worstVerdict(metric: OrganizeDirectoryMetric): string {
   const verdicts: string[] = [];

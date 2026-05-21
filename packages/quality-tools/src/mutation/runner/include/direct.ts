@@ -1,4 +1,4 @@
-import { sharedDetectorTestIncludes, type FileIncludeParts } from './includeParts';
+import { sharedDetectorTestIncludes, type FileIncludeParts } from './parts';
 
 function ancestorFeatureIncludes(root: string, parts: FileIncludeParts): string[] {
   const segments = parts.directory.split('/').filter(Boolean);

@@ -1,7 +1,7 @@
 import { clusterLines } from './clusters';
 import { fileIssueLines } from './fileIssues';
 import { summaryLines } from './summary';
-import type { OrganizeDirectoryMetric } from '../types';
+import type { OrganizeDirectoryMetric } from '../model';
 
 export interface OrganizeReportOptions {
   verbose?: boolean;

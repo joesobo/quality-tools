@@ -1,4 +1,4 @@
-import { sharedDetectorTestIncludes, type FileIncludeParts } from './includeParts';
+import { sharedDetectorTestIncludes, type FileIncludeParts } from './parts';
 
 export function fallbackIncludes(root: string, parts: FileIncludeParts): string[] {
   if (!parts.includeBroadFallback) {

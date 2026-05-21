@@ -4,7 +4,7 @@ import {
   hasReviewFirstViolation,
   hasSplitViolation,
 } from '../../../src/scrap/policy/violations';
-import type { ScrapFileMetric } from '../../../src/scrap/types';
+import type { ScrapFileMetric } from '../../../src/scrap/model';
 
 function metric(overrides: Partial<ScrapFileMetric> = {}): ScrapFileMetric {
   return {

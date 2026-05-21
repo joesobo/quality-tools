@@ -53,7 +53,7 @@ vi.mock('../../../src/mutation/analysis/profile', () => ({
   resolveMutationProfile
 }));
 
-vi.mock('../../../src/mutation/runner/vitestIncludes', () => ({
+vi.mock('../../../src/mutation/runner/include/vitest', () => ({
   resolveScopedVitestIncludes
 }));
 
@@ -81,6 +81,8 @@ function fileTarget(): QualityTarget {
 
 describe('runMutation', () => {
   beforeEach(() => {
+    delete process.env.QUALITY_TOOLS_VITEST_CONFIG;
+    delete process.env.QUALITY_TOOLS_VITEST_DIR;
     execFileSync.mockClear();
     copySharedMutationReports.mockClear();
     reportMutationSiteViolations.mockClear();
@@ -109,7 +111,7 @@ describe('runMutation', () => {
     });
     expect(execFileSync).toHaveBeenCalledWith(
       process.execPath,
-      [
+      expect.arrayContaining([
         expect.stringContaining('@stryker-mutator/core'),
         'run',
         `${REPO_ROOT}/packages/quality-tools/stryker.config.cjs`,
@@ -117,26 +119,38 @@ describe('runMutation', () => {
         'reports/mutation/quality-tools/stryker-incremental-quality-tools.json',
         '-m',
         'packages/quality-tools/src/**/*.ts,!packages/quality-tools/src/cli/**/*.ts',
-      ],
+        '--testFiles',
+      ]),
       expect.objectContaining({
         cwd: REPO_ROOT,
         env: expect.objectContaining({
           ...process.env,
-          QUALITY_TOOLS_VITEST_INCLUDE_JSON: expect.any(String),
+          QUALITY_TOOLS_VITEST_CONFIG: `${REPO_ROOT}/packages/quality-tools/vitest.config.ts`,
+          QUALITY_TOOLS_VITEST_DIR: 'packages/quality-tools',
         }),
         stdio: 'inherit',
       }),
     );
-    expect(
-      JSON.parse((execFileSync.mock.calls[0][2] as { env: Record<string, string> }).env.QUALITY_TOOLS_VITEST_INCLUDE_JSON)
-    ).toEqual([
-      'packages/quality-tools/tests/**/*.test.ts',
-      'packages/quality-tools/tests/**/*.test.tsx',
-      'packages/quality-tools/tests/**/*.test.ts',
-      'packages/quality-tools/tests/**/*.test.tsx',
-    ]);
+    const strykerArgs = execFileSync.mock.calls[0][1] as string[];
+    const testFiles = strykerArgs[strykerArgs.indexOf('--testFiles') + 1];
+
+    expect(testFiles).toContain('packages/quality-tools/tests/mutation/runner/run.effects.test.ts');
+    expect(testFiles).not.toContain('*');
     expect(copySharedMutationReports).toHaveBeenCalledWith('quality-tools', REPO_ROOT);
     expect(reportMutationSiteViolations).toHaveBeenCalledWith('/repo/reports/mutation.json');
+  });
+
+  it('preserves an explicit vitest config override', async () => {
+    const { runMutation } = await import('../../../src/mutation/runner/run');
+    process.env.QUALITY_TOOLS_VITEST_CONFIG = '/custom/vitest.config.ts';
+    process.env.QUALITY_TOOLS_VITEST_DIR = 'custom-package';
+
+    runMutation(target());
+
+    const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
+
+    expect(options.env.QUALITY_TOOLS_VITEST_CONFIG).toBe('/custom/vitest.config.ts');
+    expect(options.env.QUALITY_TOOLS_VITEST_DIR).toBe('custom-package');
   });
 
   it('passes scoped vitest includes for file targets', async () => {
@@ -149,10 +163,11 @@ describe('runMutation', () => {
     runMutation(fileTarget());
 
     const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
-    const includes = JSON.parse(options.env.QUALITY_TOOLS_VITEST_INCLUDE_JSON) as string[];
+    const strykerArgs = execFileSync.mock.calls[0][1] as string[];
+    const testFiles = strykerArgs[strykerArgs.indexOf('--testFiles') + 1];
 
-    expect(includes).toContain('packages/quality-tools/tests/mutation/runner/run.test.ts');
-    expect(includes).toContain('packages/quality-tools/tests/mutation/runner/run.test.tsx');
+    expect(options.env.QUALITY_TOOLS_VITEST_DIR).toBe('packages/quality-tools');
+    expect(testFiles).toBe('packages/quality-tools/tests/mutation/runner/run.test.ts');
   });
 
   it('passes scoped vitest includes for directory targets', async () => {
@@ -171,11 +186,11 @@ describe('runMutation', () => {
       relativePath: 'packages/quality-tools/src/mutation',
     });
 
-    const options = execFileSync.mock.calls[0][2] as { env: Record<string, string> };
-    const includes = JSON.parse(options.env.QUALITY_TOOLS_VITEST_INCLUDE_JSON) as string[];
+    const strykerArgs = execFileSync.mock.calls[0][1] as string[];
+    const testFiles = strykerArgs[strykerArgs.indexOf('--testFiles') + 1];
 
-    expect(includes).toContain('packages/quality-tools/tests/mutation/**/*.test.ts');
-    expect(includes).toContain('packages/quality-tools/tests/mutation/**/*.test.tsx');
+    expect(testFiles).toContain('packages/quality-tools/tests/mutation/runner/run.effects.test.ts');
+    expect(testFiles).not.toContain('*');
 
     expect(execFileSync).toHaveBeenCalledWith(
       process.execPath,
@@ -183,7 +198,7 @@ describe('runMutation', () => {
       expect.objectContaining({
         cwd: REPO_ROOT,
         env: expect.objectContaining({
-          QUALITY_TOOLS_VITEST_INCLUDE_JSON: expect.any(String),
+          QUALITY_TOOLS_VITEST_DIR: 'packages/quality-tools',
         }),
         stdio: 'inherit',
       }),

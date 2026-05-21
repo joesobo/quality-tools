@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { aiActionability } from '../../../../src/scrap/analysis/actionability';
-import type { ScrapFileMetric } from '../../../../src/scrap/types';
+import type { ScrapFileMetric } from '../../../../src/scrap/model';
 
 function metric(overrides: Partial<ScrapFileMetric> = {}): ScrapFileMetric {
   return {

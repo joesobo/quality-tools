@@ -1,4 +1,4 @@
-import { type ScrapComparison } from '../types';
+import { type ScrapComparison } from '../model';
 
 function includesNegative(values: number[]): boolean {
   return values.some((value) => value < 0);

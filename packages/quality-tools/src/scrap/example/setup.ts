@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import { collectCallCount, isAssertionCall } from './calls/extract';
-import { type ScrapExampleNode } from '../types';
+import { type ScrapExampleNode } from '../model';
 import { statementFingerprint } from '../calls/normalizedShapes';
 
 export interface ExampleSetupMetric {

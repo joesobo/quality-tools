@@ -4,7 +4,7 @@ import { analyzeExampleSetup } from '../example/setup';
 import { findExamples } from './find';
 import { scoreExample } from './score';
 import { duplicateSetupGroupSizes } from '../example/calls/duplicates';
-import { type ScrapExampleMetric } from '../types';
+import { type ScrapExampleMetric } from '../model';
 
 export function analyzeFileExamples(sourceFile: ts.SourceFile): ScrapExampleMetric[] {
   const examples = findExamples(sourceFile);

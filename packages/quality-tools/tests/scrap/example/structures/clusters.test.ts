@@ -5,7 +5,7 @@ import {
   isRepeatedSetupExample,
   strongestSetupCluster
 } from '../../../../src/scrap/example/clusters';
-import type { ScrapExampleMetric } from '../../../../src/scrap/types';
+import type { ScrapExampleMetric } from '../../../../src/scrap/model';
 
 function example(overrides: Partial<ScrapExampleMetric> = {}): ScrapExampleMetric {
   return {

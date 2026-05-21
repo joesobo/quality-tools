@@ -4,7 +4,7 @@ import type { QualityTarget } from '../shared/resolve/target';
 import { listWorkspacePackages, type WorkspacePackage } from '../shared/util/workspacePackages';
 import { analyzePackage } from './packageAnalysis';
 import { mergeReports } from './merge';
-import type { BoundaryReport } from './types';
+import type { BoundaryReport } from './model';
 
 function analyzePackageRoot(repoRoot: string, workspacePackage: WorkspacePackage): BoundaryReport {
   return analyzePackage(repoRoot, workspacePackage);

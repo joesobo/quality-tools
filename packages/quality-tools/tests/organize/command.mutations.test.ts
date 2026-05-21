@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { runOrganizeCli } from '../../src/organize/command';
-import type { OrganizeDirectoryMetric } from '../../src/organize/types';
+import type { OrganizeDirectoryMetric } from '../../src/organize/model';
 import { REPO_ROOT } from '../../src/shared/resolve/repoRoot';
 import { createDependencies, createMetrics, qualityToolsTarget } from './command.testSupport';
 import { cleanupTempDirs } from './testHelpers';

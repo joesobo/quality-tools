@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { buildImportGraph } from '../../src/organize/cohesion/importGraph';
-import type { OrganizeDirectoryMetric } from '../../src/organize/types';
+import type { OrganizeDirectoryMetric } from '../../src/organize/model';
 import type { ImportAdjacency } from '../../src/organize/cohesion/importGraph';
 import type { QualityTarget } from '../../src/shared/resolve/target';
 
@@ -219,8 +219,8 @@ export function createTarget(absolutePath: string): QualityTarget {
  * Creates a partial OrganizeCohesionCluster with sensible defaults
  */
 export function createCluster(
-  overrides: Partial<import('../../src/organize/types').OrganizeCohesionCluster> = {}
-): import('../../src/organize/types').OrganizeCohesionCluster {
+  overrides: Partial<import('../../src/organize/model').OrganizeCohesionCluster> = {}
+): import('../../src/organize/model').OrganizeCohesionCluster {
   return {
     prefix: 'test',
     memberCount: 5,
@@ -235,8 +235,8 @@ export function createCluster(
  * Creates multiple clusters with different prefixes
  */
 export function createClusters(
-  specs: Array<Partial<import('../../src/organize/types').OrganizeCohesionCluster>>
-): import('../../src/organize/types').OrganizeCohesionCluster[] {
+  specs: Array<Partial<import('../../src/organize/model').OrganizeCohesionCluster>>
+): import('../../src/organize/model').OrganizeCohesionCluster[] {
   return specs.map((spec, idx) =>
     createCluster({
       prefix: spec.prefix ?? `cluster${idx}`,
@@ -249,8 +249,8 @@ export function createClusters(
  * Creates a file issue for testing
  */
 export function createFileIssue(
-  overrides: Partial<import('../../src/organize/types').OrganizeFileIssue> = {}
-): import('../../src/organize/types').OrganizeFileIssue {
+  overrides: Partial<import('../../src/organize/model').OrganizeFileIssue> = {}
+): import('../../src/organize/model').OrganizeFileIssue {
   return {
     fileName: 'test.ts',
     kind: 'low-info-banned' as const,

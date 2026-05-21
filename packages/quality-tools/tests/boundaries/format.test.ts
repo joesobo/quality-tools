@@ -4,7 +4,7 @@ import {
   formatBoundaryViolation,
   summaryLines
 } from '../../src/boundaries/format';
-import type { BoundaryReport } from '../../src/boundaries/types';
+import type { BoundaryReport } from '../../src/boundaries/model';
 
 function createReport(): BoundaryReport {
   return {

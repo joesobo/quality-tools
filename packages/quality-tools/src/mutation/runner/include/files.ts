@@ -1,7 +1,7 @@
-import { baseTestRoots } from './includeRoots';
-import { directIncludes } from './directIncludes';
-import { fallbackIncludes } from './fallbackIncludes';
-import { fileIncludeParts } from './includeParts';
+import { baseTestRoots } from './roots';
+import { directIncludes } from './direct';
+import { fallbackIncludes } from './fallback';
+import { fileIncludeParts } from './parts';
 
 export function fileIncludes(packageName: string, relativeSourceFile: string): string[] {
   const parts = fileIncludeParts(relativeSourceFile);

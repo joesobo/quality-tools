@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import { parseIssues } from './parseIssues';
-import { type ScrapValidationIssue } from '../types';
+import { type ScrapValidationIssue } from '../model';
 import { structureIssues } from './structureIssues';
 
 export function validateScrapFile(sourceFile: ts.SourceFile): ScrapValidationIssue[] {

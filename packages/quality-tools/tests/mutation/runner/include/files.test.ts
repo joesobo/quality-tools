@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fileIncludes } from '../../../src/mutation/runner/fileIncludes';
+import { fileIncludes } from '../../../../src/mutation/runner/include/files';
 
 describe('fileIncludes', () => {
   it('includes mirrored and broad fallback globs for ordinary source files', () => {

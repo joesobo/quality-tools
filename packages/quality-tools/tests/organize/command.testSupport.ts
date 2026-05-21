@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import { REPO_ROOT } from '../../src/shared/resolve/repoRoot';
 import type { QualityTarget } from '../../src/shared/resolve/target';
-import type { OrganizeDirectoryMetric } from '../../src/organize/types';
+import type { OrganizeDirectoryMetric } from '../../src/organize/model';
 import type { OrganizeCliDependencies } from '../../src/organize/command';
 
 export function qualityToolsTarget(): QualityTarget {

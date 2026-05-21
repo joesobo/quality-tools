@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compareBlockSummaries } from '../../../src/scrap/structure/ordering';
-import { type ScrapBlockSummary } from '../../../src/scrap/types';
+import { type ScrapBlockSummary } from '../../../src/scrap/model';
 
 function summary(overrides: Partial<ScrapBlockSummary>): ScrapBlockSummary {
   return {

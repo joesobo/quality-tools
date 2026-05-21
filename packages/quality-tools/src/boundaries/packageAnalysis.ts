@@ -4,7 +4,7 @@ import type { WorkspacePackage } from '../shared/util/workspacePackages';
 import { deadEnds, deadSurfaces } from './deadFiles';
 import { resolveImportTarget } from './imports';
 import { createNodesByPath, type BoundaryNodeIndex } from './nodeIndex';
-import type { BoundaryReport, BoundaryViolation } from './types';
+import type { BoundaryReport, BoundaryViolation } from './model';
 
 function collectViolations(
   absolutePath: string,

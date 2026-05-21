@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { applyBaselineComparison } from '../../../src/scrap/test/compare';
-import type { ScrapFileMetric } from '../../../src/scrap/types';
+import type { ScrapFileMetric } from '../../../src/scrap/model';
 
 function metric(overrides: Partial<ScrapFileMetric> = {}): ScrapFileMetric {
   return {

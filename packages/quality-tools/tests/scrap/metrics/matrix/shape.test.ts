@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { hasCompactCoverageShape, hasLowNoiseStructure, isSimpleCoverageMatrixShape } from '../../../../src/scrap/metrics/matrix/shape';
-import type { ScrapExampleMetric } from '../../../../src/scrap/types';
+import type { ScrapExampleMetric } from '../../../../src/scrap/model';
 
 function example(overrides: Partial<ScrapExampleMetric> = {}): ScrapExampleMetric {
   return {

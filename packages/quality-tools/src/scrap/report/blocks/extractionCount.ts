@@ -1,4 +1,4 @@
-import { type ScrapExampleMetric } from '../../types';
+import { type ScrapExampleMetric } from '../../model';
 
 function isExtractableSetup(example: ScrapExampleMetric): boolean {
   return example.duplicateSetupGroupSize > 1 &&

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mergeReports } from '../../src/boundaries/merge';
-import type { BoundaryReport } from '../../src/boundaries/types';
+import type { BoundaryReport } from '../../src/boundaries/model';
 
 describe('mergeReports', () => {
   it('concatenates files, dead ends, dead surfaces, and violations under the provided target', () => {

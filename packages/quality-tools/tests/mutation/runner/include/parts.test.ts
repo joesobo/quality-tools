@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   fileIncludeParts,
   sharedDetectorTestIncludes
-} from '../../../src/mutation/runner/includeParts';
+} from '../../../../src/mutation/runner/include/parts';
 
 describe('fileIncludeParts', () => {
   it('derives include parts for nested hyphenated source files', () => {

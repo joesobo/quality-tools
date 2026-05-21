@@ -1,4 +1,4 @@
-import { type ScrapExampleMetric } from '../../types';
+import { type ScrapExampleMetric } from '../../model';
 
 export function hasLowNoiseStructure(example: ScrapExampleMetric): boolean {
   return example.branchCount <= 1 &&

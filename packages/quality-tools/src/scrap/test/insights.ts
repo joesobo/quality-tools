@@ -3,7 +3,7 @@ import { duplicateGroupCount, countedFingerprintGroups } from './groupSizes';
 import { duplicationRecommendations } from './recommendations';
 import { recommendedExtractionCount } from '../report/blocks/extractionCount';
 import { featureGroupSizes } from '../metrics/average/groups';
-import { type ScrapExampleMetric, type ScrapRecommendation } from '../types';
+import { type ScrapExampleMetric, type ScrapRecommendation } from '../model';
 
 export interface DuplicationInsights {
   assertionDuplicationScore: number;

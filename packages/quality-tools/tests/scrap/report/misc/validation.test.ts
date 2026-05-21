@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validationLines } from '../../../../src/scrap/report/blocks/validation';
-import type { ScrapFileMetric } from '../../../../src/scrap/types';
+import type { ScrapFileMetric } from '../../../../src/scrap/model';
 
 function metric(overrides: Partial<ScrapFileMetric> = {}): ScrapFileMetric {
   return {

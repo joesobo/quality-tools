@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { averageScore, hotExampleCount, maxScore, roundScore, worstExamples } from '../../../../src/scrap/example/scoreSummary';
-import type { ScrapExampleMetric } from '../../../../src/scrap/types';
+import type { ScrapExampleMetric } from '../../../../src/scrap/model';
 
 function example(name: string, score: number): ScrapExampleMetric {
   return {

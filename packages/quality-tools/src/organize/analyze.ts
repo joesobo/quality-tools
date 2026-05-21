@@ -1,6 +1,6 @@
 import { relative } from 'path';
 import { REPO_ROOT } from '../shared/resolve/repoRoot';
-import { loadOrganizeConfig } from './config';
+import { loadOrganizeConfig } from './rules';
 import { walkDirectories } from './metric/directoryWalk';
 import { fileFanOutVerdict } from './metric/fileFanOut';
 import { folderFanOutVerdict } from './metric/folderFanOut';
@@ -10,7 +10,7 @@ import { findCohesionClusters } from './cohesion/clusters';
 import { extractAncestorFolders, computeAverageRedundancy } from './ancestors';
 import { collectFileIssues } from './issues';
 import type { QualityTarget } from '../shared/resolve/target';
-import type { OrganizeDirectoryMetric } from './types';
+import type { OrganizeDirectoryMetric } from './model';
 
 export function analyze(target: QualityTarget): OrganizeDirectoryMetric[] {
   const config = loadOrganizeConfig(REPO_ROOT, target.packageName);

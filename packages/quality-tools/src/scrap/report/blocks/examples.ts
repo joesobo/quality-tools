@@ -1,4 +1,4 @@
-import { type ScrapFileMetric } from '../../types';
+import { type ScrapFileMetric } from '../../model';
 
 export function worstExampleLines(metric: ScrapFileMetric): string[] {
   if (metric.worstExamples.length === 0) {

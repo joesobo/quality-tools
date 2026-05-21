@@ -1,5 +1,5 @@
-import { type ScrapExampleMetric } from '../types';
-import { type ScrapRecommendation } from '../types';
+import { type ScrapExampleMetric } from '../model';
+import { type ScrapRecommendation } from '../model';
 import { summarizeBlockPaths, summarizeHelperGroups } from '../report/blocks/recommendationText';
 import { coverageRelevantExamples, strongestSetupCluster } from '../example/clusters';
 

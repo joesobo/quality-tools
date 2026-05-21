@@ -1,4 +1,4 @@
-import { type OrganizeFileIssue } from '../types';
+import { type OrganizeFileIssue } from '../model';
 import { formatBarrelIssues, formatLowInfoIssues, formatRedundancyIssues } from './issueFormatters';
 
 export function fileIssueLines(issues: OrganizeFileIssue[]): string[] {

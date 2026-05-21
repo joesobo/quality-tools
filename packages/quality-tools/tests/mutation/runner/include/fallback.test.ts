@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fallbackIncludes } from '../../../src/mutation/runner/fallbackIncludes';
+import { fallbackIncludes } from '../../../../src/mutation/runner/include/fallback';
 
 describe('fallbackIncludes', () => {
   it('returns no patterns when broad fallback is disabled', () => {

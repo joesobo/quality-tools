@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { directIncludes } from '../../../src/mutation/runner/directIncludes';
+import { directIncludes } from '../../../../src/mutation/runner/include/direct';
 
 describe('directIncludes', () => {
   it('builds the exact direct include set for ordinary files', () => {

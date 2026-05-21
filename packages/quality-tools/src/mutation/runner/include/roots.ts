@@ -1,4 +1,4 @@
-import { normalizeSourcePathForTests } from './includeParts';
+import { normalizeSourcePathForTests } from './parts';
 
 export function baseTestRoots(packageName: string): string[] {
   return [`packages/${packageName}/tests`];

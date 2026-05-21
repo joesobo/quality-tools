@@ -1,4 +1,4 @@
-import { type ScrapExampleMetric } from '../types';
+import { type ScrapExampleMetric } from '../model';
 import {
   countExamples,
   hasAsyncWait,

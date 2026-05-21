@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isRepeatedSetupExample, groupSetupExamples, strongestSetupCluster, coverageRelevantExamples } from '../../../src/scrap/example/clusters';
-import type { ScrapExampleMetric } from '../../../src/scrap/types';
+import type { ScrapExampleMetric } from '../../../src/scrap/model';
 
 function createExample(overrides: Partial<ScrapExampleMetric> = {}): ScrapExampleMetric {
   return {

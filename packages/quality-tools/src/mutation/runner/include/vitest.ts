@@ -1,7 +1,7 @@
 import { posix } from 'path';
-import { type QualityTarget } from '../../shared/resolve/target';
-import { fileIncludes } from './fileIncludes';
-import { directoryIncludes, packageIncludes } from './includeRoots';
+import { type QualityTarget } from '../../../shared/resolve/target';
+import { fileIncludes } from './files';
+import { directoryIncludes, packageIncludes } from './roots';
 
 function relativeSourcePath(target: QualityTarget): string | undefined {
   if (!target.packageRelativePath?.startsWith('src/')) {

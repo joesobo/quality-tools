@@ -1,4 +1,4 @@
-import { type ScrapComparison, type ScrapFileMetric } from '../types';
+import { type ScrapComparison, type ScrapFileMetric } from '../model';
 import { verdictFromDeltas } from '../report/verdict';
 
 export interface BaselineFileMetric {

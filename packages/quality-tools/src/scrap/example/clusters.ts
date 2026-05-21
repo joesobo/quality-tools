@@ -1,4 +1,4 @@
-import { type ScrapExampleMetric } from '../types';
+import { type ScrapExampleMetric } from '../model';
 
 export function isRepeatedSetupExample(example: ScrapExampleMetric): boolean {
   return example.duplicateSetupGroupSize > 1 &&

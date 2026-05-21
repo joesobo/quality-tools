@@ -1,5 +1,5 @@
 import { relative } from 'path';
-import { type ScrapFileMetric } from '../types';
+import { type ScrapFileMetric } from '../model';
 
 function summaryCount(value: number | undefined): number {
   return value ?? 0;

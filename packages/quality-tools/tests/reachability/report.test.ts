@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { reportReachability } from '../../src/reachability/report';
-import type { ReachabilityReport } from '../../src/reachability/types';
+import type { ReachabilityReport } from '../../src/reachability/model';
 
 function createReport(): ReachabilityReport {
   return {

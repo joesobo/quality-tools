@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { loadOrganizeConfig } from '../../src/organize/config';
+import { loadOrganizeConfig } from '../../src/organize/rules';
 import {
   createOrganizeConfigMissingRepo,
   createOrganizeConfigRepo,
   DEFAULT_ORGANIZE_CONFIG
-} from './config.testSupport';
+} from './rules.testSupport';
 
 describe('loadOrganizeConfig', () => {
   it('returns default config when the file is missing', () => {

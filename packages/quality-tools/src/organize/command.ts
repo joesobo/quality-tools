@@ -7,7 +7,7 @@ import { sanitizeReportKey } from '../shared/util/reportKey';
 import { analyze } from './analyze';
 import { compareBaseline } from './baselineCompare';
 import { reportOrganize } from './report/format';
-import type { OrganizeDirectoryMetric } from './types';
+import type { OrganizeDirectoryMetric } from './model';
 
 export interface OrganizeCliDependencies {
   analyze: typeof analyze;

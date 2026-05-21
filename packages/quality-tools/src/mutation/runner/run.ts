@@ -1,15 +1,18 @@
 import { execFileSync } from 'child_process';
+import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
+import { globSync } from 'glob';
 import { resolvePackageToolGlobs } from '../../config/quality';
 import { type QualityTarget } from '../../shared/resolve/target';
 import { REPO_ROOT } from '../../shared/resolve/repoRoot';
+import { relativeTo, toPosix } from '../../shared/util/pathUtils';
 import { buildMutateGlobs } from '../analysis/mutateGlobs';
 import { copySharedMutationReports, incrementalReportPath } from '../reporting/reportArtifacts';
 import { reportMutationSiteViolations } from '../reporting/check';
 import { resolveMutationProfile } from '../analysis/profile';
 import { sanitizeReportKey } from '../../shared/util/reportKey';
-import { resolveScopedVitestIncludes } from './vitestIncludes';
+import { resolveScopedVitestIncludes } from './include/vitest';
 
 const require = createRequire(import.meta.url);
 
@@ -29,17 +32,51 @@ function buildArgs(target: QualityTarget): { args: string[]; reportKey: string }
   return { args, reportKey };
 }
 
+function defaultVitestConfig(target: QualityTarget): string | undefined {
+  if (process.env.QUALITY_TOOLS_VITEST_CONFIG || !target.packageRoot) {
+    return undefined;
+  }
+
+  const packageConfig = join(target.packageRoot, 'vitest.config.ts');
+  return existsSync(packageConfig) ? packageConfig : undefined;
+}
+
+function defaultVitestDir(target: QualityTarget): string | undefined {
+  if (process.env.QUALITY_TOOLS_VITEST_DIR || !target.packageRoot) {
+    return undefined;
+  }
+
+  return relativeTo(REPO_ROOT, target.packageRoot);
+}
+
+function expandExistingTestIncludes(includes: string[]): string[] {
+  return [...new Set(
+    includes.flatMap((include) => globSync(include, { cwd: REPO_ROOT, nodir: true }).map(toPosix))
+  )];
+}
+
 export function runMutation(target: QualityTarget): void {
   const { args, reportKey } = buildArgs(target);
   const scopedVitestIncludes = resolveScopedVitestIncludes(target);
+  const scopedVitestFiles = scopedVitestIncludes ? expandExistingTestIncludes(scopedVitestIncludes) : [];
+  if (scopedVitestFiles.length > 0) {
+    args.push('--testFiles', scopedVitestFiles.join(','));
+  }
+  const vitestConfig = defaultVitestConfig(target);
+  const vitestDir = defaultVitestDir(target);
   const env = {
     ...process.env,
     QUALITY_TOOLS_VITEST_SCOPE: target.packageName === 'extension'
       ? 'extension'
       : process.env.QUALITY_TOOLS_VITEST_SCOPE ?? 'workspace',
-    ...(scopedVitestIncludes
+    ...(vitestConfig
       ? {
-          QUALITY_TOOLS_VITEST_INCLUDE_JSON: JSON.stringify(scopedVitestIncludes),
+          QUALITY_TOOLS_VITEST_CONFIG: vitestConfig,
+        }
+      : {}),
+    ...(vitestDir
+      ? {
+          QUALITY_TOOLS_VITEST_DIR: vitestDir,
         }
       : {}),
   };

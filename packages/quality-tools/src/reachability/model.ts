@@ -1,4 +1,4 @@
-import type { BoundaryFileNode } from '../boundaries/types';
+import type { BoundaryFileNode } from '../boundaries/model';
 
 export interface ReachabilityReport {
   deadEnds: BoundaryFileNode[];

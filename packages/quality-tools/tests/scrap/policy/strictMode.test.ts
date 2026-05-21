@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { STRICT_FAILURE_MESSAGE, hasStrictViolations } from './strictModeSupport';
-import type { ScrapFileMetric } from '../../../src/scrap/types';
+import type { ScrapFileMetric } from '../../../src/scrap/model';
 
 function createMetric(overrides: Partial<ScrapFileMetric> = {}): ScrapFileMetric {
   return {

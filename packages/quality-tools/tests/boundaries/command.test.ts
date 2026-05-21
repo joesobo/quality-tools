@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { runBoundariesCli, type BoundariesCliDependencies } from '../../src/boundaries/command';
 import { REPO_ROOT } from '../../src/shared/resolve/repoRoot';
-import type { BoundaryReport } from '../../src/boundaries/types';
+import type { BoundaryReport } from '../../src/boundaries/model';
 import type { QualityTarget } from '../../src/shared/resolve/target';
 
 function createTarget(): QualityTarget {
@@ -46,13 +46,16 @@ describe('runBoundariesCli', () => {
     expect(dependencies.setExitCode).not.toHaveBeenCalled();
   });
 
-  it('treats a leading --verbose flag as a value flag during target parsing and still reports verbose output', () => {
+  it.each([
+    { flag: '--verbose', verbose: true },
+    { flag: '--strict', verbose: false },
+  ])('treats a leading $flag flag as a value flag during target parsing', ({ flag, verbose }) => {
     const dependencies = createDependencies();
 
-    runBoundariesCli(['--verbose', 'extension/'], dependencies);
+    runBoundariesCli([flag, 'extension/'], dependencies);
 
     expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, undefined);
-    expect(dependencies.reportBoundaries).toHaveBeenCalledWith(createReport(), { verbose: true });
+    expect(dependencies.reportBoundaries).toHaveBeenCalledWith(createReport(), { verbose });
     expect(dependencies.setExitCode).not.toHaveBeenCalled();
   });
 
@@ -69,94 +72,87 @@ describe('runBoundariesCli', () => {
     log.mockRestore();
   });
 
-  it('treats a leading --strict flag as a value flag during target parsing', () => {
-    const dependencies = createDependencies();
+  it.each([
+    {
+      name: 'layer violations even without dead ends or strict mode',
+      args: ['extension/'],
+      report: {
+        ...createReport(),
+        layerViolations: [
+          {
+            from: 'packages/extension/src/core/bad.ts',
+            reason: 'core cannot depend on webview',
+            to: 'packages/extension/src/webview/view.ts',
+          },
+        ],
+      },
+    },
+    {
+      name: 'dead ends even when there are no layer violations',
+      args: ['extension/'],
+      report: {
+        ...createReport(),
+        deadEnds: [
+          {
+            absolutePath: `${REPO_ROOT}/packages/extension/src/shared/isolated.ts`,
+            entrypoint: false,
+            incoming: 0,
+            outgoing: 0,
+            relativePath: 'packages/extension/src/shared/isolated.ts',
+          },
+        ],
+      },
+    },
+    {
+      name: 'dead surfaces in strict mode',
+      args: ['extension/', '--strict'],
+      report: {
+        ...createReport(),
+        deadSurfaces: [
+          {
+            absolutePath: `${REPO_ROOT}/packages/extension/src/shared/orphan.ts`,
+            entrypoint: false,
+            incoming: 0,
+            outgoing: 1,
+            relativePath: 'packages/extension/src/shared/orphan.ts',
+          },
+        ],
+      },
+    },
+  ] satisfies Array<{ name: string; args: string[]; report: BoundaryReport }>)('fails for $name', ({ args, report }) => {
+    const dependencies = createDependencies(report);
 
-    runBoundariesCli(['--strict', 'extension/'], dependencies);
-
-    expect(dependencies.resolveQualityTarget).toHaveBeenCalledWith(REPO_ROOT, undefined);
-    expect(dependencies.reportBoundaries).toHaveBeenCalledWith(createReport(), { verbose: false });
-    expect(dependencies.setExitCode).not.toHaveBeenCalled();
-  });
-
-  it('fails for layer violations even without dead ends or strict mode', () => {
-    const dependencies = createDependencies({
-      ...createReport(),
-      layerViolations: [
-        {
-          from: 'packages/extension/src/core/bad.ts',
-          reason: 'core cannot depend on webview',
-          to: 'packages/extension/src/webview/view.ts',
-        },
-      ],
-    });
-
-    runBoundariesCli(['extension/'], dependencies);
-
-    expect(dependencies.setExitCode).toHaveBeenCalledWith(1);
-  });
-
-  it('fails for dead ends even when there are no layer violations', () => {
-    const dependencies = createDependencies({
-      ...createReport(),
-      deadEnds: [
-        {
-          absolutePath: `${REPO_ROOT}/packages/extension/src/shared/isolated.ts`,
-          entrypoint: false,
-          incoming: 0,
-          outgoing: 0,
-          relativePath: 'packages/extension/src/shared/isolated.ts',
-        },
-      ],
-    });
-
-    runBoundariesCli(['extension/'], dependencies);
-
-    expect(dependencies.setExitCode).toHaveBeenCalledWith(1);
-  });
-
-  it('fails in strict mode when only dead surfaces are present', () => {
-    const dependencies = createDependencies({
-      ...createReport(),
-      deadSurfaces: [
-        {
-          absolutePath: `${REPO_ROOT}/packages/extension/src/shared/orphan.ts`,
-          entrypoint: false,
-          incoming: 0,
-          outgoing: 1,
-          relativePath: 'packages/extension/src/shared/orphan.ts',
-        },
-      ],
-    });
-
-    runBoundariesCli(['extension/', '--strict'], dependencies);
+    runBoundariesCli(args, dependencies);
 
     expect(dependencies.setExitCode).toHaveBeenCalledWith(1);
   });
 
-  it('does not fail in strict mode when dead surfaces are absent', () => {
-    const dependencies = createDependencies();
+  it.each([
+    {
+      name: 'strict mode when dead surfaces are absent',
+      args: ['extension/', '--strict'],
+      report: createReport(),
+    },
+    {
+      name: 'dead surfaces when strict mode is absent',
+      args: ['extension/'],
+      report: {
+        ...createReport(),
+        deadSurfaces: [
+          {
+            absolutePath: `${REPO_ROOT}/packages/extension/src/shared/orphan.ts`,
+            entrypoint: false,
+            incoming: 0,
+            outgoing: 1,
+            relativePath: 'packages/extension/src/shared/orphan.ts',
+          },
+        ],
+      },
+    },
+  ] satisfies Array<{ name: string; args: string[]; report: BoundaryReport }>)('does not fail for $name', ({ args, report }) => {
+    const dependencies = createDependencies(report);
 
-    runBoundariesCli(['extension/', '--strict'], dependencies);
-
-    expect(dependencies.setExitCode).not.toHaveBeenCalled();
-  });
-
-  it('does not fail for dead surfaces when strict mode is absent', () => {
-    const dependencies = createDependencies({
-      ...createReport(),
-      deadSurfaces: [
-        {
-          absolutePath: `${REPO_ROOT}/packages/extension/src/shared/orphan.ts`,
-          entrypoint: false,
-          incoming: 0,
-          outgoing: 1,
-          relativePath: 'packages/extension/src/shared/orphan.ts',
-        },
-      ],
-    });
-
-    runBoundariesCli(['extension/'], dependencies);
+    runBoundariesCli(args, dependencies);
 
     expect(dependencies.setExitCode).not.toHaveBeenCalled();
   });

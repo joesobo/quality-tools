@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { deadEnds, deadSurfaces } from '../../src/boundaries/deadFiles';
-import type { BoundaryFileNode } from '../../src/boundaries/types';
+import type { BoundaryFileNode } from '../../src/boundaries/model';
 
 const files: BoundaryFileNode[] = [
   {

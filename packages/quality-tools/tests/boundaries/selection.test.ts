@@ -11,11 +11,7 @@ afterEach(() => {
   tempDirs.splice(0).forEach((tempDir) => rmSync(tempDir, { force: true, recursive: true }));
 });
 
-function createWorkspace(): { repoRoot: string; workspacePackage: WorkspacePackage } {
-  const repoRoot = mkdtempSync(join(tmpdir(), 'quality-tools-selection-'));
-  tempDirs.push(repoRoot);
-  const packageRoot = join(repoRoot, 'packages', 'example');
-
+function writeBoundaryConfig(repoRoot: string, entrypoints?: string[]): void {
   writeFileSync(
     join(repoRoot, 'quality.config.json'),
     JSON.stringify({
@@ -24,9 +20,26 @@ function createWorkspace(): { repoRoot: string; workspacePackage: WorkspacePacka
           include: ['src/**/*.ts'],
           exclude: ['src/**/*.test.ts', '**/index.ts']
         }
-      }
+      },
+      ...(entrypoints
+        ? {
+            packages: {
+              example: {
+                boundaries: { entrypoints }
+              }
+            }
+          }
+        : {})
     })
   );
+}
+
+function createWorkspace(): { repoRoot: string; workspacePackage: WorkspacePackage } {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'quality-tools-selection-'));
+  tempDirs.push(repoRoot);
+  const packageRoot = join(repoRoot, 'packages', 'example');
+
+  writeBoundaryConfig(repoRoot);
 
   for (const [relativePath, source] of Object.entries({
     'src/a.ts': 'export const a = 1;\n',
@@ -59,54 +72,12 @@ describe('resolvePackageCandidates', () => {
     ]);
   });
 
-  it('keeps configured entrypoints even when broad excludes match them', () => {
+  it.each([
+    ['configured entrypoints', ['src/nested/index.ts']],
+    ['configured entrypoint globs', ['src/**/index.ts']],
+  ])('keeps %s even when broad excludes match them', (_name, entrypoints) => {
     const { repoRoot, workspacePackage } = createWorkspace();
-    writeFileSync(
-      join(repoRoot, 'quality.config.json'),
-      JSON.stringify({
-        defaults: {
-          boundaries: {
-            include: ['src/**/*.ts'],
-            exclude: ['src/**/*.test.ts', '**/index.ts']
-          }
-        },
-        packages: {
-          example: {
-            boundaries: {
-              entrypoints: ['src/nested/index.ts']
-            }
-          }
-        }
-      })
-    );
-
-    expect(resolvePackageCandidates(repoRoot, workspacePackage)).toEqual([
-      join(workspacePackage.root, 'src/a.ts'),
-      join(workspacePackage.root, 'src/nested/b.ts'),
-      join(workspacePackage.root, 'src/nested/index.ts')
-    ]);
-  });
-
-  it('keeps configured entrypoint globs even when broad excludes match them', () => {
-    const { repoRoot, workspacePackage } = createWorkspace();
-    writeFileSync(
-      join(repoRoot, 'quality.config.json'),
-      JSON.stringify({
-        defaults: {
-          boundaries: {
-            include: ['src/**/*.ts'],
-            exclude: ['src/**/*.test.ts', '**/index.ts']
-          }
-        },
-        packages: {
-          example: {
-            boundaries: {
-              entrypoints: ['src/**/index.ts']
-            }
-          }
-        }
-      })
-    );
+    writeBoundaryConfig(repoRoot, entrypoints);
 
     expect(resolvePackageCandidates(repoRoot, workspacePackage)).toEqual([
       join(workspacePackage.root, 'src/a.ts'),

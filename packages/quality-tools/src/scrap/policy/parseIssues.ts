@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { type ScrapValidationIssue } from '../types';
+import { type ScrapValidationIssue } from '../model';
 
 function diagnosticLine(sourceFile: ts.SourceFile, diagnostic: ts.DiagnosticWithLocation): number {
   return sourceFile.getLineAndCharacterOfPosition(diagnostic.start ?? 0).line + 1;

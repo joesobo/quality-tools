@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { BoundaryFileNode } from '../../src/boundaries/types';
+import type { BoundaryFileNode } from '../../src/boundaries/model';
 import { runReachabilityCli, type ReachabilityCliDependencies } from '../../src/reachability/command';
-import type { ReachabilityReport } from '../../src/reachability/types';
+import type { ReachabilityReport } from '../../src/reachability/model';
 import { REPO_ROOT } from '../../src/shared/resolve/repoRoot';
 import type { QualityTarget } from '../../src/shared/resolve/target';
 

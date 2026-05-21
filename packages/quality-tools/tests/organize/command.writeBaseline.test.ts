@@ -7,7 +7,7 @@ import {
 } from '../../src/organize/command';
 import { REPO_ROOT } from '../../src/shared/resolve/repoRoot';
 import { createDependencies, createMetrics, qualityToolsTarget } from './command.testSupport';
-import type { OrganizeComparison } from '../../src/organize/types';
+import type { OrganizeComparison } from '../../src/organize/model';
 
 describe('organize command baseline helpers', () => {
   it('uses repo.json for the repo target baseline path', () => {
