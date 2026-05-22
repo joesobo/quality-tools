@@ -1,0 +1,32 @@
+import { type OrganizeDirectoryMetric } from '../model';
+
+function worstVerdict(metric: OrganizeDirectoryMetric): string {
+  const depthVerdict = metric.depthVerdict === 'DEEP' ? 'SPLIT' : metric.depthVerdict;
+  const verdicts = [depthVerdict, metric.fileFanOutVerdict, metric.folderFanOutVerdict];
+
+  // SPLIT > WARNING > STABLE
+  if (verdicts.includes('SPLIT')) {
+    return 'SPLIT';
+  }
+  if (verdicts.includes('WARNING')) {
+    return 'WARNING';
+  }
+  return 'STABLE';
+}
+
+function countIssuesByKind(metric: OrganizeDirectoryMetric, kindPrefix: string): number {
+  return metric.fileIssues.filter((issue) => issue.kind.startsWith(kindPrefix)).length;
+}
+
+export function summaryLines(metric: OrganizeDirectoryMetric): string[] {
+  const verdict = worstVerdict(metric);
+  const redundantCount = countIssuesByKind(metric, 'redundancy');
+  const lowInfoCount = countIssuesByKind(metric, 'low-info');
+  const barrelCount = countIssuesByKind(metric, 'barrel');
+  const redundancy = metric.averageRedundancy.toFixed(2);
+
+  const line =
+    `${metric.directoryPath}  [${verdict}]  files: ${metric.fileFanOut}  folders: ${metric.folderFanOut}  depth: ${metric.depth}  redundancy: ${redundancy}  clusters: ${metric.clusters.length}  redundant: ${redundantCount}  low-info: ${lowInfoCount}  barrels: ${barrelCount}`;
+
+  return [line];
+}
