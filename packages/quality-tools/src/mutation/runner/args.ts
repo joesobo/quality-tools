@@ -8,6 +8,12 @@ import { incrementalReportPath } from '../reporting/reportArtifacts';
 
 export interface MutationRunOptions {
   force?: boolean;
+  mutateGlobs?: string[];
+  testIncludes?: string[];
+}
+
+function configuredExcludeGlobs(patterns: { exclude: string[] }): string[] {
+  return patterns.exclude.map((pattern) => `!${pattern}`);
 }
 
 export function buildMutationArgs(
@@ -27,7 +33,10 @@ export function buildMutationArgs(
   const configPatterns = profile.packageName
     ? resolvePackageToolGlobs(REPO_ROOT, profile.packageName, 'mutation')
     : resolveDefaultToolPatterns(REPO_ROOT, 'mutation');
-  args.push('-m', buildMutateGlobs(target, configPatterns).join(','));
+  const mutateGlobs = options.mutateGlobs
+    ? [...options.mutateGlobs, ...configuredExcludeGlobs(configPatterns)]
+    : buildMutateGlobs(target, configPatterns);
+  args.push('-m', mutateGlobs.join(','));
 
   return { args, reportKey };
 }

@@ -111,6 +111,40 @@ describe('command', () => {
     );
   });
 
+  it('passes explicit mutation globs and test includes through to the runner', async () => {
+    const dependencies = createDependencies();
+
+    await runMutationCli([
+      'quality-tools',
+      '--mutate-glob',
+      'packages/quality-tools/src/mutation/**/*.ts',
+      '--test-include',
+      'packages/quality-tools/tests/mutation/**/*.test.ts',
+      '--mutate-globs-json',
+      '["packages/quality-tools/src/cli/*.ts"]',
+      '--test-includes-json',
+      '["packages/quality-tools/tests/cli/*.test.ts"]',
+    ], dependencies);
+
+    expect(dependencies.runMutation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'package',
+        relativePath: 'packages/quality-tools'
+      }),
+      {
+        force: false,
+        mutateGlobs: [
+          'packages/quality-tools/src/mutation/**/*.ts',
+          'packages/quality-tools/src/cli/*.ts',
+        ],
+        testIncludes: [
+          'packages/quality-tools/tests/mutation/**/*.test.ts',
+          'packages/quality-tools/tests/cli/*.test.ts',
+        ],
+      }
+    );
+  });
+
   it('runs a repo-wide target when explicitly requested', async () => {
     const dependencies = createDependencies();
 

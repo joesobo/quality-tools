@@ -51,7 +51,7 @@ function runStryker(args: string[], env: NodeJS.ProcessEnv, target: QualityTarge
 
 export async function runMutation(target: QualityTarget, options: MutationRunOptions = {}): Promise<void> {
   const { args, reportKey } = buildMutationArgs(target, options);
-  await runStryker(args, buildMutationEnv(), target);
+  await runStryker(args, buildMutationEnv(options), target);
   const reportPath = copySharedMutationReports(reportKey, REPO_ROOT);
   reportMutationSiteViolations(reportPath);
 }

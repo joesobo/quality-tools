@@ -11,6 +11,7 @@ const require = createRequire(import.meta.url);
 const rootStrykerConfig = require(`${REPO_ROOT}/packages/quality-tools/stryker.config.cjs`) as {
   dryRunTimeoutMinutes?: number;
   plugins?: string[];
+  reporters?: string[];
   testRunner?: string;
 };
 
@@ -43,6 +44,10 @@ describe('mutation profiles', () => {
   it('routes shared mutation through the repo-local vitest runner', () => {
     expect(rootStrykerConfig.testRunner).toBe('quality-tools-vitest');
     expect(rootStrykerConfig.plugins?.join(' ')).toContain('quality-tools-vitest-runner.mjs');
+  });
+
+  it('enables append-only mutation progress in CI logs', () => {
+    expect(rootStrykerConfig.reporters).toContain('progress');
   });
 
   it('uses the shared Stryker config for repo or non-package targets', () => {

@@ -117,6 +117,31 @@ describe('runMutation', () => {
     expect(reportMutationSiteViolations).toHaveBeenCalledWith('/repo/reports/quality-tools/mutation.json');
   });
 
+  it('uses explicit mutate globs and test includes when provided by a host wrapper', async () => {
+    const { runMutation } = await import('../../../src/mutation/runner/run');
+
+    await runMutation(target(), {
+      mutateGlobs: ['packages/quality-tools/src/mutation/**/*.ts'],
+      testIncludes: ['packages/quality-tools/tests/mutation/**/*.test.ts'],
+    });
+
+    expect(buildMutateGlobs).not.toHaveBeenCalled();
+    expect(spawn).toHaveBeenCalledWith(
+      process.execPath,
+      expect.arrayContaining([
+        '-m',
+        'packages/quality-tools/src/mutation/**/*.ts,!packages/quality-tools/src/cli/**/*.ts',
+      ]),
+      expect.objectContaining({
+        env: expect.objectContaining({
+          QUALITY_TOOLS_VITEST_INCLUDE_JSON: JSON.stringify([
+            'packages/quality-tools/tests/mutation/**/*.test.ts',
+          ]),
+        }),
+      }),
+    );
+  });
+
   it('rejects when Stryker exits unsuccessfully', async () => {
     spawn.mockImplementationOnce(() => {
       const child = new EventEmitter();
