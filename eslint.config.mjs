@@ -6,7 +6,7 @@ export default defineConfig(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['packages/quality-tools/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

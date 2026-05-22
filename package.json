@@ -1,24 +1,63 @@
 {
-  "name": "quality-tools-repo",
-  "private": true,
-  "version": "0.0.0",
-  "packageManager": "pnpm@10.32.0",
+  "name": "@poleski/quality-tools",
+  "version": "0.1.1",
   "type": "module",
+  "description": "Portable TypeScript quality checks for project structure, complexity, mutation, and test health",
+  "license": "MIT",
+  "packageManager": "pnpm@10.32.0",
+  "bin": {
+    "quality-tools": "./dist/cli/main.js"
+  },
+  "files": [
+    "dist/",
+    "stryker/",
+    "stryker.config.cjs",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.22.0"
+  },
   "scripts": {
-    "build": "pnpm --filter @poleski/quality-tools run build",
+    "build": "esbuild src/cli/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/cli/main.js",
+    "prepack": "pnpm run build",
     "ci": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
     "changeset": "changeset",
-    "test": "pnpm --filter @poleski/quality-tools run test",
-    "lint": "pnpm --filter @poleski/quality-tools run lint",
-    "typecheck": "pnpm --filter @poleski/quality-tools run typecheck",
-    "quality-tools": "pnpm --filter @poleski/quality-tools run cli",
+    "cli": "tsx src/cli/main.ts",
+    "quality-tools": "pnpm run cli",
+    "boundaries": "tsx src/cli/boundaries.ts",
+    "reachability": "tsx src/cli/reachability.ts",
+    "crap": "tsx src/cli/crap.ts",
+    "mutate": "tsx src/cli/mutate.ts",
+    "scrap": "tsx src/cli/scrap.ts",
+    "organize": "tsx src/cli/organize.ts",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts",
+    "lint": "eslint src tests",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "version-packages": "changeset version"
+  },
+  "dependencies": {
+    "@stryker-mutator/api": "^9.6.1",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
+    "glob": "^13.0.6",
+    "semver": "^7.7.4",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
     "@eslint/js": "^9.0.0",
     "@types/node": "^20.11.0",
+    "@vitest/coverage-istanbul": "^3.2.4",
+    "esbuild": "^0.25.0",
     "eslint": "^9.0.0",
+    "tsx": "^4.21.0",
+    "vitest": "^3.0.0",
     "typescript-eslint": "^8.0.0"
   }
 }
