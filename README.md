@@ -1,4 +1,4 @@
-# @codegraphy-dev/quality-tools
+# @poleski/quality-tools
 
 Portable TypeScript quality checks for project structure, complexity,
 reachability, mutation, and test health.
@@ -10,7 +10,7 @@ targets, and read project-specific behavior from `quality.config.json`.
 ## Install
 
 ```bash
-pnpm add -D @codegraphy-dev/quality-tools
+pnpm add -D @poleski/quality-tools
 pnpm exec quality-tools init
 ```
 
@@ -212,7 +212,7 @@ config also accepts these environment knobs:
 Use a project Stryker config when you need custom Vitest wiring:
 
 ```js
-const base = require('@codegraphy-dev/quality-tools/stryker.config.cjs');
+const base = require('@poleski/quality-tools/stryker.config.cjs');
 
 module.exports = {
   ...base,

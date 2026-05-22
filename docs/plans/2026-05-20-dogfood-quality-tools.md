@@ -2,7 +2,7 @@
 
 ## Goal
 
-Use `@codegraphy-dev/quality-tools` against its own package and follow the tool output
+Use `@poleski/quality-tools` against its own package and follow the tool output
 until the tools report useful, low-noise signals for each tool folder.
 
 Current host-project setup, configuration fields, and command usage live in the
