@@ -7,6 +7,25 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@stryker-mutator/api':
+        specifier: ^9.6.1
+        version: 9.6.1
+      '@stryker-mutator/core':
+        specifier: ^9.6.1
+        version: 9.6.1(@types/node@20.19.41)
+      '@stryker-mutator/vitest-runner':
+        specifier: ^9.6.1
+        version: 9.6.1(@stryker-mutator/core@9.6.1(@types/node@20.19.41))(vitest@3.2.4(@types/node@20.19.41)(tsx@4.22.3))
+      glob:
+        specifier: ^13.0.6
+        version: 13.0.6
+      semver:
+        specifier: ^7.7.4
+        version: 7.8.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
     devDependencies:
       '@changesets/cli':
         specifier: ^2.30.0
@@ -17,12 +36,24 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.41
+      '@vitest/coverage-istanbul':
+        specifier: ^3.2.4
+        version: 3.2.4(vitest@3.2.4(@types/node@20.19.41)(tsx@4.22.3))
+      esbuild:
+        specifier: ^0.25.0
+        version: 0.25.12
       eslint:
         specifier: ^9.0.0
         version: 9.39.4
+      tsx:
+        specifier: ^4.21.0
+        version: 4.22.3
       typescript-eslint:
         specifier: ^8.0.0
         version: 8.59.4(eslint@9.39.4)(typescript@5.9.3)
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@20.19.41)(tsx@4.22.3)
 
   packages/quality-tools:
     dependencies:

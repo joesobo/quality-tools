@@ -6,9 +6,25 @@
         "src/**/*.ts",
         "src/**/*.tsx"
       ],
-      "exclude": []
+      "exclude": [
+        "src/cli/**/*.ts"
+      ]
     },
     "crap": {
+      "coverage": {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "vitest",
+          "run",
+          "--config",
+          "vitest.config.ts",
+          "--coverage",
+          "--coverage.reportsDirectory",
+          "{repoRoot}/{reportsDir}/crap/{reportKey}"
+        ],
+        "coveragePath": "{repoRoot}/{reportsDir}/crap/{reportKey}/coverage-final.json"
+      },
       "exclude": [
         "**/*.test.ts",
         "**/*.test.tsx",
@@ -34,46 +50,16 @@
         "src/**/*.tsx"
       ],
       "exclude": [
+        "src/cli/**/*.ts",
         "src/**/*.d.ts",
+        "tests/**/*.ts",
         "**/*.test.ts",
         "**/*.test.tsx"
+      ],
+      "entrypoints": [
+        "src/**/command.ts"
       ]
     }
   },
-  "packages": {
-    "quality-tools": {
-      "crap": {
-        "coverage": {
-          "command": "pnpm",
-          "args": [
-            "--filter",
-            "@poleski/quality-tools",
-            "exec",
-            "vitest",
-            "run",
-            "--config",
-            "vitest.config.ts",
-            "--coverage",
-            "--coverage.reportsDirectory",
-            "{repoRoot}/{reportsDir}/crap/{reportKey}"
-          ],
-          "coveragePath": "{repoRoot}/{reportsDir}/crap/{reportKey}/coverage-final.json"
-        }
-      },
-      "mutation": {
-        "exclude": [
-          "src/cli/**/*.ts"
-        ]
-      },
-      "boundaries": {
-        "entrypoints": [
-          "src/**/command.ts"
-        ],
-        "exclude": [
-          "src/cli/**/*.ts",
-          "tests/**/*.ts"
-        ]
-      }
-    }
-  }
+  "packages": {}
 }

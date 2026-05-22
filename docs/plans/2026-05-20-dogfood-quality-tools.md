@@ -6,18 +6,18 @@ Use `@poleski/quality-tools` against its own package and follow the tool output
 until the tools report useful, low-noise signals for each tool folder.
 
 Current host-project setup, configuration fields, and command usage live in the
-package [README](../../packages/quality-tools/README.md).
+package [README](../../README.md).
 
 ## Tool Folders
 
 The quality-tools package currently has these command-owned tool folders:
 
-- `packages/quality-tools/src/boundaries`
-- `packages/quality-tools/src/reachability`
-- `packages/quality-tools/src/organize`
-- `packages/quality-tools/src/scrap`
-- `packages/quality-tools/src/crap`
-- `packages/quality-tools/src/mutation`
+- `src/boundaries`
+- `src/reachability`
+- `src/organize`
+- `src/scrap`
+- `src/crap`
+- `src/mutation`
 
 ## Dogfood Loop
 

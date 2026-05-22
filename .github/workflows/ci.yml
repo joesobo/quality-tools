@@ -38,4 +38,4 @@ jobs:
         run: pnpm run build
 
       - name: Pack
-        run: pnpm --filter @poleski/quality-tools pack --pack-destination /tmp
+        run: pnpm pack --pack-destination /tmp
