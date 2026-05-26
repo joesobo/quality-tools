@@ -1,6 +1,6 @@
 {
 	"name": "@poleski/quality-tools",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"type": "module",
 	"description": "Portable TypeScript quality checks for project structure, complexity, mutation, and test health",
 	"license": "MIT",
@@ -26,7 +26,7 @@
 		"build": "esbuild src/cli/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/cli/main.js",
 		"prepack": "pnpm run build",
 		"ci": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
-		"release": "pnpm run ci && pnpm publish",
+		"release": "pnpm run ci && pnpm publish --no-git-checks",
 		"changeset": "changeset",
 		"cli": "tsx src/cli/main.ts",
 		"quality-tools": "pnpm run cli",

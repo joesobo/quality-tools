@@ -1,5 +1,11 @@
 # @poleski/quality-tools
 
+## 0.1.4
+
+### Patch Changes
+
+- 289c605: Stop host projects from seeing Stryker warnings about the upstream Vitest runner plugin when using the bundled mutation config, and throttle Stryker mutation progress into the existing one-minute heartbeat.
+
 ## 0.1.3
 
 ### Patch Changes
