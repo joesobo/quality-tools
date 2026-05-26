@@ -21,7 +21,6 @@ module.exports = {
   testRunner: 'quality-tools-vitest',
   plugins: [
     path.join(packageRoot, 'stryker/quality-tools-vitest-runner.mjs'),
-    '@stryker-mutator/vitest-runner',
   ],
   vitest: {
     configFile: path.isAbsolute(vitestConfig) ? vitestConfig : path.join(hostRoot, vitestConfig),

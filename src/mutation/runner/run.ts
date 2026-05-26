@@ -6,6 +6,10 @@ import { reportMutationSiteViolations } from '../reporting/check';
 import { buildMutationArgs, buildMutationArgsForTest, type MutationRunOptions } from './args';
 import { strykerBinPath } from './strykerBinary';
 import { buildMutationEnv } from './environment';
+import {
+  createMutationProgressOutputForwarder,
+  MutationProgressTracker,
+} from './progress';
 
 const MUTATION_PROGRESS_INTERVAL_MS = 60_000;
 
@@ -20,18 +24,35 @@ function formatElapsedDuration(durationMs: number): string {
 function runStryker(args: string[], env: NodeJS.ProcessEnv, target: QualityTarget): Promise<void> {
   return new Promise((resolve, reject) => {
     const startedAt = Date.now();
+    const progressTracker = new MutationProgressTracker();
+    const stdoutForwarder = createMutationProgressOutputForwarder(
+      progressTracker,
+      text => process.stdout.write(text),
+    );
+    const stderrForwarder = createMutationProgressOutputForwarder(
+      progressTracker,
+      text => process.stderr.write(text),
+    );
     const child = spawn(process.execPath, [strykerBinPath(), ...args], {
       cwd: REPO_ROOT,
       env,
-      stdio: 'inherit'
+      stdio: ['inherit', 'pipe', 'pipe']
+    });
+    child.stdout?.on('data', (chunk: Buffer | string) => {
+      stdoutForwarder.write(String(chunk));
+    });
+    child.stderr?.on('data', (chunk: Buffer | string) => {
+      stderrForwarder.write(String(chunk));
     });
     const progressTimer = setInterval(() => {
-      console.error(
+      console.error(progressTracker.formatLatest() ??
         `[mutation] Still running ${target.relativePath} after ${formatElapsedDuration(Date.now() - startedAt)}...`
       );
     }, MUTATION_PROGRESS_INTERVAL_MS);
     const clearProgressTimer = () => {
       clearInterval(progressTimer);
+      stdoutForwarder.flush();
+      stderrForwarder.flush();
     };
 
     child.once('error', (error) => {

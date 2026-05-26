@@ -13,6 +13,10 @@ const { vitestWrapper } = await import(path.join(vitestRunnerRoot, 'dist/src/vit
 const STRYKER_SETUP = path.join(vitestRunnerRoot, 'dist/src/stryker-setup.js');
 const STRYKER_SETUP_SOURCE_MAP = 'stryker-setup.js.map';
 
+export const strykerValidationSchema = JSON.parse(
+  fs.readFileSync(path.join(vitestRunnerRoot, 'dist/schema/vitest-runner-options.json'), 'utf-8'),
+);
+
 function createStrykerSetupSourceMap(setupFilePath) {
   return JSON.stringify({
     version: 3,
