@@ -107,7 +107,7 @@ describe('runMutation', () => {
         env: expect.objectContaining({
           QUALITY_TOOLS_REPORTS_DIR: 'reports/quality-tools'
         }),
-        stdio: 'inherit',
+        stdio: ['inherit', 'pipe', 'pipe'],
       }),
     );
     const strykerArgs = (spawn.mock.calls[0]?.[1] ?? []) as unknown as string[];

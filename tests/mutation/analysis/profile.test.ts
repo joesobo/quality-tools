@@ -38,6 +38,23 @@ describe('mutation profiles', () => {
     expect(rootStrykerConfig.plugins?.join(' ')).toContain('quality-tools-vitest-runner.mjs');
   });
 
+  it('does not require host projects to resolve the upstream vitest runner plugin', () => {
+    expect(rootStrykerConfig.plugins).not.toContain('@stryker-mutator/vitest-runner');
+  });
+
+  it('exports validation for the vitest runner options from the package-owned plugin', async () => {
+    const plugin = await import(`${REPO_ROOT}/stryker/quality-tools-vitest-runner.mjs`);
+    expect(plugin.strykerValidationSchema).toMatchObject({
+      properties: {
+        vitest: {
+          properties: {
+            configFile: expect.any(Object),
+          },
+        },
+      },
+    });
+  });
+
   it('enables append-only mutation progress in CI logs', () => {
     expect(rootStrykerConfig.reporters).toContain('progress');
   });
