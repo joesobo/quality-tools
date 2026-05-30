@@ -50,6 +50,6 @@ Then I see file nodes
 
     expect(generated).toContain("import { acceptanceSteps, createAcceptanceContext } from '../../acceptance/steps';");
     expect(generated).toContain("test.describe('Graph View', () => {");
-    expect(generated).toContain("test('Opening the graph', async ({ page }, testInfo) => {");
+    expect(generated).toContain("test('Opening the graph', async ({}, testInfo) => {");
   });
 });

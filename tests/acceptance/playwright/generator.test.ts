@@ -39,7 +39,7 @@ describe('playwright acceptance generator', () => {
     expect(source).toContain("import { test } from '@playwright/test';");
     expect(source).toContain("import { acceptanceSteps, createAcceptanceContext } from '../../acceptance/steps';");
     expect(source).toContain("test.describe('Graph View', () => {");
-    expect(source).toContain("test('Indexing shows graph progress', async ({ page }, testInfo) => {");
+    expect(source).toContain("test('Indexing shows graph progress', async ({}, testInfo) => {");
     expect(source).toContain("await test.step('Given I open the example workspace'");
     expect(source).toContain("await runAcceptanceStep(context, 'I open the example workspace'");
     expect(source).toContain("tests/acceptance/specs/graph-view.md:5");

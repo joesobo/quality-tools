@@ -55,9 +55,8 @@ function generateScenario(sourcePath: string, scenario: AcceptanceScenario): str
   const steps = indentLines(scenario.steps.flatMap((step) => generateStep(sourcePath, step)), 2);
 
   return [
-    `test(${quote(scenario.name)}, async ({ page }, testInfo) => {`,
+    `test(${quote(scenario.name)}, async ({}, testInfo) => {`,
     '  const context = await createAcceptanceContext({',
-    '    page,',
     '    testInfo,',
     `    sourcePath: ${quote(sourcePath)},`,
     `    scenario: ${quote(scenario.name)}`,
