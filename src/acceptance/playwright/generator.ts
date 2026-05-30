@@ -53,7 +53,7 @@ function generateDocumentSections(document: AcceptanceDocument): string[] {
 }
 
 function generateScenario(sourcePath: string, scenario: AcceptanceScenario): string[] {
-  const steps = indentLines(scenario.steps.flatMap((step) => generateStep(sourcePath, step)), 2);
+  const steps = indentLines(scenario.steps.flatMap((step) => generateStep(sourcePath, step)), 4);
 
   return [
     `test(${quote(scenario.name)}, async ({}, testInfo) => {`,
