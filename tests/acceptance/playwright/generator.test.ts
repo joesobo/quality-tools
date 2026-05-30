@@ -37,6 +37,7 @@ describe('playwright acceptance generator', () => {
     });
 
     expect(source).toContain("import { test } from '@playwright/test';");
+    expect(source).toContain('/* eslint-disable no-empty-pattern */');
     expect(source).toContain("import { acceptanceSteps, createAcceptanceContext } from '../../acceptance/steps';");
     expect(source).toContain("test.describe('Graph View', () => {");
     expect(source).toContain("test('Indexing shows graph progress', async ({}, testInfo) => {");
