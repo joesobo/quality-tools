@@ -15,7 +15,7 @@ export function generatePlaywrightAcceptanceSpec(
     "import { test } from '@playwright/test';",
     `import { acceptanceSteps, createAcceptanceContext } from ${quote(options.stepsImportPath)};`,
     '',
-    'type AcceptanceContext = Awaited<ReturnType<typeof createAcceptanceContext>>;',
+    'type AcceptanceContext = Awaited<ReturnType<typeof createAcceptanceContext>> & { cleanup?: () => unknown | Promise<unknown> };',
     'type AcceptanceRuntimeStep = { keyword: string; text: string; sourcePath: string; line: number };',
     'type AcceptanceStepImplementation = (context: AcceptanceContext, step: AcceptanceRuntimeStep) => unknown | Promise<unknown>;',
     'type AcceptanceStepRegistry = Record<string, AcceptanceStepImplementation>;',
@@ -62,7 +62,11 @@ function generateScenario(sourcePath: string, scenario: AcceptanceScenario): str
     `    scenario: ${quote(scenario.name)}`,
     '  });',
     '',
+    '  try {',
     ...steps,
+    '  } finally {',
+    '    await context.cleanup?.();',
+    '  }',
     '});'
   ];
 }
