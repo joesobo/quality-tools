@@ -24,6 +24,7 @@ pnpm add -D link:/absolute/path/to/quality-tools
 
 ```bash
 pnpm exec quality-tools organize .
+pnpm exec quality-tools acceptance compile --spec "tests/acceptance/specs/**/*.md" --steps "tests/acceptance/steps.ts" --out "tests/playwright/generated/acceptance.spec.ts"
 pnpm exec quality-tools boundaries . --strict
 pnpm exec quality-tools reachability . --strict
 pnpm exec quality-tools scrap ./tests
@@ -244,12 +245,15 @@ root, then falls back to the bundled base config.
 ## Other Tools
 
 ```bash
+pnpm exec quality-tools acceptance compile --spec "tests/acceptance/specs/**/*.md" --steps "tests/acceptance/steps.ts" --out "tests/playwright/generated/acceptance.spec.ts"
 pnpm exec quality-tools organize ./src
 pnpm exec quality-tools boundaries parser --strict
 pnpm exec quality-tools reachability parser --strict
 pnpm exec quality-tools scrap ./tests --strict
 ```
 
+- `acceptance` compiles human-authored Gherkin-ish Markdown specs into
+  executable Playwright specs that import host-owned step bindings.
 - `organize` checks directory size, depth, naming, barrels, and cohesion. Use
   `--write-baseline` and `--compare <path>` for baseline workflows.
 - `boundaries` checks configured layers, entrypoints, dead surfaces, and dead
