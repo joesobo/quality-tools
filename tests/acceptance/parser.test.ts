@@ -52,4 +52,21 @@ And I see edges
       ]
     });
   });
+
+  it('rejects a feature without scenarios', () => {
+    expect(() => parseAcceptanceMarkdown(
+      '# Feature: Graph View\n',
+      'tests/acceptance/specs/graph-view.md'
+    )).toThrow('tests/acceptance/specs/graph-view.md: Expected at least one Scenario');
+  });
+
+  it('rejects a scenario without steps', () => {
+    expect(() => parseAcceptanceMarkdown(
+      `# Feature: Graph View
+
+## Scenario: Empty scenario
+`,
+      'tests/acceptance/specs/graph-view.md'
+    )).toThrow('tests/acceptance/specs/graph-view.md:3 Scenario "Empty scenario" must contain at least one step');
+  });
 });

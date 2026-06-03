@@ -60,6 +60,15 @@ export function parseAcceptanceMarkdown(markdown: string, sourcePath: string): A
     throw new Error(`${sourcePath}: Expected a Feature heading`);
   }
 
+  if (scenarios.length === 0) {
+    throw new Error(`${sourcePath}: Expected at least one Scenario`);
+  }
+
+  const emptyScenario = scenarios.find((scenario) => scenario.steps.length === 0);
+  if (emptyScenario) {
+    throw new Error(`${sourcePath}:${emptyScenario.line} Scenario "${emptyScenario.name}" must contain at least one step`);
+  }
+
   return {
     sourcePath,
     feature,
