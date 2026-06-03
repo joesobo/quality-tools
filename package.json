@@ -24,12 +24,12 @@
 	},
 	"scripts": {
 		"build": "esbuild src/cli/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/cli/main.js",
-		"prepack": "pnpm run build",
 		"ci": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
 		"release": "pnpm run ci && pnpm publish --no-git-checks",
 		"changeset": "changeset",
 		"cli": "tsx src/cli/main.ts",
 		"quality-tools": "pnpm run cli",
+		"acceptance": "tsx src/cli/acceptance.ts",
 		"boundaries": "tsx src/cli/boundaries.ts",
 		"reachability": "tsx src/cli/reachability.ts",
 		"crap": "tsx src/cli/crap.ts",

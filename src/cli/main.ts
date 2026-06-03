@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { runAcceptanceCli } from '../acceptance/command';
 import { runBoundariesCli } from '../boundaries/command';
 import { runCrapCli } from '../crap/command';
 import { runInitCli } from './init';
@@ -10,6 +11,7 @@ import { runScrapCli } from '../scrap/command';
 import { cleanCliArgs } from '../shared/cliArgs';
 
 const COMMANDS = {
+  acceptance: runAcceptanceCli,
   boundaries: runBoundariesCli,
   crap: runCrapCli,
   init: runInitCli,
@@ -24,6 +26,7 @@ function printHelp(): void {
 
 Commands:
   init          Create a starter quality.config.json
+  acceptance    Compile human-authored acceptance specs into executable tests
   organize     Check folder structure, naming, and cohesion
   boundaries   Check package/layer boundaries
   reachability Check dead surfaces and dead ends
