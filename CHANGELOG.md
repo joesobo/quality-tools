@@ -1,5 +1,11 @@
 # @poleski/quality-tools
 
+## 0.2.0
+
+### Minor Changes
+
+- 5bab67a: Add an acceptance spec compiler that turns Gherkin-ish Markdown into Playwright tests.
+
 ## 0.1.4
 
 ### Patch Changes

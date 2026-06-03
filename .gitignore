@@ -9,3 +9,6 @@ reports/
 .stryker-tmp/
 *.tsbuildinfo
 .DS_Store
+.codegraphy/*
+!.codegraphy/
+!.codegraphy/settings.json
