@@ -57,7 +57,78 @@
   },
   "favorites": [],
   "bidirectionalEdges": "separate",
-  "legend": [],
+  "legend": [
+    {
+      "pattern": "*/scrap/**",
+      "color": "#0077B6",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    },
+    {
+      "pattern": "*/acceptance/**",
+      "color": "#00B4D8",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    },
+    {
+      "pattern": "*/cli/**",
+      "color": "#48CAE4",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    },
+    {
+      "pattern": "*/config/**",
+      "color": "#90E0EF",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    },
+    {
+      "pattern": "*/organize/**",
+      "color": "#2DD4BF",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    },
+    {
+      "pattern": "*/reachability/**",
+      "color": "#06D6A0",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    },
+    {
+      "pattern": "*/mutation/**",
+      "color": "#F472B6",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    },
+    {
+      "pattern": "*/shared/**",
+      "color": "#38BDF8",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    },
+    {
+      "pattern": "*/boundaries/**",
+      "color": "#818CF8",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    },
+    {
+      "pattern": "*/crap/**",
+      "color": "#FBBF24",
+      "target": "node",
+      "shape2D": "circle",
+      "shape3D": "sphere"
+    }
+  ],
   "legendVisibility": {},
   "legendOrder": [],
   "filterPatterns": [],
@@ -73,11 +144,11 @@
   "dagMode": null,
   "nodeSizeMode": "connections",
   "physics": {
-    "repelForce": 10,
-    "linkDistance": 80,
-    "linkForce": 0.15,
+    "repelForce": 20,
+    "linkDistance": 60,
+    "linkForce": 0.85,
     "damping": 0.7,
-    "centerForce": 0.1,
+    "centerForce": 0.36,
     "chargeRange": 200
   },
   "timeline": {
