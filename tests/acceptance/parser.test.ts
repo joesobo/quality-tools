@@ -30,27 +30,55 @@ And I see edges
             {
               keyword: 'Given',
               text: 'I open the example workspace',
-              line: 5
+              line: 5,
+              parameters: []
             },
             {
               keyword: 'When',
               text: 'I open the graph view',
-              line: 6
+              line: 6,
+              parameters: []
             },
             {
               keyword: 'Then',
               text: 'I see file nodes',
-              line: 7
+              line: 7,
+              parameters: []
             },
             {
               keyword: 'And',
               text: 'I see edges',
-              line: 8
+              line: 8,
+              parameters: []
             }
           ]
         }
       ]
     });
+  });
+
+  it('records placeholder parameters from step text', () => {
+    const document = parseAcceptanceMarkdown(
+      `# Feature: Graph View
+
+## Scenario: Open a workspace
+
+Given I open the <workspace> workspace
+Then <node_name> is visible in <workspace>
+`,
+      'tests/acceptance/specs/graph-view.md'
+    );
+
+    expect(document.scenarios[0]?.steps).toEqual([
+      expect.objectContaining({
+        text: 'I open the <workspace> workspace',
+        parameters: ['workspace']
+      }),
+      expect.objectContaining({
+        text: '<node_name> is visible in <workspace>',
+        parameters: ['node_name', 'workspace']
+      })
+    ]);
   });
 
   it('rejects a feature without scenarios', () => {

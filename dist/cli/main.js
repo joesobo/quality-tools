@@ -5,10 +5,199 @@ import fs from "node:fs";
 import path from "node:path";
 import { glob } from "glob";
 
+// src/acceptance/dryChecker.ts
+var NEAR_DUPLICATE_THRESHOLD = 0.72;
+var POSSIBLE_SYNONYM_THRESHOLD = 0.45;
+var IGNORED_TOKENS = /* @__PURE__ */ new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "be",
+  "i",
+  "in",
+  "is",
+  "of",
+  "the",
+  "then",
+  "to",
+  "when"
+]);
+function analyzeAcceptanceIrDryness(document, options = {}) {
+  const occurrences = document.scenarios.flatMap(
+    (scenario, scenarioIndex) => scenario.steps.map((step, stepIndex) => ({
+      step,
+      location: createLocation(scenario, scenarioIndex, step, stepIndex)
+    }))
+  );
+  const findings = [
+    ...findDuplicateInScenario(document.scenarios),
+    ...options.includeExact ? findExactDuplicates(occurrences) : [],
+    ...findPlaceholderVariants(occurrences),
+    ...findSimilarSteps(occurrences)
+  ];
+  return {
+    schema_version: 1,
+    feature_name: document.feature.name,
+    summary: {
+      step_occurrences: occurrences.length,
+      unique_steps: new Set(occurrences.map((occurrence) => occurrence.step.text)).size,
+      findings: findings.length
+    },
+    findings
+  };
+}
+function findDuplicateInScenario(scenarios) {
+  return scenarios.flatMap((scenario, scenarioIndex) => {
+    const groups = groupOccurrences(scenario.steps.map((step, stepIndex) => ({
+      step,
+      location: createLocation(scenario, scenarioIndex, step, stepIndex)
+    })), (occurrence) => occurrence.step.text);
+    return [...groups.entries()].filter(([, members]) => members.length > 1).map(([text, members]) => createFinding({
+      kind: "duplicate-in-scenario",
+      confidence: "high",
+      canonicalCandidate: text,
+      members,
+      reason: "the same step text appears more than once in one scenario",
+      suggestedAction: "Review the scenario and remove the repeated step if it is accidental."
+    }));
+  });
+}
+function findExactDuplicates(occurrences) {
+  return [...groupOccurrences(occurrences, (occurrence) => occurrence.step.text).entries()].filter(([, members]) => members.length > 1).map(([text, members]) => createFinding({
+    kind: "exact-duplicate",
+    confidence: "medium",
+    canonicalCandidate: text,
+    members,
+    reason: "the same step text appears more than once in the feature",
+    suggestedAction: "Keep repeated setup vocabulary when intentional; normalize only accidental drift."
+  }));
+}
+function findPlaceholderVariants(occurrences) {
+  return [...groupOccurrences(occurrences, (occurrence) => normalizePlaceholders(occurrence.step.text)).entries()].filter(([, members]) => members.length > 1 && new Set(members.map((member) => member.step.text)).size > 1).map(([text, members]) => createFinding({
+    kind: "placeholder-variant",
+    confidence: "high",
+    canonicalCandidate: text,
+    patternCandidate: patternFromPlaceholderText(text),
+    members,
+    reason: "step text is identical after replacing placeholder names with generic slots",
+    suggestedAction: "Normalize the Gherkin if the different placeholder names do not add reader meaning."
+  }));
+}
+function findSimilarSteps(occurrences) {
+  const findings = [];
+  occurrences.forEach((left, leftIndex) => {
+    occurrences.slice(leftIndex + 1).forEach((right) => {
+      if (left.step.text === right.step.text) {
+        return;
+      }
+      if (normalizePlaceholders(left.step.text) === normalizePlaceholders(right.step.text)) {
+        return;
+      }
+      const score = tokenSimilarity(left.step.text, right.step.text);
+      if (score < POSSIBLE_SYNONYM_THRESHOLD) {
+        return;
+      }
+      findings.push(createFinding({
+        kind: score >= NEAR_DUPLICATE_THRESHOLD ? "near-duplicate" : "possible-synonym",
+        confidence: score >= NEAR_DUPLICATE_THRESHOLD ? "medium" : "low",
+        canonicalCandidate: left.step.text,
+        members: [left, right],
+        reason: "step texts share similar normalized tokens",
+        score: Number(score.toFixed(3)),
+        suggestedAction: "Review whether these steps express the same behavior before changing feature wording."
+      }));
+    });
+  });
+  return findings;
+}
+function createLocation(scenario, scenarioIndex, step, stepIndex) {
+  return {
+    section: "scenario",
+    scenario_index: scenarioIndex,
+    scenario_name: scenario.name,
+    step_index: stepIndex,
+    keyword: step.keyword,
+    line: step.line
+  };
+}
+function createFinding(input) {
+  return {
+    kind: input.kind,
+    confidence: input.confidence,
+    canonical_candidate: input.canonicalCandidate,
+    ...input.patternCandidate ? { pattern_candidate: input.patternCandidate } : {},
+    ...input.score === void 0 ? {} : { score: input.score },
+    members: [...groupOccurrences(input.members, (member) => member.step.text).entries()].map(([text, members]) => ({
+      text,
+      locations: members.map((member) => member.location)
+    })),
+    reason: input.reason,
+    suggested_action: input.suggestedAction
+  };
+}
+function groupOccurrences(values, keySelector) {
+  const groups = /* @__PURE__ */ new Map();
+  values.forEach((value) => {
+    const key = keySelector(value);
+    groups.set(key, [...groups.get(key) ?? [], value]);
+  });
+  return groups;
+}
+function normalizePlaceholders(text) {
+  let index = 0;
+  return text.replace(/<[^>]+>/g, () => {
+    index += 1;
+    return `<_${index}>`;
+  });
+}
+function patternFromPlaceholderText(text) {
+  const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return `^${escaped.replace(/<_[0-9]+>/g, "(.+)")}$`;
+}
+function tokenSimilarity(left, right) {
+  const leftTokens = tokenize(left);
+  const rightTokens = tokenize(right);
+  const union = /* @__PURE__ */ new Set([...leftTokens, ...rightTokens]);
+  if (union.size === 0) {
+    return 0;
+  }
+  const intersection = [...leftTokens].filter((token) => rightTokens.has(token));
+  return intersection.length / union.size;
+}
+function tokenize(text) {
+  return new Set(
+    text.replace(/<[^>]+>/g, " ").toLowerCase().split(/[^a-z0-9]+/u).filter((token) => token.length > 0 && !IGNORED_TOKENS.has(token))
+  );
+}
+
+// src/acceptance/ir.ts
+function toAcceptanceIr(document) {
+  return {
+    schema_version: 1,
+    source_path: document.sourcePath,
+    feature: {
+      name: document.feature.name,
+      line: document.feature.line
+    },
+    scenarios: document.scenarios.map((scenario) => ({
+      name: scenario.name,
+      line: scenario.line,
+      steps: scenario.steps.map((step) => ({
+        keyword: step.keyword,
+        text: step.text,
+        line: step.line,
+        parameters: step.parameters
+      }))
+    }))
+  };
+}
+
 // src/acceptance/parser.ts
 var FEATURE_PATTERN = /^#{0,6}\s*Feature:\s*(.+)$/;
 var SCENARIO_PATTERN = /^#{0,6}\s*Scenario:\s*(.+)$/;
 var STEP_PATTERN = /^(Given|When|Then|And|But)\s+(.+)$/;
+var PARAMETER_PATTERN = /<([A-Za-z0-9_]+)>/g;
 function parseAcceptanceMarkdown(markdown, sourcePath) {
   const lines = markdown.split(/\r?\n/);
   let feature;
@@ -45,7 +234,8 @@ function parseAcceptanceMarkdown(markdown, sourcePath) {
       scenario.steps.push({
         keyword: stepMatch[1],
         text: stepMatch[2].trim(),
-        line: lineNumber
+        line: lineNumber,
+        parameters: extractParameters(stepMatch[2].trim())
       });
     }
   });
@@ -64,6 +254,9 @@ function parseAcceptanceMarkdown(markdown, sourcePath) {
     feature,
     scenarios
   };
+}
+function extractParameters(text) {
+  return [...text.matchAll(PARAMETER_PATTERN)].map((match) => match[1] ?? "");
 }
 
 // src/acceptance/playwright/generator.ts
@@ -195,28 +388,83 @@ async function compileAcceptance(args2, cwd) {
   if (specFiles.length === 0) {
     throw new Error(`No acceptance specs matched: ${options.specPatterns.join(", ")}`);
   }
-  const documents = specFiles.map((specFile) => {
-    const source = fs.readFileSync(specFile, "utf8");
-    return parseAcceptanceMarkdown(source, toPosixPath(path.relative(cwd, specFile)));
-  });
+  const documents = specFiles.map((specFile) => parseSpecFile(cwd, specFile));
+  writeIrFiles(cwd, options.irDir, documents);
+  writeDryReports(cwd, options.dryReportDir, documents);
+  if (options.outDir) {
+    writeSplitPlaywrightSpecs(cwd, options, documents);
+    return;
+  }
+  if (!options.outPath) {
+    throw new Error("Missing required --out <path> or --out-dir <path>");
+  }
   const outPath = path.resolve(cwd, options.outPath);
   const stepsImportPath = createStepsImportPath(outPath, path.resolve(cwd, options.stepsPath));
-  const generated = generatePlaywrightAcceptanceSpec(documents, { stepsImportPath });
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, generated);
+  writeFile(outPath, generatePlaywrightAcceptanceSpec(documents, { stepsImportPath }));
 }
 function parseCompileOptions(args2) {
   const specPatterns = collectFlagValues(args2, "--spec");
   const stepsPath = requireFlagValue(args2, "--steps");
-  const outPath = requireFlagValue(args2, "--out");
+  const outPath = collectFlagValues(args2, "--out").at(0);
+  const outDir = collectFlagValues(args2, "--out-dir").at(0);
+  const irDir = collectFlagValues(args2, "--ir-dir").at(0);
+  const dryReportDir = collectFlagValues(args2, "--dry-report-dir").at(0);
   if (specPatterns.length === 0) {
     throw new Error("Missing required --spec <glob>");
+  }
+  if (outPath && outDir) {
+    throw new Error("Use either --out <path> or --out-dir <path>, not both");
   }
   return {
     specPatterns,
     stepsPath,
-    outPath
+    outPath,
+    outDir,
+    irDir,
+    dryReportDir
   };
+}
+function parseSpecFile(cwd, specFile) {
+  const source = fs.readFileSync(specFile, "utf8");
+  return parseAcceptanceMarkdown(source, toPosixPath(path.relative(cwd, specFile)));
+}
+function writeIrFiles(cwd, irDir, documents) {
+  if (!irDir) {
+    return;
+  }
+  const resolvedDir = path.resolve(cwd, irDir);
+  documents.forEach((document) => {
+    writeJsonFile(path.join(resolvedDir, `${sourcePathSlug(document.sourcePath)}.json`), toAcceptanceIr(document));
+  });
+}
+function writeDryReports(cwd, dryReportDir, documents) {
+  if (!dryReportDir) {
+    return;
+  }
+  const resolvedDir = path.resolve(cwd, dryReportDir);
+  documents.forEach((document) => {
+    writeJsonFile(path.join(resolvedDir, `${sourcePathSlug(document.sourcePath)}.json`), analyzeAcceptanceIrDryness(document));
+  });
+}
+function writeSplitPlaywrightSpecs(cwd, options, documents) {
+  if (!options.outDir) {
+    return;
+  }
+  const outDir = path.resolve(cwd, options.outDir);
+  const stepsPath = path.resolve(cwd, options.stepsPath);
+  documents.forEach((document) => {
+    const outPath = path.join(outDir, `${sourcePathSlug(document.sourcePath)}.spec.ts`);
+    const stepsImportPath = createStepsImportPath(outPath, stepsPath);
+    writeFile(outPath, generatePlaywrightAcceptanceSpec([document], { stepsImportPath }));
+  });
+}
+function writeJsonFile(filePath, data) {
+  writeFile(filePath, `${JSON.stringify(data, null, 2)}
+`);
+}
+function writeFile(filePath, content) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, content);
 }
 async function findSpecFiles(cwd, patterns) {
   const files = await Promise.all(
@@ -255,6 +503,9 @@ function requireFlagValue(args2, flag) {
 }
 function toPosixPath(value) {
   return value.split(path.sep).join(path.posix.sep);
+}
+function sourcePathSlug(sourcePath) {
+  return sourcePath.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
 // src/shared/resolve/repoRoot.ts
@@ -2164,7 +2415,7 @@ function shouldStartNewToken(previous, current, next) {
 }
 
 // src/organize/naming/tokenize.ts
-function tokenize(name) {
+function tokenize2(name) {
   const withoutExtension = stripExtension(name);
   const characters = Array.from(withoutExtension);
   const tokens = [];
@@ -2195,7 +2446,7 @@ function tokenize(name) {
 function buildPrefixGroups(fileNames) {
   const groups = /* @__PURE__ */ new Map();
   for (const fileName of fileNames) {
-    const tokens = tokenize(fileName);
+    const tokens = tokenize2(fileName);
     if (tokens.length > 0) {
       const prefix = tokens[0];
       if (!groups.has(prefix)) {
@@ -2209,7 +2460,7 @@ function buildPrefixGroups(fileNames) {
 function countFirstTokens(fileNames) {
   const tokenCounts = /* @__PURE__ */ new Map();
   for (const fileName of fileNames) {
-    const tokens = tokenize(fileName);
+    const tokens = tokenize2(fileName);
     if (tokens.length > 0) {
       const token = tokens[0];
       tokenCounts.set(token, (tokenCounts.get(token) ?? 0) + 1);
@@ -2413,9 +2664,9 @@ function isConventionalEntryFile(filePath, ancestorFolders) {
     return false;
   }
   const hookName = fileStem.slice(3);
-  const hookTokens = tokenize(hookName);
+  const hookTokens = tokenize2(hookName);
   return hookTokens.some((hookToken) => ancestorFolders.some((folder) => {
-    const folderTokens = tokenize(folder);
+    const folderTokens = tokenize2(folder);
     return folderTokens.includes(hookToken);
   }));
 }
@@ -2426,13 +2677,13 @@ function pathRedundancy(filePath, ancestorFolders) {
     return 0;
   }
   const fileName = basename5(filePath);
-  const fileTokens = tokenize(fileName);
+  const fileTokens = tokenize2(fileName);
   if (fileTokens.length === 0) {
     return 0;
   }
   const ancestorTokens = /* @__PURE__ */ new Set();
   for (const folder of ancestorFolders) {
-    const folderTokens = tokenize(folder);
+    const folderTokens = tokenize2(folder);
     for (const token of folderTokens) {
       ancestorTokens.add(token);
     }

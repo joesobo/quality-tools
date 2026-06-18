@@ -8,6 +8,7 @@ import type {
 const FEATURE_PATTERN = /^#{0,6}\s*Feature:\s*(.+)$/;
 const SCENARIO_PATTERN = /^#{0,6}\s*Scenario:\s*(.+)$/;
 const STEP_PATTERN = /^(Given|When|Then|And|But)\s+(.+)$/;
+const PARAMETER_PATTERN = /<([A-Za-z0-9_]+)>/g;
 
 export function parseAcceptanceMarkdown(markdown: string, sourcePath: string): AcceptanceDocument {
   const lines = markdown.split(/\r?\n/);
@@ -51,7 +52,8 @@ export function parseAcceptanceMarkdown(markdown: string, sourcePath: string): A
       scenario.steps.push({
         keyword: stepMatch[1] as AcceptanceStepKeyword,
         text: stepMatch[2].trim(),
-        line: lineNumber
+        line: lineNumber,
+        parameters: extractParameters(stepMatch[2].trim())
       });
     }
   });
@@ -74,4 +76,8 @@ export function parseAcceptanceMarkdown(markdown: string, sourcePath: string): A
     feature,
     scenarios
   };
+}
+
+function extractParameters(text: string): string[] {
+  return [...text.matchAll(PARAMETER_PATTERN)].map((match) => match[1] ?? '');
 }

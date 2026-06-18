@@ -9,6 +9,7 @@ export interface AcceptanceStep {
   keyword: AcceptanceStepKeyword;
   text: string;
   line: number;
+  parameters: string[];
 }
 
 export interface AcceptanceScenario {

@@ -19,12 +19,14 @@ describe('playwright acceptance generator', () => {
               {
                 keyword: 'Given',
                 text: 'I open the example workspace',
-                line: 5
+                line: 5,
+                parameters: []
               },
               {
                 keyword: 'Then',
                 text: 'I see file nodes',
-                line: 6
+                line: 6,
+                parameters: []
               }
             ]
           }
