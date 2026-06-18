@@ -12,14 +12,26 @@ export interface AcceptanceStep {
   parameters: string[];
 }
 
+export interface AcceptanceBackground {
+  line: number;
+  steps: AcceptanceStep[];
+}
+
+export interface AcceptanceExampleRow {
+  line: number;
+  values: Record<string, string>;
+}
+
 export interface AcceptanceScenario {
   name: string;
   line: number;
   steps: AcceptanceStep[];
+  examples: AcceptanceExampleRow[];
 }
 
 export interface AcceptanceDocument {
   sourcePath: string;
   feature: AcceptanceFeature;
+  background?: AcceptanceBackground;
   scenarios: AcceptanceScenario[];
 }

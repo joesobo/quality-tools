@@ -21,8 +21,10 @@ keeping this package TypeScript-native and host-project-neutral.
 - Treat parsed JSON IR as the canonical generator input.
 - Make DRY analysis advisory only. It must not rewrite Markdown, IR, generated
   files, step bindings, or host implementation code.
-- Generate thin Playwright entrypoints. Runtime behavior stays in shared helper
-  code plus host-owned step handlers.
+- Generate thin Playwright entrypoints that load JSON IR. Runtime behavior stays
+  in shared generated helper code plus host-owned step handlers.
+- Expose Uncle Bob-style primitive commands: `parse`, `dry-check`, and
+  `generate`. Keep `compile` as the glob loop for host projects with many specs.
 - Support split generated output by source spec, but keep a single-file output
   mode for existing hosts during migration.
 - Do not implement acceptance mutation in this slice.
@@ -31,9 +33,10 @@ keeping this package TypeScript-native and host-project-neutral.
 
 1. Add JSON IR serialization for parsed acceptance documents.
 2. Add an IR DRY checker for duplicate-in-scenario, exact duplicate,
-   placeholder-variant, near-duplicate, and possible-synonym findings.
-3. Add a split output mode that writes one generated Playwright spec per source
-   Markdown spec.
+   placeholder-variant, repeated-step-pattern, repeated-scenario-shape,
+   near-duplicate, and possible-synonym findings.
+3. Add a split output mode that writes one thin generated Playwright spec per
+   source Markdown spec plus one shared runtime.
 4. Update CodeGraphy to consume the split output mode and verify generation,
    typecheck, and CI-friendly Playwright discovery without running local
    Playwright.

@@ -1,9 +1,10 @@
-import type { AcceptanceDocument, AcceptanceScenario, AcceptanceStep } from './model';
+import type { AcceptanceIrDocument, AcceptanceIrScenario, AcceptanceIrStep } from './ir';
 
 export type AcceptanceDryFindingKind =
   | 'duplicate-in-scenario'
   | 'exact-duplicate'
   | 'placeholder-variant'
+  | 'repeated-step-pattern'
   | 'near-duplicate'
   | 'possible-synonym';
 
@@ -34,17 +35,37 @@ export interface AcceptanceDryFinding {
 
 export interface AcceptanceDryReport {
   schema_version: 1;
+  source_path: string;
   feature_name: string;
   summary: {
+    scenarios: number;
     step_occurrences: number;
     unique_steps: number;
+    repeated_step_patterns: number;
+    repeated_scenario_shapes: number;
     findings: number;
   };
+  repeated_scenario_shapes: AcceptanceDryScenarioShapeGroup[];
   findings: AcceptanceDryFinding[];
 }
 
+export interface AcceptanceDryScenarioShapeGroup {
+  confidence: 'high' | 'medium';
+  scenario_count: number;
+  shared_step_count: number;
+  pattern: string[];
+  scenarios: Array<{
+    scenario_index: number;
+    scenario_name: string;
+    line: number;
+    examples: number;
+  }>;
+  reason: string;
+  suggested_action: string;
+}
+
 interface StepOccurrence {
-  step: AcceptanceStep;
+  step: AcceptanceIrStep;
   location: AcceptanceDryFindingLocation;
 }
 
@@ -67,8 +88,8 @@ const IGNORED_TOKENS = new Set([
 ]);
 
 export function analyzeAcceptanceIrDryness(
-  document: AcceptanceDocument,
-  options: { includeExact?: boolean } = {}
+  document: AcceptanceIrDocument,
+  options: { includeExact?: boolean; includeSimilar?: boolean } = {}
 ): AcceptanceDryReport {
   const occurrences = document.scenarios.flatMap((scenario, scenarioIndex) =>
     scenario.steps.map((step, stepIndex) => ({
@@ -76,26 +97,34 @@ export function analyzeAcceptanceIrDryness(
       location: createLocation(scenario, scenarioIndex, step, stepIndex)
     }))
   );
+  const scenarioShapeGroups = findRepeatedScenarioShapes(document.scenarios);
+  const repeatedStepPatterns = findRepeatedStepPatterns(occurrences);
   const findings = [
     ...findDuplicateInScenario(document.scenarios),
     ...(options.includeExact ? findExactDuplicates(occurrences) : []),
     ...findPlaceholderVariants(occurrences),
-    ...findSimilarSteps(occurrences)
+    ...repeatedStepPatterns,
+    ...(options.includeSimilar ? findSimilarSteps(occurrences) : [])
   ];
 
   return {
     schema_version: 1,
+    source_path: document.source_path,
     feature_name: document.feature.name,
     summary: {
+      scenarios: document.scenarios.length,
       step_occurrences: occurrences.length,
       unique_steps: new Set(occurrences.map((occurrence) => occurrence.step.text)).size,
+      repeated_step_patterns: repeatedStepPatterns.length,
+      repeated_scenario_shapes: scenarioShapeGroups.length,
       findings: findings.length
     },
+    repeated_scenario_shapes: scenarioShapeGroups,
     findings
   };
 }
 
-function findDuplicateInScenario(scenarios: AcceptanceScenario[]): AcceptanceDryFinding[] {
+function findDuplicateInScenario(scenarios: AcceptanceIrScenario[]): AcceptanceDryFinding[] {
   return scenarios.flatMap((scenario, scenarioIndex) => {
     const groups = groupOccurrences(scenario.steps.map((step, stepIndex) => ({
       step,
@@ -142,6 +171,20 @@ function findPlaceholderVariants(occurrences: StepOccurrence[]): AcceptanceDryFi
     }));
 }
 
+function findRepeatedStepPatterns(occurrences: StepOccurrence[]): AcceptanceDryFinding[] {
+  return [...groupOccurrences(occurrences, (occurrence) => normalizeStepPattern(occurrence.step.text)).entries()]
+    .filter(([, members]) => members.length > 1 && new Set(members.map((member) => member.step.text)).size > 1)
+    .map(([pattern, members]) => createFinding({
+      kind: 'repeated-step-pattern',
+      confidence: 'high',
+      canonicalCandidate: pattern,
+      patternCandidate: pattern,
+      members,
+      reason: 'step text follows the same generalized pattern with different example values',
+      suggestedAction: 'Consider a Scenario Outline, data table, or shared Background if the repeated shape is intentional.'
+    }));
+}
+
 function findSimilarSteps(occurrences: StepOccurrence[]): AcceptanceDryFinding[] {
   const findings: AcceptanceDryFinding[] = [];
 
@@ -176,9 +219,9 @@ function findSimilarSteps(occurrences: StepOccurrence[]): AcceptanceDryFinding[]
 }
 
 function createLocation(
-  scenario: AcceptanceScenario,
+  scenario: AcceptanceIrScenario,
   scenarioIndex: number,
-  step: AcceptanceStep,
+  step: AcceptanceIrStep,
   stepIndex: number
 ): AcceptanceDryFindingLocation {
   return {
@@ -189,6 +232,83 @@ function createLocation(
     keyword: step.keyword,
     line: step.line
   };
+}
+
+function findRepeatedScenarioShapes(scenarios: AcceptanceIrScenario[]): AcceptanceDryScenarioShapeGroup[] {
+  const exactShapeGroups = [...groupOccurrences(
+    scenarios.map((scenario, scenarioIndex) => ({ scenario, scenarioIndex })),
+    ({ scenario }) => scenario.steps.map((step) => normalizeStepPattern(step.text)).join('\n')
+  ).entries()]
+    .filter(([, members]) => members.length > 1)
+    .map(([, members]) => createScenarioShapeGroup(members, members[0]?.scenario.steps.length ?? 0, 'high'));
+
+  const prefixShapeGroups = [...groupOccurrences(
+    scenarios.map((scenario, scenarioIndex) => ({
+      scenario,
+      scenarioIndex,
+      prefix: longestSetupPrefix(scenario)
+    })).filter((entry) => entry.prefix.length >= 3),
+    ({ prefix }) => prefix.join('\n')
+  ).entries()]
+    .filter(([, members]) => members.length > 1)
+    .map(([, members]) => createScenarioShapeGroup(members, members[0]?.prefix.length ?? 0, 'medium'));
+
+  return dedupeScenarioShapeGroups([...exactShapeGroups, ...prefixShapeGroups]);
+}
+
+function createScenarioShapeGroup(
+  members: Array<{ scenario: AcceptanceIrScenario; scenarioIndex: number; prefix?: string[] }>,
+  sharedStepCount: number,
+  confidence: AcceptanceDryScenarioShapeGroup['confidence']
+): AcceptanceDryScenarioShapeGroup {
+  const pattern = members[0]?.prefix ?? members[0]?.scenario.steps
+    .slice(0, sharedStepCount)
+    .map((step) => normalizeStepPattern(step.text)) ?? [];
+
+  return {
+    confidence,
+    scenario_count: members.length,
+    shared_step_count: sharedStepCount,
+    pattern,
+    scenarios: members.map(({ scenario, scenarioIndex }) => ({
+      scenario_index: scenarioIndex,
+      scenario_name: scenario.name,
+      line: scenario.line,
+      examples: scenario.examples.length
+    })),
+    reason: confidence === 'high'
+      ? 'multiple scenarios have the same generalized step sequence'
+      : 'multiple scenarios share the same setup or action prefix before diverging into specific assertions',
+    suggested_action: confidence === 'high'
+      ? 'Consider collapsing these scenarios into a Scenario Outline or a data-driven runner.'
+      : 'Consider moving the shared prefix into Background or a host fixture if it does not need to be repeated in every scenario.'
+  };
+}
+
+function longestSetupPrefix(scenario: AcceptanceIrScenario): string[] {
+  const normalizedSteps = scenario.steps.map((step) => normalizeStepPattern(step.text));
+  const assertionIndex = scenario.steps.findIndex((step) => step.keyword === 'Then');
+  const prefixLength = assertionIndex === -1 ? normalizedSteps.length : assertionIndex;
+  return normalizedSteps.slice(0, prefixLength);
+}
+
+function dedupeScenarioShapeGroups(groups: AcceptanceDryScenarioShapeGroup[]): AcceptanceDryScenarioShapeGroup[] {
+  const seen = new Set<string>();
+  const sorted = groups.sort((left, right) =>
+    right.scenario_count - left.scenario_count ||
+    right.shared_step_count - left.shared_step_count ||
+    left.confidence.localeCompare(right.confidence)
+  );
+
+  return sorted.filter((group) => {
+    const scenarioKey = group.scenarios.map((scenario) => scenario.scenario_index).join(',');
+    const key = `${scenarioKey}:${group.shared_step_count}:${group.pattern.join('\n')}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 }
 
 function createFinding(input: {
@@ -233,6 +353,17 @@ function normalizePlaceholders(text: string): string {
     index += 1;
     return `<_${index}>`;
   });
+}
+
+function normalizeStepPattern(text: string): string {
+  return normalizePlaceholders(text)
+    .replace(/\b\d+\b/g, '<number>')
+    .replace(/\bexamples\/[A-Za-z0-9_-]+\b/g, '<workspace>')
+    .replace(/\b[A-Za-z0-9._/-]+\.[A-Za-z0-9]+\b/g, '<path>')
+    .replace(/\b(File|Folder|Package|Symbol|Namespace|Function|Callable|Method|Constructor|Prototype|Class|Interface|Record|Delegate|Property|Event|Type|Struct|Union|Enum|Alias|Template|Typedef|Variable|Constant|Global|Field|Parameter|Local|Godot class_name)\b/g, '<node-type>')
+    .replace(/\b(Include|Imports|References|Calls|Type imports|Inherits|Using|Call|Implements|Loads|Nests|Contains|Overrides|TypeScript Alias Import)\b/g, '<edge-type>')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function patternFromPlaceholderText(text: string): string {

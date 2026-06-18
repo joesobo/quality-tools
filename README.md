@@ -24,7 +24,7 @@ pnpm add -D link:/absolute/path/to/quality-tools
 
 ```bash
 pnpm exec quality-tools organize .
-pnpm exec quality-tools acceptance compile --spec "tests/acceptance/specs/**/*.md" --steps "tests/acceptance/steps.ts" --out "tests/playwright/generated/acceptance.spec.ts"
+pnpm exec quality-tools acceptance compile "tests/acceptance/specs/**/*.md" "tests/playwright/generated" --steps "tests/acceptance/steps.ts" --ir "build/acceptance/ir" --dry "build/acceptance/dry"
 pnpm exec quality-tools boundaries . --strict
 pnpm exec quality-tools reachability . --strict
 pnpm exec quality-tools scrap ./tests
@@ -39,6 +39,29 @@ or a file. Package shorthand is resolved from workspace package names, not from
 hardcoded folder names. The starter config uses `src` as a conventional default,
 but the tools scope from the target path plus your configured include/exclude
 globs.
+
+## Acceptance
+
+The acceptance tool follows a small parser -> IR -> DRY check -> entrypoint
+generator pipeline:
+
+```bash
+pnpm exec quality-tools acceptance parse features/example.feature build/acceptance/ir/example.json
+pnpm exec quality-tools acceptance dry-check build/acceptance/ir/example.json build/acceptance/dry/example.json
+pnpm exec quality-tools acceptance generate build/acceptance/ir/example.json acceptance/generated/example.spec.ts --steps acceptance/steps.ts
+```
+
+For host projects with many specs, `compile` loops the same pipeline over a
+glob, writes one JSON IR file per source spec, optionally writes advisory DRY
+reports, and creates thin Playwright entrypoints that load the IR at runtime:
+
+```bash
+pnpm exec quality-tools acceptance compile "tests/acceptance/specs/**/*.md" "tests/playwright/generated" --steps "tests/acceptance/steps.ts" --ir "build/acceptance/ir" --dry "build/acceptance/dry"
+```
+
+The generated Playwright files delegate all behavior to the host step registry.
+DRY reports are advisory; they do not rewrite the source specs, IR, generated
+tests, or host bindings.
 
 ## Reports
 

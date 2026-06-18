@@ -1,44 +1,40 @@
 import { describe, expect, it } from 'vitest';
 import { analyzeAcceptanceIrDryness } from '../../src/acceptance/dryChecker';
-import type { AcceptanceDocument } from '../../src/acceptance/model';
+import type { AcceptanceIrDocument } from '../../src/acceptance/ir';
 
 describe('acceptance IR DRY checker', () => {
-  it('reports duplicate and overlapping step text without rewriting the IR', () => {
-    const document: AcceptanceDocument = {
-      sourcePath: 'features/graph-view.feature',
+  it('reports repeated steps and scenario shapes without rewriting the IR', () => {
+    const document: AcceptanceIrDocument = {
+      schema_version: 1,
+      source_path: 'features/graph-view.feature',
       feature: {
         name: 'Graph View',
         line: 1
       },
       scenarios: [
         {
-          name: 'Open workspaces',
+          name: 'File node type works',
           line: 3,
+          examples: [],
           steps: [
-            {
-              keyword: 'Given',
-              text: 'I open the <workspace> workspace',
-              line: 5,
-              parameters: ['workspace']
-            },
-            {
-              keyword: 'Then',
-              text: 'I see file nodes',
-              line: 6,
-              parameters: []
-            },
-            {
-              keyword: 'Then',
-              text: 'I see file nodes',
-              line: 7,
-              parameters: []
-            },
-            {
-              keyword: 'Given',
-              text: 'I open the <project> workspace',
-              line: 8,
-              parameters: ['project']
-            }
+            step('Given', 'I open the examples/example-typescript workspace', 5),
+            step('When', 'I open the graph view', 6),
+            step('And', 'I show no edge types', 7),
+            step('When', 'I show only the File node type', 8),
+            step('Then', 'I can see there are 18 nodes and 0 connections', 9),
+            step('Then', 'I can see there are 18 nodes and 0 connections', 10)
+          ]
+        },
+        {
+          name: 'Folder node type works',
+          line: 12,
+          examples: [],
+          steps: [
+            step('Given', 'I open the examples/example-typescript workspace', 14),
+            step('When', 'I open the graph view', 15),
+            step('And', 'I show no edge types', 16),
+            step('When', 'I show only the Folder node type', 17),
+            step('Then', 'I can see there are 21 nodes and 0 connections', 18)
           ]
         }
       ]
@@ -48,21 +44,37 @@ describe('acceptance IR DRY checker', () => {
 
     expect(report).toMatchObject({
       schema_version: 1,
+      source_path: 'features/graph-view.feature',
       feature_name: 'Graph View',
       summary: {
-        step_occurrences: 4,
-        unique_steps: 3
+        scenarios: 2,
+        step_occurrences: 11,
+        repeated_scenario_shapes: 1
       }
     });
     expect(report.findings).toContainEqual(expect.objectContaining({
       kind: 'duplicate-in-scenario',
       confidence: 'high',
-      canonical_candidate: 'I see file nodes'
+      canonical_candidate: 'I can see there are 18 nodes and 0 connections'
     }));
     expect(report.findings).toContainEqual(expect.objectContaining({
-      kind: 'placeholder-variant',
+      kind: 'repeated-step-pattern',
       confidence: 'high',
-      canonical_candidate: 'I open the <_1> workspace'
+      canonical_candidate: 'I show only the <node-type> node type'
+    }));
+    expect(report.repeated_scenario_shapes).toContainEqual(expect.objectContaining({
+      confidence: 'medium',
+      scenario_count: 2,
+      shared_step_count: 4
     }));
   });
 });
+
+function step(keyword: 'Given' | 'When' | 'Then' | 'And' | 'But', text: string, line: number) {
+  return {
+    keyword,
+    text,
+    line,
+    parameters: [...text.matchAll(/<([A-Za-z0-9_]+)>/g)].map((match) => match[1] ?? '')
+  };
+}

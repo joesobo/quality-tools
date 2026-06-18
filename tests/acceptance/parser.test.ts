@@ -26,6 +26,7 @@ And I see edges
         {
           name: 'Indexing shows graph progress',
           line: 3,
+          examples: [],
           steps: [
             {
               keyword: 'Given',
@@ -79,6 +80,76 @@ Then <node_name> is visible in <workspace>
         parameters: ['node_name', 'workspace']
       })
     ]);
+  });
+
+  it('parses background steps and scenario outline examples', () => {
+    const document = parseAcceptanceMarkdown(
+      `Feature: Checkout
+
+Background:
+Given I open the store
+
+Scenario Outline: Calculate totals
+When I add <item>
+Then the total is <total>
+
+Examples:
+| item | total |
+| book | 12 |
+| pen | 3 |
+`,
+      'features/checkout.feature'
+    );
+
+    expect(document).toMatchObject({
+      sourcePath: 'features/checkout.feature',
+      feature: {
+        name: 'Checkout',
+        line: 1
+      },
+      background: {
+        line: 3,
+        steps: [
+          expect.objectContaining({
+            keyword: 'Given',
+            text: 'I open the store',
+            line: 4
+          })
+        ]
+      },
+      scenarios: [
+        {
+          name: 'Calculate totals',
+          line: 6,
+          steps: [
+            expect.objectContaining({
+              text: 'I add <item>',
+              parameters: ['item']
+            }),
+            expect.objectContaining({
+              text: 'the total is <total>',
+              parameters: ['total']
+            })
+          ],
+          examples: [
+            {
+              line: 12,
+              values: {
+                item: 'book',
+                total: '12'
+              }
+            },
+            {
+              line: 13,
+              values: {
+                item: 'pen',
+                total: '3'
+              }
+            }
+          ]
+        }
+      ]
+    });
   });
 
   it('rejects a feature without scenarios', () => {

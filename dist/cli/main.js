@@ -30,20 +30,28 @@ function analyzeAcceptanceIrDryness(document, options = {}) {
       location: createLocation(scenario, scenarioIndex, step, stepIndex)
     }))
   );
+  const scenarioShapeGroups = findRepeatedScenarioShapes(document.scenarios);
+  const repeatedStepPatterns = findRepeatedStepPatterns(occurrences);
   const findings = [
     ...findDuplicateInScenario(document.scenarios),
     ...options.includeExact ? findExactDuplicates(occurrences) : [],
     ...findPlaceholderVariants(occurrences),
-    ...findSimilarSteps(occurrences)
+    ...repeatedStepPatterns,
+    ...options.includeSimilar ? findSimilarSteps(occurrences) : []
   ];
   return {
     schema_version: 1,
+    source_path: document.source_path,
     feature_name: document.feature.name,
     summary: {
+      scenarios: document.scenarios.length,
       step_occurrences: occurrences.length,
       unique_steps: new Set(occurrences.map((occurrence) => occurrence.step.text)).size,
+      repeated_step_patterns: repeatedStepPatterns.length,
+      repeated_scenario_shapes: scenarioShapeGroups.length,
       findings: findings.length
     },
+    repeated_scenario_shapes: scenarioShapeGroups,
     findings
   };
 }
@@ -84,6 +92,17 @@ function findPlaceholderVariants(occurrences) {
     suggestedAction: "Normalize the Gherkin if the different placeholder names do not add reader meaning."
   }));
 }
+function findRepeatedStepPatterns(occurrences) {
+  return [...groupOccurrences(occurrences, (occurrence) => normalizeStepPattern(occurrence.step.text)).entries()].filter(([, members]) => members.length > 1 && new Set(members.map((member) => member.step.text)).size > 1).map(([pattern, members]) => createFinding({
+    kind: "repeated-step-pattern",
+    confidence: "high",
+    canonicalCandidate: pattern,
+    patternCandidate: pattern,
+    members,
+    reason: "step text follows the same generalized pattern with different example values",
+    suggestedAction: "Consider a Scenario Outline, data table, or shared Background if the repeated shape is intentional."
+  }));
+}
 function findSimilarSteps(occurrences) {
   const findings = [];
   occurrences.forEach((left, leftIndex) => {
@@ -121,6 +140,59 @@ function createLocation(scenario, scenarioIndex, step, stepIndex) {
     line: step.line
   };
 }
+function findRepeatedScenarioShapes(scenarios) {
+  const exactShapeGroups = [...groupOccurrences(
+    scenarios.map((scenario, scenarioIndex) => ({ scenario, scenarioIndex })),
+    ({ scenario }) => scenario.steps.map((step) => normalizeStepPattern(step.text)).join("\n")
+  ).entries()].filter(([, members]) => members.length > 1).map(([, members]) => createScenarioShapeGroup(members, members[0]?.scenario.steps.length ?? 0, "high"));
+  const prefixShapeGroups = [...groupOccurrences(
+    scenarios.map((scenario, scenarioIndex) => ({
+      scenario,
+      scenarioIndex,
+      prefix: longestSetupPrefix(scenario)
+    })).filter((entry) => entry.prefix.length >= 3),
+    ({ prefix }) => prefix.join("\n")
+  ).entries()].filter(([, members]) => members.length > 1).map(([, members]) => createScenarioShapeGroup(members, members[0]?.prefix.length ?? 0, "medium"));
+  return dedupeScenarioShapeGroups([...exactShapeGroups, ...prefixShapeGroups]);
+}
+function createScenarioShapeGroup(members, sharedStepCount, confidence) {
+  const pattern = members[0]?.prefix ?? members[0]?.scenario.steps.slice(0, sharedStepCount).map((step) => normalizeStepPattern(step.text)) ?? [];
+  return {
+    confidence,
+    scenario_count: members.length,
+    shared_step_count: sharedStepCount,
+    pattern,
+    scenarios: members.map(({ scenario, scenarioIndex }) => ({
+      scenario_index: scenarioIndex,
+      scenario_name: scenario.name,
+      line: scenario.line,
+      examples: scenario.examples.length
+    })),
+    reason: confidence === "high" ? "multiple scenarios have the same generalized step sequence" : "multiple scenarios share the same setup or action prefix before diverging into specific assertions",
+    suggested_action: confidence === "high" ? "Consider collapsing these scenarios into a Scenario Outline or a data-driven runner." : "Consider moving the shared prefix into Background or a host fixture if it does not need to be repeated in every scenario."
+  };
+}
+function longestSetupPrefix(scenario) {
+  const normalizedSteps = scenario.steps.map((step) => normalizeStepPattern(step.text));
+  const assertionIndex = scenario.steps.findIndex((step) => step.keyword === "Then");
+  const prefixLength = assertionIndex === -1 ? normalizedSteps.length : assertionIndex;
+  return normalizedSteps.slice(0, prefixLength);
+}
+function dedupeScenarioShapeGroups(groups) {
+  const seen = /* @__PURE__ */ new Set();
+  const sorted = groups.sort(
+    (left, right) => right.scenario_count - left.scenario_count || right.shared_step_count - left.shared_step_count || left.confidence.localeCompare(right.confidence)
+  );
+  return sorted.filter((group) => {
+    const scenarioKey = group.scenarios.map((scenario) => scenario.scenario_index).join(",");
+    const key = `${scenarioKey}:${group.shared_step_count}:${group.pattern.join("\n")}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
 function createFinding(input) {
   return {
     kind: input.kind,
@@ -151,6 +223,9 @@ function normalizePlaceholders(text) {
     return `<_${index}>`;
   });
 }
+function normalizeStepPattern(text) {
+  return normalizePlaceholders(text).replace(/\b\d+\b/g, "<number>").replace(/\bexamples\/[A-Za-z0-9_-]+\b/g, "<workspace>").replace(/\b[A-Za-z0-9._/-]+\.[A-Za-z0-9]+\b/g, "<path>").replace(/\b(File|Folder|Package|Symbol|Namespace|Function|Callable|Method|Constructor|Prototype|Class|Interface|Record|Delegate|Property|Event|Type|Struct|Union|Enum|Alias|Template|Typedef|Variable|Constant|Global|Field|Parameter|Local|Godot class_name)\b/g, "<node-type>").replace(/\b(Include|Imports|References|Calls|Type imports|Inherits|Using|Call|Implements|Loads|Nests|Contains|Overrides|TypeScript Alias Import)\b/g, "<edge-type>").replace(/\s+/g, " ").trim();
+}
 function patternFromPlaceholderText(text) {
   const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return `^${escaped.replace(/<_[0-9]+>/g, "(.+)")}$`;
@@ -180,28 +255,49 @@ function toAcceptanceIr(document) {
       name: document.feature.name,
       line: document.feature.line
     },
+    ...document.background ? {
+      background: {
+        line: document.background.line,
+        steps: document.background.steps.map(toAcceptanceIrStep)
+      }
+    } : {},
     scenarios: document.scenarios.map((scenario) => ({
       name: scenario.name,
       line: scenario.line,
-      steps: scenario.steps.map((step) => ({
-        keyword: step.keyword,
-        text: step.text,
-        line: step.line,
-        parameters: step.parameters
+      steps: scenario.steps.map(toAcceptanceIrStep),
+      examples: scenario.examples.map((example) => ({
+        line: example.line,
+        values: example.values
       }))
     }))
+  };
+}
+function toAcceptanceIrStep(documentStep) {
+  return {
+    keyword: documentStep.keyword,
+    text: documentStep.text,
+    line: documentStep.line,
+    parameters: documentStep.parameters
   };
 }
 
 // src/acceptance/parser.ts
 var FEATURE_PATTERN = /^#{0,6}\s*Feature:\s*(.+)$/;
+var BACKGROUND_PATTERN = /^#{0,6}\s*Background:\s*$/;
 var SCENARIO_PATTERN = /^#{0,6}\s*Scenario:\s*(.+)$/;
+var SCENARIO_OUTLINE_PATTERN = /^#{0,6}\s*Scenario Outline:\s*(.+)$/;
+var EXAMPLES_PATTERN = /^#{0,6}\s*Examples:\s*$/;
 var STEP_PATTERN = /^(Given|When|Then|And|But)\s+(.+)$/;
 var PARAMETER_PATTERN = /<([A-Za-z0-9_]+)>/g;
 function parseAcceptanceMarkdown(markdown, sourcePath) {
   const lines = markdown.split(/\r?\n/);
   let feature;
+  let background;
   const scenarios = [];
+  const scenariosWithExamples = /* @__PURE__ */ new Set();
+  let stepTarget;
+  let examplesTarget;
+  let examplesHeaders;
   lines.forEach((rawLine, index) => {
     const lineNumber = index + 1;
     const line = rawLine.trim();
@@ -214,24 +310,76 @@ function parseAcceptanceMarkdown(markdown, sourcePath) {
         name: featureMatch[1].trim(),
         line: lineNumber
       };
+      stepTarget = void 0;
+      examplesTarget = void 0;
+      examplesHeaders = void 0;
       return;
     }
-    const scenarioMatch = SCENARIO_PATTERN.exec(line);
-    if (scenarioMatch) {
-      scenarios.push({
-        name: scenarioMatch[1].trim(),
+    if (BACKGROUND_PATTERN.test(line)) {
+      if (background) {
+        throw new Error(`${sourcePath}:${lineNumber} Feature has more than one Background`);
+      }
+      background = {
         line: lineNumber,
         steps: []
+      };
+      stepTarget = background;
+      examplesTarget = void 0;
+      examplesHeaders = void 0;
+      return;
+    }
+    const scenarioMatch = SCENARIO_PATTERN.exec(line) ?? SCENARIO_OUTLINE_PATTERN.exec(line);
+    if (scenarioMatch) {
+      const scenario = {
+        name: scenarioMatch[1].trim(),
+        line: lineNumber,
+        steps: [],
+        examples: []
+      };
+      scenarios.push(scenario);
+      stepTarget = scenario;
+      examplesTarget = void 0;
+      examplesHeaders = void 0;
+      return;
+    }
+    if (EXAMPLES_PATTERN.test(line)) {
+      const scenario = scenarios.at(-1);
+      if (!scenario) {
+        throw new Error(`${sourcePath}:${lineNumber} Examples appear before a Scenario`);
+      }
+      examplesTarget = scenario;
+      scenariosWithExamples.add(scenario);
+      stepTarget = void 0;
+      examplesHeaders = void 0;
+      return;
+    }
+    if (line.startsWith("|")) {
+      if (!examplesTarget) {
+        return;
+      }
+      const values = parseExamplesRow(line);
+      if (!examplesHeaders) {
+        examplesHeaders = values;
+        if (examplesHeaders.length === 0) {
+          throw new Error(`${sourcePath}:${lineNumber} Examples header must contain at least one column`);
+        }
+        return;
+      }
+      if (values.length !== examplesHeaders.length) {
+        throw new Error(`${sourcePath}:${lineNumber} Examples row has ${values.length} cells; expected ${examplesHeaders.length}`);
+      }
+      examplesTarget.examples.push({
+        line: lineNumber,
+        values: Object.fromEntries(examplesHeaders.map((header, cellIndex) => [header, values[cellIndex] ?? ""]))
       });
       return;
     }
     const stepMatch = STEP_PATTERN.exec(line);
     if (stepMatch) {
-      const scenario = scenarios.at(-1);
-      if (!scenario) {
-        throw new Error(`${sourcePath}:${lineNumber} Step appears before a Scenario`);
+      if (!stepTarget) {
+        throw new Error(`${sourcePath}:${lineNumber} Step appears before a Scenario or Background`);
       }
-      scenario.steps.push({
+      stepTarget.steps.push({
         keyword: stepMatch[1],
         text: stepMatch[2].trim(),
         line: lineNumber,
@@ -245,41 +393,189 @@ function parseAcceptanceMarkdown(markdown, sourcePath) {
   if (scenarios.length === 0) {
     throw new Error(`${sourcePath}: Expected at least one Scenario`);
   }
+  if (background && background.steps.length === 0) {
+    throw new Error(`${sourcePath}:${background.line} Background must contain at least one step`);
+  }
   const emptyScenario = scenarios.find((scenario) => scenario.steps.length === 0);
   if (emptyScenario) {
     throw new Error(`${sourcePath}:${emptyScenario.line} Scenario "${emptyScenario.name}" must contain at least one step`);
   }
+  const emptyExamples = scenarios.find((scenario) => scenariosWithExamples.has(scenario) && scenario.examples.length === 0);
+  if (emptyExamples) {
+    throw new Error(`${sourcePath}:${emptyExamples.line} Scenario "${emptyExamples.name}" has Examples without rows`);
+  }
   return {
     sourcePath,
     feature,
+    ...background ? { background } : {},
     scenarios
   };
 }
 function extractParameters(text) {
   return [...text.matchAll(PARAMETER_PATTERN)].map((match) => match[1] ?? "");
 }
+function parseExamplesRow(line) {
+  return line.slice(1, line.endsWith("|") ? -1 : void 0).split("|").map((cell) => cell.trim());
+}
 
 // src/acceptance/playwright/generator.ts
-function generatePlaywrightAcceptanceSpec(documents, options) {
-  const sections = documents.flatMap((document) => generateDocumentSections(document));
+function generatePlaywrightAcceptanceSpec(options) {
   return [
-    "/* Generated by quality-tools acceptance compile. Do not edit. */",
+    "/* Generated by quality-tools acceptance generate. Do not edit. */",
     "/* eslint-disable playwright/expect-expect */",
+    "import path from 'node:path';",
     "import { test } from '@playwright/test';",
     `import { acceptanceSteps, createAcceptanceContext } from ${quote(options.stepsImportPath)};`,
+    `import { loadAcceptanceIr, runAcceptanceFeature } from ${quote(options.runtimeImportPath)};`,
     "",
-    "type AcceptanceContext = Awaited<ReturnType<typeof createAcceptanceContext>> & { cleanup?: () => unknown | Promise<unknown> };",
-    "type AcceptanceRuntimeStep = { keyword: string; text: string; sourcePath: string; line: number };",
-    "type AcceptanceStepImplementation = (context: AcceptanceContext, step: AcceptanceRuntimeStep) => unknown | Promise<unknown>;",
-    "type AcceptanceStepRegistry = Record<string, AcceptanceStepImplementation>;",
+    `const feature = loadAcceptanceIr(path.join(__dirname, ${quotePathSegments(options.irImportPath)}));`,
+    "",
+    "runAcceptanceFeature(test, feature, {",
+    "  acceptanceSteps,",
+    "  createAcceptanceContext",
+    "});",
+    ""
+  ].join("\n");
+}
+function generatePlaywrightAcceptanceRuntime() {
+  return [
+    "/* Generated by quality-tools acceptance generate. Do not edit. */",
+    "import fs from 'node:fs';",
+    "import type { TestInfo } from '@playwright/test';",
+    "",
+    "export interface AcceptanceIrStep {",
+    "  keyword: string;",
+    "  text: string;",
+    "  line: number;",
+    "  parameters: string[];",
+    "}",
+    "",
+    "export interface AcceptanceIrExampleRow {",
+    "  line: number;",
+    "  values: Record<string, string>;",
+    "}",
+    "",
+    "export interface AcceptanceIrScenario {",
+    "  name: string;",
+    "  line: number;",
+    "  steps: AcceptanceIrStep[];",
+    "  examples: AcceptanceIrExampleRow[];",
+    "}",
+    "",
+    "export interface AcceptanceIrDocument {",
+    "  schema_version: 1;",
+    "  source_path: string;",
+    "  feature: { name: string; line: number };",
+    "  background?: { line: number; steps: AcceptanceIrStep[] };",
+    "  scenarios: AcceptanceIrScenario[];",
+    "}",
+    "",
+    "export type AcceptanceContext = Awaited<ReturnType<AcceptanceBindings['createAcceptanceContext']>> & { cleanup?: () => unknown | Promise<unknown> };",
+    "",
+    "export interface AcceptanceRuntimeStep {",
+    "  keyword: string;",
+    "  text: string;",
+    "  sourceText: string;",
+    "  sourcePath: string;",
+    "  line: number;",
+    "  parameters: string[];",
+    "  example: Record<string, string>;",
+    "}",
+    "",
+    "export type AcceptanceStepImplementation = (",
+    "  context: AcceptanceContext,",
+    "  step: AcceptanceRuntimeStep",
+    ") => unknown | Promise<unknown>;",
+    "",
+    "export type AcceptanceStepRegistry = Record<string, AcceptanceStepImplementation>;",
+    "",
+    "export interface AcceptanceBindings {",
+    "  acceptanceSteps: AcceptanceStepRegistry;",
+    "  createAcceptanceContext: (input: {",
+    "    testInfo: TestInfo;",
+    "    sourcePath: string;",
+    "    scenario: string;",
+    "    example: Record<string, string>;",
+    "  }) => unknown | Promise<unknown>;",
+    "}",
+    "",
+    "type PlaywrightTest = {",
+    "  (title: string, callback: (fixtures: unknown, testInfo: TestInfo) => Promise<void>): void;",
+    "  describe(title: string, callback: () => void): void;",
+    "  step(title: string, callback: () => Promise<void>): Promise<void>;",
+    "};",
+    "",
+    "interface ScenarioExecution {",
+    "  name: string;",
+    "  scenario: AcceptanceIrScenario;",
+    "  example: AcceptanceIrExampleRow;",
+    "  steps: AcceptanceRuntimeStep[];",
+    "}",
+    "",
+    "export function loadAcceptanceIr(filePath: string): AcceptanceIrDocument {",
+    "  return JSON.parse(fs.readFileSync(filePath, 'utf8')) as AcceptanceIrDocument;",
+    "}",
+    "",
+    "export function runAcceptanceFeature(",
+    "  test: PlaywrightTest,",
+    "  feature: AcceptanceIrDocument,",
+    "  bindings: AcceptanceBindings",
+    "): void {",
+    "  test.describe(feature.feature.name, () => {",
+    "    expandScenarioExecutions(feature).forEach((execution) => {",
+    "      test(execution.name, async (_fixtures, testInfo) => {",
+    "        const context = await bindings.createAcceptanceContext({",
+    "          testInfo,",
+    "          sourcePath: feature.source_path,",
+    "          scenario: execution.name,",
+    "          example: execution.example.values",
+    "        }) as AcceptanceContext;",
+    "",
+    "        try {",
+    "          for (const step of execution.steps) {",
+    "            await test.step(`${step.keyword} ${step.text}`, async () => {",
+    "              await runAcceptanceStep(bindings.acceptanceSteps, context, step);",
+    "            });",
+    "          }",
+    "        } finally {",
+    "          await context.cleanup?.();",
+    "        }",
+    "      });",
+    "    });",
+    "  });",
+    "}",
+    "",
+    "function expandScenarioExecutions(feature: AcceptanceIrDocument): ScenarioExecution[] {",
+    "  return feature.scenarios.flatMap((scenario) => {",
+    "    const examples = scenario.examples.length > 0",
+    "      ? scenario.examples",
+    "      : [{ line: scenario.line, values: {} }];",
+    "",
+    "    return examples.map((example) => ({",
+    "      name: scenario.examples.length > 0",
+    "        ? `${scenario.name} (${formatExampleName(example.values)})`",
+    "        : scenario.name,",
+    "      scenario,",
+    "      example,",
+    "      steps: [...(feature.background?.steps ?? []), ...scenario.steps].map((step) => ({",
+    "        keyword: step.keyword,",
+    "        text: renderStepText(step.text, example.values),",
+    "        sourceText: step.text,",
+    "        sourcePath: feature.source_path,",
+    "        line: step.line,",
+    "        parameters: step.parameters,",
+    "        example: example.values",
+    "      }))",
+    "    }));",
+    "  });",
+    "}",
     "",
     "async function runAcceptanceStep(",
+    "  registry: AcceptanceStepRegistry,",
     "  context: AcceptanceContext,",
-    "  stepText: string,",
     "  step: AcceptanceRuntimeStep",
     "): Promise<void> {",
-    "  const registry = acceptanceSteps as AcceptanceStepRegistry;",
-    "  const implementation = registry[stepText] ?? registry[`${step.keyword} ${stepText}`];",
+    "  const implementation = findAcceptanceStepImplementation(registry, step);",
     "",
     "  if (!implementation) {",
     '    throw new Error(`Missing acceptance step "${step.keyword} ${step.text}" at ${step.sourcePath}:${step.line}`);',
@@ -288,58 +584,33 @@ function generatePlaywrightAcceptanceSpec(documents, options) {
     "  await implementation(context, step);",
     "}",
     "",
-    ...sections,
+    "function findAcceptanceStepImplementation(",
+    "  registry: AcceptanceStepRegistry,",
+    "  step: AcceptanceRuntimeStep",
+    "): AcceptanceStepImplementation | undefined {",
+    "  return registry[step.text]",
+    "    ?? registry[`${step.keyword} ${step.text}`]",
+    "    ?? registry[step.sourceText]",
+    "    ?? registry[`${step.keyword} ${step.sourceText}`];",
+    "}",
+    "",
+    "function renderStepText(text: string, values: Record<string, string>): string {",
+    "  return text.replace(/<([^>]+)>/g, (placeholder, key: string) => values[key] ?? placeholder);",
+    "}",
+    "",
+    "function formatExampleName(values: Record<string, string>): string {",
+    "  return Object.entries(values)",
+    "    .map(([key, value]) => `${key}: ${value}`)",
+    "    .join(', ');",
+    "}",
     ""
   ].join("\n");
-}
-function generateDocumentSections(document) {
-  const scenarios = document.scenarios.flatMap((scenario) => generateScenario(document.sourcePath, scenario));
-  return [
-    `test.describe(${quote(document.feature.name)}, () => {`,
-    ...indentLines(scenarios, 2),
-    "});",
-    ""
-  ];
-}
-function generateScenario(sourcePath, scenario) {
-  const steps = indentLines(scenario.steps.flatMap((step) => generateStep(sourcePath, step)), 4);
-  return [
-    `test(${quote(scenario.name)}, async ({}, testInfo) => {`,
-    "  const context = await createAcceptanceContext({",
-    "    testInfo,",
-    `    sourcePath: ${quote(sourcePath)},`,
-    `    scenario: ${quote(scenario.name)}`,
-    "  });",
-    "",
-    "  try {",
-    ...steps,
-    "  } finally {",
-    "    await context.cleanup?.();",
-    "  }",
-    "});"
-  ];
-}
-function generateStep(sourcePath, step) {
-  const label = `${step.keyword} ${step.text}`;
-  return [
-    `// ${sourcePath}:${step.line}`,
-    `await test.step(${quote(label)}, async () => {`,
-    `  await runAcceptanceStep(context, ${quote(step.text)}, {`,
-    `    keyword: ${quote(step.keyword)},`,
-    `    text: ${quote(step.text)},`,
-    `    sourcePath: ${quote(sourcePath)},`,
-    `    line: ${step.line}`,
-    "  });",
-    "});",
-    ""
-  ];
 }
 function quote(value) {
   return `'${value.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\r/g, "\\r").replace(/\n/g, "\\n")}'`;
 }
-function indentLines(lines, spaces) {
-  const prefix = " ".repeat(spaces);
-  return lines.map((line) => line === "" ? line : `${prefix}${line}`);
+function quotePathSegments(relativePath) {
+  return relativePath.split("/").map(quote).join(", ");
 }
 
 // src/shared/flagValue.ts
@@ -377,86 +648,146 @@ function cleanCliArgs(args2) {
 async function runAcceptanceCli(rawArgs, options = {}) {
   const args2 = cleanCliArgs(rawArgs);
   const [command2, ...commandArgs] = args2;
-  if (command2 !== "compile") {
-    throw new Error("Usage: quality-tools acceptance compile --spec <glob> --steps <path> --out <path>");
+  const cwd = options.cwd ?? process.cwd();
+  if (!command2 || command2 === "--help" || command2 === "-h") {
+    console.log(acceptanceUsage());
+    return;
   }
-  await compileAcceptance(commandArgs, options.cwd ?? process.cwd());
+  if (command2 === "parse") {
+    parseCommand(commandArgs, cwd);
+    return;
+  }
+  if (command2 === "dry-check") {
+    dryCheckCommand(commandArgs, cwd);
+    return;
+  }
+  if (command2 === "generate") {
+    generateCommand(commandArgs, cwd);
+    return;
+  }
+  if (command2 === "compile") {
+    await compileCommand(commandArgs, cwd);
+    return;
+  }
+  throw new Error(acceptanceUsage());
 }
-async function compileAcceptance(args2, cwd) {
+function acceptanceUsage() {
+  return [
+    "Usage:",
+    "  quality-tools acceptance parse <feature-file> <json-output>",
+    "  quality-tools acceptance dry-check [--include-exact] [--include-similar] <json-ir> <report-output>",
+    "  quality-tools acceptance generate <json-ir> <generated-test-output> --steps <path>",
+    "  quality-tools acceptance compile <spec-glob> <generated-output-dir> --steps <path> [--ir <dir>] [--dry <dir>]"
+  ].join("\n");
+}
+function parseCommand(args2, cwd) {
+  const [featurePath, jsonOutputPath, ...extraArgs] = args2;
+  if (!featurePath || !jsonOutputPath || extraArgs.length > 0) {
+    throw new Error("Usage: quality-tools acceptance parse <feature-file> <json-output>");
+  }
+  const ir = parseIrFile(cwd, featurePath);
+  writeJsonFile(path.resolve(cwd, jsonOutputPath), ir);
+}
+function dryCheckCommand(args2, cwd) {
+  const options = parseDryCheckOptions(args2);
+  const report = analyzeAcceptanceIrDryness(readIrFile(cwd, options.irPath), {
+    includeExact: options.includeExact,
+    includeSimilar: options.includeSimilar
+  });
+  writeJsonFile(path.resolve(cwd, options.reportPath), report);
+}
+function generateCommand(args2, cwd) {
+  const options = parseGenerateOptions(args2);
+  writeGeneratedPlaywrightSpec(cwd, options.irPath, options.outPath, options.stepsPath);
+}
+async function compileCommand(args2, cwd) {
   const options = parseCompileOptions(args2);
   const specFiles = await findSpecFiles(cwd, options.specPatterns);
   if (specFiles.length === 0) {
     throw new Error(`No acceptance specs matched: ${options.specPatterns.join(", ")}`);
   }
-  const documents = specFiles.map((specFile) => parseSpecFile(cwd, specFile));
-  writeIrFiles(cwd, options.irDir, documents);
-  writeDryReports(cwd, options.dryReportDir, documents);
-  if (options.outDir) {
-    writeSplitPlaywrightSpecs(cwd, options, documents);
-    return;
+  const generatedDir = path.resolve(cwd, options.generatedDir);
+  writePlaywrightRuntime(generatedDir);
+  specFiles.forEach((specFile) => {
+    const ir = parseIrFile(cwd, specFile);
+    const slug = sourcePathSlug(ir.source_path);
+    const irPath = path.join(path.resolve(cwd, options.irDir), `${slug}.json`);
+    const generatedPath = path.join(generatedDir, `${slug}.spec.ts`);
+    writeJsonFile(irPath, ir);
+    if (options.dryDir) {
+      writeJsonFile(path.join(path.resolve(cwd, options.dryDir), `${slug}.json`), analyzeAcceptanceIrDryness(ir, {
+        includeExact: options.includeExact,
+        includeSimilar: options.includeSimilar
+      }));
+    }
+    writeGeneratedPlaywrightSpec(cwd, irPath, generatedPath, options.stepsPath);
+  });
+}
+function parseDryCheckOptions(args2) {
+  const positional = args2.filter((arg) => !arg.startsWith("--"));
+  if (positional.length !== 2) {
+    throw new Error("Usage: quality-tools acceptance dry-check [--include-exact] [--include-similar] <json-ir> <report-output>");
   }
-  if (!options.outPath) {
-    throw new Error("Missing required --out <path> or --out-dir <path>");
+  return {
+    irPath: positional[0] ?? "",
+    reportPath: positional[1] ?? "",
+    includeExact: args2.includes("--include-exact"),
+    includeSimilar: args2.includes("--include-similar")
+  };
+}
+function parseGenerateOptions(args2) {
+  const positional = args2.filter((arg, index) => arg !== "--steps" && args2[index - 1] !== "--steps" && !arg.startsWith("--"));
+  if (positional.length !== 2) {
+    throw new Error("Usage: quality-tools acceptance generate <json-ir> <generated-test-output> --steps <path>");
   }
-  const outPath = path.resolve(cwd, options.outPath);
-  const stepsImportPath = createStepsImportPath(outPath, path.resolve(cwd, options.stepsPath));
-  writeFile(outPath, generatePlaywrightAcceptanceSpec(documents, { stepsImportPath }));
+  return {
+    irPath: positional[0] ?? "",
+    outPath: positional[1] ?? "",
+    stepsPath: requireFlagValue(args2, "--steps")
+  };
 }
 function parseCompileOptions(args2) {
-  const specPatterns = collectFlagValues(args2, "--spec");
-  const stepsPath = requireFlagValue(args2, "--steps");
-  const outPath = collectFlagValues(args2, "--out").at(0);
-  const outDir = collectFlagValues(args2, "--out-dir").at(0);
-  const irDir = collectFlagValues(args2, "--ir-dir").at(0);
-  const dryReportDir = collectFlagValues(args2, "--dry-report-dir").at(0);
-  if (specPatterns.length === 0) {
-    throw new Error("Missing required --spec <glob>");
-  }
-  if (outPath && outDir) {
-    throw new Error("Use either --out <path> or --out-dir <path>, not both");
+  const positional = args2.filter(
+    (arg, index) => !arg.startsWith("--") && !isFlagValue(args2, index, ["--steps", "--ir", "--dry", "--spec", "--out-dir", "--ir-dir", "--dry-report-dir"])
+  );
+  const legacySpecPatterns = collectFlagValues(args2, "--spec");
+  const specPatterns = legacySpecPatterns.length > 0 ? legacySpecPatterns : positional.slice(0, 1);
+  const generatedDir = collectFlagValues(args2, "--out-dir").at(0) ?? positional[1];
+  const irDir = collectFlagValues(args2, "--ir").at(0) ?? collectFlagValues(args2, "--ir-dir").at(0) ?? path.join(generatedDir ?? "", "..", "generated-ir");
+  const dryDir = collectFlagValues(args2, "--dry").at(0) ?? collectFlagValues(args2, "--dry-report-dir").at(0);
+  if (specPatterns.length === 0 || !generatedDir) {
+    throw new Error("Usage: quality-tools acceptance compile <spec-glob> <generated-output-dir> --steps <path> [--ir <dir>] [--dry <dir>]");
   }
   return {
     specPatterns,
-    stepsPath,
-    outPath,
-    outDir,
+    stepsPath: requireFlagValue(args2, "--steps"),
+    generatedDir,
     irDir,
-    dryReportDir
+    dryDir,
+    includeExact: args2.includes("--include-exact"),
+    includeSimilar: args2.includes("--include-similar")
   };
 }
-function parseSpecFile(cwd, specFile) {
-  const source = fs.readFileSync(specFile, "utf8");
-  return parseAcceptanceMarkdown(source, toPosixPath(path.relative(cwd, specFile)));
+function parseIrFile(cwd, featurePath) {
+  const resolvedPath = path.resolve(cwd, featurePath);
+  const source = fs.readFileSync(resolvedPath, "utf8");
+  return toAcceptanceIr(parseAcceptanceMarkdown(source, toPosixPath(path.relative(cwd, resolvedPath))));
 }
-function writeIrFiles(cwd, irDir, documents) {
-  if (!irDir) {
-    return;
-  }
-  const resolvedDir = path.resolve(cwd, irDir);
-  documents.forEach((document) => {
-    writeJsonFile(path.join(resolvedDir, `${sourcePathSlug(document.sourcePath)}.json`), toAcceptanceIr(document));
-  });
+function readIrFile(cwd, irPath) {
+  return JSON.parse(fs.readFileSync(path.resolve(cwd, irPath), "utf8"));
 }
-function writeDryReports(cwd, dryReportDir, documents) {
-  if (!dryReportDir) {
-    return;
-  }
-  const resolvedDir = path.resolve(cwd, dryReportDir);
-  documents.forEach((document) => {
-    writeJsonFile(path.join(resolvedDir, `${sourcePathSlug(document.sourcePath)}.json`), analyzeAcceptanceIrDryness(document));
-  });
+function writeGeneratedPlaywrightSpec(cwd, irPath, outPath, stepsPath) {
+  const resolvedOutPath = path.resolve(cwd, outPath);
+  const generatedDir = path.dirname(resolvedOutPath);
+  writePlaywrightRuntime(generatedDir);
+  writeFile(resolvedOutPath, generatePlaywrightAcceptanceSpec({
+    irImportPath: toPosixPath(path.relative(generatedDir, path.resolve(cwd, irPath))),
+    runtimeImportPath: createExtensionlessImportPath(resolvedOutPath, path.join(generatedDir, "runtime.ts")),
+    stepsImportPath: createExtensionlessImportPath(resolvedOutPath, path.resolve(cwd, stepsPath))
+  }));
 }
-function writeSplitPlaywrightSpecs(cwd, options, documents) {
-  if (!options.outDir) {
-    return;
-  }
-  const outDir = path.resolve(cwd, options.outDir);
-  const stepsPath = path.resolve(cwd, options.stepsPath);
-  documents.forEach((document) => {
-    const outPath = path.join(outDir, `${sourcePathSlug(document.sourcePath)}.spec.ts`);
-    const stepsImportPath = createStepsImportPath(outPath, stepsPath);
-    writeFile(outPath, generatePlaywrightAcceptanceSpec([document], { stepsImportPath }));
-  });
+function writePlaywrightRuntime(generatedDir) {
+  writeFile(path.join(generatedDir, "runtime.ts"), generatePlaywrightAcceptanceRuntime());
 }
 function writeJsonFile(filePath, data) {
   writeFile(filePath, `${JSON.stringify(data, null, 2)}
@@ -470,10 +801,10 @@ async function findSpecFiles(cwd, patterns) {
   const files = await Promise.all(
     patterns.map((pattern) => glob(pattern, { absolute: true, cwd, nodir: true }))
   );
-  return files.flat().sort((left, right) => left.localeCompare(right));
+  return [...new Set(files.flat())].sort((left, right) => left.localeCompare(right));
 }
-function createStepsImportPath(outPath, stepsPath) {
-  const relativePath = toPosixPath(path.relative(path.dirname(outPath), stepsPath));
+function createExtensionlessImportPath(outPath, targetPath) {
+  const relativePath = toPosixPath(path.relative(path.dirname(outPath), targetPath));
   const extension = path.extname(relativePath);
   const extensionlessPath = extension ? relativePath.slice(0, -extension.length) : relativePath;
   if (extensionlessPath.startsWith(".")) {
@@ -500,6 +831,9 @@ function requireFlagValue(args2, flag) {
     throw new Error(`Missing required ${flag} <path>`);
   }
   return value;
+}
+function isFlagValue(args2, index, flags) {
+  return flags.includes(args2[index - 1] ?? "");
 }
 function toPosixPath(value) {
   return value.split(path.sep).join(path.posix.sep);
