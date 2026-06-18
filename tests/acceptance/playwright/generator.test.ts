@@ -34,5 +34,7 @@ describe('playwright acceptance generator', () => {
     expect(source).toContain('steps: [...(feature.background?.steps ?? []), ...scenario.steps].map');
     expect(source).toContain('text: renderStepText(step.text, example.values)');
     expect(source).toContain('?? registry[step.sourceText]');
+    expect(source).toContain('const explicitName = values.case ?? values.name ?? values.title ?? values.example;');
+    expect(source).toContain('return explicitName;');
   });
 });

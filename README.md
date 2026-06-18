@@ -63,6 +63,12 @@ The generated Playwright files delegate all behavior to the host step registry.
 DRY reports are advisory; they do not rewrite the source specs, IR, generated
 tests, or host bindings.
 
+Scenario Outline examples may include a `case`, `name`, `title`, or `example`
+column to control the generated Playwright case suffix. Prefer `case` as the
+first column when the remaining example values are detailed test data; this
+keeps generated test names readable while preserving the full row in the runtime
+example payload.
+
 ## Reports
 
 All quality-tool artifacts use one report root:
