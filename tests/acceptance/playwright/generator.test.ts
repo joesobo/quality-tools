@@ -15,7 +15,7 @@ describe('playwright acceptance generator', () => {
     expect(source).toContain("import { test } from '@playwright/test';");
     expect(source).toContain("import { acceptanceSteps, createAcceptanceContext } from '../../acceptance/steps';");
     expect(source).toContain("import { loadAcceptanceIr, runAcceptanceFeature } from './runtime';");
-    expect(source).toContain("const feature = loadAcceptanceIr(path.join(__dirname, '..', 'generated-ir', 'graph-view.json'));");
+    expect(source).toContain("const feature = loadAcceptanceIr('../generated-ir/graph-view.json');");
     expect(source).toContain('runAcceptanceFeature(test, feature, {');
     expect(source).not.toContain('/* eslint-disable playwright/expect-expect */');
     expect(source).not.toContain("test.describe('Graph View'");

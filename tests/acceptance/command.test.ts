@@ -71,7 +71,7 @@ describe('acceptance command', () => {
     expect(dry.summary.findings).toBeGreaterThan(0);
     expect(dry.summary.repeated_scenario_shapes).toBeGreaterThan(0);
     expect(generated).toContain("import { acceptanceSteps, createAcceptanceContext } from '../../acceptance/steps';");
-    expect(generated).toContain("loadAcceptanceIr(path.join(__dirname, '..', '..', '..', 'build', 'acceptance', 'ir', 'graph-view.json'))");
+    expect(generated).toContain("loadAcceptanceIr('build/acceptance/ir/graph-view.json')");
     expect(generated).not.toContain("await test.step('Given");
     expect(runtime).toContain('export function runAcceptanceFeature(');
   });

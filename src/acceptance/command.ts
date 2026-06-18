@@ -211,7 +211,7 @@ function writeGeneratedPlaywrightSpec(cwd: string, irPath: string, outPath: stri
   const generatedDir = path.dirname(resolvedOutPath);
   writePlaywrightRuntime(generatedDir);
   writeFile(resolvedOutPath, generatePlaywrightAcceptanceSpec({
-    irImportPath: toPosixPath(path.relative(generatedDir, path.resolve(cwd, irPath))),
+    irImportPath: toPosixPath(path.relative(cwd, path.resolve(cwd, irPath))),
     runtimeImportPath: createExtensionlessImportPath(resolvedOutPath, path.join(generatedDir, 'runtime.ts')),
     stepsImportPath: createExtensionlessImportPath(resolvedOutPath, path.resolve(cwd, stepsPath))
   }));
