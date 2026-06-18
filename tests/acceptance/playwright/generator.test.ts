@@ -28,6 +28,7 @@ describe('playwright acceptance generator', () => {
     expect(source).toContain('/* eslint-disable playwright/expect-expect */');
     expect(source).toContain('export function loadAcceptanceIr(filePath: string): AcceptanceIrDocument');
     expect(source).toContain('export function runAcceptanceFeature(');
+    expect(source).toContain('callback: (fixtures: object, testInfo: TestInfo) => Promise<void>');
     expect(source).toContain('test(execution.name, async ({}, testInfo) => {');
     expect(source).not.toContain('async (_fixtures, testInfo)');
     expect(source).toContain('steps: [...(feature.background?.steps ?? []), ...scenario.steps].map');

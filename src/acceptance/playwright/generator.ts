@@ -85,7 +85,7 @@ export function generatePlaywrightAcceptanceRuntime(): string {
     '}',
     '',
     'type PlaywrightTest = {',
-    '  (title: string, callback: (fixtures: Record<string, unknown>, testInfo: TestInfo) => Promise<void>): void;',
+    '  (title: string, callback: (fixtures: object, testInfo: TestInfo) => Promise<void>): void;',
     '  describe(title: string, callback: () => void): void;',
     '  step(title: string, callback: () => Promise<void>): Promise<void>;',
     '};',
