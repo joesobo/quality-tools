@@ -13,11 +13,11 @@ describe('playwright acceptance generator', () => {
     });
 
     expect(source).toContain("import { test } from '@playwright/test';");
-    expect(source).toContain('/* eslint-disable playwright/expect-expect */');
     expect(source).toContain("import { acceptanceSteps, createAcceptanceContext } from '../../acceptance/steps';");
     expect(source).toContain("import { loadAcceptanceIr, runAcceptanceFeature } from './runtime';");
     expect(source).toContain("const feature = loadAcceptanceIr(path.join(__dirname, '..', 'generated-ir', 'graph-view.json'));");
     expect(source).toContain('runAcceptanceFeature(test, feature, {');
+    expect(source).not.toContain('/* eslint-disable playwright/expect-expect */');
     expect(source).not.toContain("test.describe('Graph View'");
     expect(source).not.toContain("await test.step('Given");
   });
@@ -25,6 +25,7 @@ describe('playwright acceptance generator', () => {
   it('generates a shared runtime that expands background, examples, and host step handlers', () => {
     const source = generatePlaywrightAcceptanceRuntime();
 
+    expect(source).toContain('/* eslint-disable playwright/expect-expect */');
     expect(source).toContain('export function loadAcceptanceIr(filePath: string): AcceptanceIrDocument');
     expect(source).toContain('export function runAcceptanceFeature(');
     expect(source).toContain('steps: [...(feature.background?.steps ?? []), ...scenario.steps].map');
