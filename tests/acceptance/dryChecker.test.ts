@@ -68,6 +68,41 @@ describe('acceptance IR DRY checker', () => {
       shared_step_count: 4
     }));
   });
+
+  it('does not report restored-state assertions as duplicate steps', () => {
+    const document: AcceptanceIrDocument = {
+      schema_version: 1,
+      source_path: 'features/graph-scope.feature',
+      feature: {
+        name: 'Graph Scope',
+        line: 1
+      },
+      scenarios: [
+        {
+          name: 'Imports edge can be toggled off and restored',
+          line: 3,
+          examples: [],
+          steps: [
+            step('Given', 'I open the examples/example-typescript workspace', 5),
+            step('When', 'I open the graph view', 6),
+            step('And', 'I show only the Imports edge', 7),
+            step('Then', 'src/index.ts points to src/user.ts', 8),
+            step('When', 'I toggle the Imports edge off', 9),
+            step('Then', 'I can see there are 6 nodes and 0 connections', 10),
+            step('When', 'I toggle the Imports edge on', 11),
+            step('Then', 'src/index.ts points to src/user.ts', 12)
+          ]
+        }
+      ]
+    };
+
+    const report = analyzeAcceptanceIrDryness(document);
+
+    expect(report.findings).not.toContainEqual(expect.objectContaining({
+      kind: 'duplicate-in-scenario',
+      canonical_candidate: 'src/index.ts points to src/user.ts'
+    }));
+  });
 });
 
 function step(keyword: 'Given' | 'When' | 'Then' | 'And' | 'But', text: string, line: number) {

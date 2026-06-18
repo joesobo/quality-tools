@@ -61,7 +61,7 @@ function findDuplicateInScenario(scenarios) {
       step,
       location: createLocation(scenario, scenarioIndex, step, stepIndex)
     })), (occurrence) => occurrence.step.text);
-    return [...groups.entries()].filter(([, members]) => members.length > 1).map(([text, members]) => createFinding({
+    return [...groups.entries()].filter(([, members]) => containsDuplicateWithoutInterveningAction(scenario.steps, members)).map(([text, members]) => createFinding({
       kind: "duplicate-in-scenario",
       confidence: "high",
       canonicalCandidate: text,
@@ -69,6 +69,29 @@ function findDuplicateInScenario(scenarios) {
       reason: "the same step text appears more than once in one scenario",
       suggestedAction: "Review the scenario and remove the repeated step if it is accidental."
     }));
+  });
+}
+function containsDuplicateWithoutInterveningAction(steps, members) {
+  const stepIndexes = members.map((member) => member.location.step_index).sort((left, right) => left - right);
+  return stepIndexes.some((stepIndex, index) => {
+    const nextStepIndex = stepIndexes[index + 1];
+    return nextStepIndex !== void 0 && !hasInterveningAction(steps, stepIndex, nextStepIndex);
+  });
+}
+function hasInterveningAction(steps, leftIndex, rightIndex) {
+  const effectiveKeywords = getEffectiveKeywords(steps);
+  return steps.slice(leftIndex + 1, rightIndex).some((_, offset) => {
+    const effectiveKeyword = effectiveKeywords[leftIndex + offset + 1];
+    return effectiveKeyword === "Given" || effectiveKeyword === "When";
+  });
+}
+function getEffectiveKeywords(steps) {
+  let currentKeyword = "Given";
+  return steps.map((step) => {
+    if (step.keyword !== "And" && step.keyword !== "But") {
+      currentKeyword = step.keyword;
+    }
+    return currentKeyword;
   });
 }
 function findExactDuplicates(occurrences) {

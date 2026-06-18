@@ -132,7 +132,7 @@ function findDuplicateInScenario(scenarios: AcceptanceIrScenario[]): AcceptanceD
     })), (occurrence) => occurrence.step.text);
 
     return [...groups.entries()]
-      .filter(([, members]) => members.length > 1)
+      .filter(([, members]) => containsDuplicateWithoutInterveningAction(scenario.steps, members))
       .map(([text, members]) => createFinding({
         kind: 'duplicate-in-scenario',
         confidence: 'high',
@@ -141,6 +141,40 @@ function findDuplicateInScenario(scenarios: AcceptanceIrScenario[]): AcceptanceD
         reason: 'the same step text appears more than once in one scenario',
         suggestedAction: 'Review the scenario and remove the repeated step if it is accidental.'
       }));
+  });
+}
+
+function containsDuplicateWithoutInterveningAction(
+  steps: AcceptanceIrStep[],
+  members: StepOccurrence[]
+): boolean {
+  const stepIndexes = members
+    .map((member) => member.location.step_index)
+    .sort((left, right) => left - right);
+
+  return stepIndexes.some((stepIndex, index) => {
+    const nextStepIndex = stepIndexes[index + 1];
+    return nextStepIndex !== undefined && !hasInterveningAction(steps, stepIndex, nextStepIndex);
+  });
+}
+
+function hasInterveningAction(steps: AcceptanceIrStep[], leftIndex: number, rightIndex: number): boolean {
+  const effectiveKeywords = getEffectiveKeywords(steps);
+
+  return steps.slice(leftIndex + 1, rightIndex).some((_, offset) => {
+    const effectiveKeyword = effectiveKeywords[leftIndex + offset + 1];
+    return effectiveKeyword === 'Given' || effectiveKeyword === 'When';
+  });
+}
+
+function getEffectiveKeywords(steps: AcceptanceIrStep[]): Array<AcceptanceIrStep['keyword']> {
+  let currentKeyword: AcceptanceIrStep['keyword'] = 'Given';
+
+  return steps.map((step) => {
+    if (step.keyword !== 'And' && step.keyword !== 'But') {
+      currentKeyword = step.keyword;
+    }
+    return currentKeyword;
   });
 }
 
