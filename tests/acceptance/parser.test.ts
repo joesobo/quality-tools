@@ -1,23 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { parseAcceptanceMarkdown } from '../../src/acceptance/parser';
+import { parseAcceptanceFeature } from '../../src/acceptance/parser';
 
-describe('acceptance markdown parser', () => {
+describe('acceptance feature parser', () => {
   it('parses a feature with one scenario and ordered steps', () => {
-    const document = parseAcceptanceMarkdown(
-      `# Feature: Graph View
+    const document = parseAcceptanceFeature(
+      `Feature: Graph View
 
-## Scenario: Indexing shows graph progress
+Scenario: Indexing shows graph progress
 
 Given I open the example workspace
 When I open the graph view
 Then I see file nodes
 And I see edges
 `,
-      'tests/acceptance/specs/graph-view.md'
+      'tests/acceptance/specs/graph-view.feature'
     );
 
     expect(document).toEqual({
-      sourcePath: 'tests/acceptance/specs/graph-view.md',
+      sourcePath: 'tests/acceptance/specs/graph-view.feature',
       feature: {
         name: 'Graph View',
         line: 1
@@ -59,15 +59,15 @@ And I see edges
   });
 
   it('records placeholder parameters from step text', () => {
-    const document = parseAcceptanceMarkdown(
-      `# Feature: Graph View
+    const document = parseAcceptanceFeature(
+      `Feature: Graph View
 
-## Scenario: Open a workspace
+Scenario: Open a workspace
 
 Given I open the <workspace> workspace
 Then <node_name> is visible in <workspace>
 `,
-      'tests/acceptance/specs/graph-view.md'
+      'tests/acceptance/specs/graph-view.feature'
     );
 
     expect(document.scenarios[0]?.steps).toEqual([
@@ -83,7 +83,7 @@ Then <node_name> is visible in <workspace>
   });
 
   it('parses background steps and scenario outline examples', () => {
-    const document = parseAcceptanceMarkdown(
+    const document = parseAcceptanceFeature(
       `Feature: Checkout
 
 Background:
@@ -153,19 +153,19 @@ Examples:
   });
 
   it('rejects a feature without scenarios', () => {
-    expect(() => parseAcceptanceMarkdown(
-      '# Feature: Graph View\n',
-      'tests/acceptance/specs/graph-view.md'
-    )).toThrow('tests/acceptance/specs/graph-view.md: Expected at least one Scenario');
+    expect(() => parseAcceptanceFeature(
+      'Feature: Graph View\n',
+      'tests/acceptance/specs/graph-view.feature'
+    )).toThrow('tests/acceptance/specs/graph-view.feature: Expected at least one Scenario');
   });
 
   it('rejects a scenario without steps', () => {
-    expect(() => parseAcceptanceMarkdown(
-      `# Feature: Graph View
+    expect(() => parseAcceptanceFeature(
+      `Feature: Graph View
 
-## Scenario: Empty scenario
+Scenario: Empty scenario
 `,
-      'tests/acceptance/specs/graph-view.md'
-    )).toThrow('tests/acceptance/specs/graph-view.md:3 Scenario "Empty scenario" must contain at least one step');
+      'tests/acceptance/specs/graph-view.feature'
+    )).toThrow('tests/acceptance/specs/graph-view.feature:3 Scenario "Empty scenario" must contain at least one step');
   });
 });

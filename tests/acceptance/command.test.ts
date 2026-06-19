@@ -19,7 +19,7 @@ describe('acceptance command', () => {
     await runAcceptanceCli(
       [
         'parse',
-        'tests/acceptance/specs/graph-view.md',
+        'tests/acceptance/specs/graph-view.feature',
         'build/acceptance/ir/graph-view.json'
       ],
       { cwd: repoRoot }
@@ -63,7 +63,7 @@ describe('acceptance command', () => {
 
     expect(ir).toMatchObject({
       schema_version: 1,
-      source_path: 'tests/acceptance/specs/graph-view.md',
+      source_path: 'tests/acceptance/specs/graph-view.feature',
       feature: {
         name: 'Graph View'
       }
@@ -79,10 +79,10 @@ describe('acceptance command', () => {
   it('compiles matching specs by looping the pipeline over a glob', async () => {
     const repoRoot = createAcceptanceRepo();
     fs.writeFileSync(
-      path.join(repoRoot, 'tests/acceptance/specs/settings-panel.md'),
-      `# Feature: Settings Panel
+      path.join(repoRoot, 'tests/acceptance/specs/settings-panel.feature'),
+      `Feature: Settings Panel
 
-## Scenario: Opening settings
+Scenario: Opening settings
 
 Given I open the example workspace
 Then I see settings
@@ -92,7 +92,7 @@ Then I see settings
     await runAcceptanceCli(
       [
         'compile',
-        'tests/acceptance/specs/**/*.md',
+        'tests/acceptance/specs/**/*.feature',
         'tests/playwright/generated',
         '--steps',
         'tests/acceptance/steps.ts',
@@ -106,19 +106,19 @@ Then I see settings
 
     expect(fs.existsSync(path.join(
       repoRoot,
-      'tests/playwright/generated/tests-acceptance-specs-graph-view-md.spec.ts'
+      'tests/playwright/generated/tests-acceptance-specs-graph-view-feature.spec.ts'
     ))).toBe(true);
     expect(fs.existsSync(path.join(
       repoRoot,
-      'tests/playwright/generated/tests-acceptance-specs-settings-panel-md.spec.ts'
+      'tests/playwright/generated/tests-acceptance-specs-settings-panel-feature.spec.ts'
     ))).toBe(true);
     expect(fs.existsSync(path.join(
       repoRoot,
-      'build/acceptance/ir/tests-acceptance-specs-graph-view-md.json'
+      'build/acceptance/ir/tests-acceptance-specs-graph-view-feature.json'
     ))).toBe(true);
     expect(fs.existsSync(path.join(
       repoRoot,
-      'build/acceptance/dry/tests-acceptance-specs-graph-view-md.json'
+      'build/acceptance/dry/tests-acceptance-specs-graph-view-feature.json'
     ))).toBe(true);
   });
 });
@@ -128,10 +128,10 @@ function createAcceptanceRepo(): string {
   tempRoots.push(repoRoot);
   fs.mkdirSync(path.join(repoRoot, 'tests/acceptance/specs'), { recursive: true });
   fs.writeFileSync(
-    path.join(repoRoot, 'tests/acceptance/specs/graph-view.md'),
-    `# Feature: Graph View
+    path.join(repoRoot, 'tests/acceptance/specs/graph-view.feature'),
+    `Feature: Graph View
 
-## Scenario: File node type works
+Scenario: File node type works
 
 Given I open the examples/example-typescript workspace
 When I open the graph view
@@ -139,7 +139,7 @@ And I show no edge types
 When I show only the File node type
 Then I can see there are 18 nodes and 0 connections
 
-## Scenario: Folder node type works
+Scenario: Folder node type works
 
 Given I open the examples/example-typescript workspace
 When I open the graph view

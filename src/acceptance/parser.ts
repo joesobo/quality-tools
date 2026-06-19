@@ -14,8 +14,8 @@ const EXAMPLES_PATTERN = /^#{0,6}\s*Examples:\s*$/;
 const STEP_PATTERN = /^(Given|When|Then|And|But)\s+(.+)$/;
 const PARAMETER_PATTERN = /<([A-Za-z0-9_]+)>/g;
 
-export function parseAcceptanceMarkdown(markdown: string, sourcePath: string): AcceptanceDocument {
-  const lines = markdown.split(/\r?\n/);
+export function parseAcceptanceFeature(featureSource: string, sourcePath: string): AcceptanceDocument {
+  const lines = featureSource.split(/\r?\n/);
   let feature: AcceptanceFeature | undefined;
   let background: AcceptanceBackground | undefined;
   const scenarios: AcceptanceScenario[] = [];

@@ -2,11 +2,11 @@
 
 ## Goal
 
-Evolve `quality-tools acceptance` from a direct Markdown-to-Playwright compiler
+Evolve `quality-tools acceptance` from a direct feature-to-Playwright compiler
 into a small acceptance pipeline:
 
 ```txt
-Markdown specs
+Gherkin feature specs
   -> JSON IR
   -> advisory IR DRY report
   -> generated Playwright entrypoints
@@ -17,9 +17,9 @@ keeping this package TypeScript-native and host-project-neutral.
 
 ## Decisions
 
-- Keep Markdown as the human-authored source format for now.
+- Use `.feature` files as the human-authored source format.
 - Treat parsed JSON IR as the canonical generator input.
-- Make DRY analysis advisory only. It must not rewrite Markdown, IR, generated
+- Make DRY analysis advisory only. It must not rewrite Gherkin, IR, generated
   files, step bindings, or host implementation code.
 - Generate thin Playwright entrypoints that load JSON IR. Runtime behavior stays
   in shared generated helper code plus host-owned step handlers.
@@ -36,7 +36,7 @@ keeping this package TypeScript-native and host-project-neutral.
    placeholder-variant, repeated-step-pattern, repeated-scenario-shape,
    near-duplicate, and possible-synonym findings.
 3. Add a split output mode that writes one thin generated Playwright spec per
-   source Markdown spec plus one shared runtime.
+   source feature spec plus one shared runtime.
 4. Update CodeGraphy to consume the split output mode and verify generation,
    typecheck, and CI-friendly Playwright discovery without running local
    Playwright.

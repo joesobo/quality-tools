@@ -312,8 +312,8 @@ var SCENARIO_OUTLINE_PATTERN = /^#{0,6}\s*Scenario Outline:\s*(.+)$/;
 var EXAMPLES_PATTERN = /^#{0,6}\s*Examples:\s*$/;
 var STEP_PATTERN = /^(Given|When|Then|And|But)\s+(.+)$/;
 var PARAMETER_PATTERN = /<([A-Za-z0-9_]+)>/g;
-function parseAcceptanceMarkdown(markdown, sourcePath) {
-  const lines = markdown.split(/\r?\n/);
+function parseAcceptanceFeature(featureSource, sourcePath) {
+  const lines = featureSource.split(/\r?\n/);
   let feature;
   let background;
   const scenarios = [];
@@ -795,7 +795,7 @@ function parseCompileOptions(args2) {
 function parseIrFile(cwd, featurePath) {
   const resolvedPath = path.resolve(cwd, featurePath);
   const source = fs.readFileSync(resolvedPath, "utf8");
-  return toAcceptanceIr(parseAcceptanceMarkdown(source, toPosixPath(path.relative(cwd, resolvedPath))));
+  return toAcceptanceIr(parseAcceptanceFeature(source, toPosixPath(path.relative(cwd, resolvedPath))));
 }
 function readIrFile(cwd, irPath) {
   return JSON.parse(fs.readFileSync(path.resolve(cwd, irPath), "utf8"));

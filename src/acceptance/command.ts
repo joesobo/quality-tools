@@ -4,7 +4,7 @@ import { glob } from 'glob';
 import { analyzeAcceptanceIrDryness } from './dryChecker';
 import type { AcceptanceIrDocument } from './ir';
 import { toAcceptanceIr } from './ir';
-import { parseAcceptanceMarkdown } from './parser';
+import { parseAcceptanceFeature } from './parser';
 import {
   generatePlaywrightAcceptanceRuntime,
   generatePlaywrightAcceptanceSpec
@@ -199,7 +199,7 @@ function parseCompileOptions(args: string[]): CompileOptions {
 function parseIrFile(cwd: string, featurePath: string): AcceptanceIrDocument {
   const resolvedPath = path.resolve(cwd, featurePath);
   const source = fs.readFileSync(resolvedPath, 'utf8');
-  return toAcceptanceIr(parseAcceptanceMarkdown(source, toPosixPath(path.relative(cwd, resolvedPath))));
+  return toAcceptanceIr(parseAcceptanceFeature(source, toPosixPath(path.relative(cwd, resolvedPath))));
 }
 
 function readIrFile(cwd: string, irPath: string): AcceptanceIrDocument {
