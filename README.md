@@ -24,7 +24,7 @@ pnpm add -D link:/absolute/path/to/quality-tools
 
 ```bash
 pnpm exec quality-tools organize .
-pnpm exec quality-tools acceptance compile --spec "tests/acceptance/specs/**/*.md" --steps "tests/acceptance/steps.ts" --out "tests/playwright/generated/acceptance.spec.ts"
+pnpm exec quality-tools acceptance compile "tests/acceptance/specs/**/*.feature" "tests/playwright/generated" --steps "tests/acceptance/steps.ts" --ir "build/acceptance/ir" --dry "build/acceptance/dry"
 pnpm exec quality-tools boundaries . --strict
 pnpm exec quality-tools reachability . --strict
 pnpm exec quality-tools scrap ./tests
@@ -39,6 +39,40 @@ or a file. Package shorthand is resolved from workspace package names, not from
 hardcoded folder names. The starter config uses `src` as a conventional default,
 but the tools scope from the target path plus your configured include/exclude
 globs.
+
+## Acceptance
+
+The acceptance tool follows a small parser -> IR -> DRY check -> entrypoint
+generator pipeline:
+
+```bash
+pnpm exec quality-tools acceptance parse features/example.feature build/acceptance/ir/example.json
+pnpm exec quality-tools acceptance dry-check build/acceptance/ir/example.json build/acceptance/dry/example.json
+pnpm exec quality-tools acceptance generate build/acceptance/ir/example.json acceptance/generated/example.spec.ts --steps acceptance/steps.ts
+```
+
+For host projects with many specs, `compile` loops the same pipeline over a
+glob, writes one JSON IR file per source spec, optionally writes advisory DRY
+reports, and creates thin Playwright entrypoints that load the IR at runtime:
+
+```bash
+pnpm exec quality-tools acceptance compile "tests/acceptance/specs/**/*.feature" "tests/playwright/generated" --steps "tests/acceptance/steps.ts" --ir "build/acceptance/ir" --dry "build/acceptance/dry"
+```
+
+The generated Playwright files delegate all behavior to the host step registry.
+DRY reports are advisory; they do not rewrite the source specs, IR, generated
+tests, or host bindings.
+
+The checker treats exact duplicate assertions as actionable only when no setup
+or action step occurs between the repeated assertions. This keeps restoration
+checks such as toggling a graph-scope filter off and back on out of the major
+cleanup path while still flagging accidental duplicate lines.
+
+Scenario Outline examples may include a `case`, `name`, `title`, or `example`
+column to control the generated Playwright case suffix. Prefer `case` as the
+first column when the remaining example values are detailed test data; this
+keeps generated test names readable while preserving the full row in the runtime
+example payload.
 
 ## Reports
 
@@ -245,14 +279,14 @@ root, then falls back to the bundled base config.
 ## Other Tools
 
 ```bash
-pnpm exec quality-tools acceptance compile --spec "tests/acceptance/specs/**/*.md" --steps "tests/acceptance/steps.ts" --out "tests/playwright/generated/acceptance.spec.ts"
+pnpm exec quality-tools acceptance compile "tests/acceptance/specs/**/*.feature" "tests/playwright/generated" --steps "tests/acceptance/steps.ts" --ir "build/acceptance/ir" --dry "build/acceptance/dry"
 pnpm exec quality-tools organize ./src
 pnpm exec quality-tools boundaries parser --strict
 pnpm exec quality-tools reachability parser --strict
 pnpm exec quality-tools scrap ./tests --strict
 ```
 
-- `acceptance` compiles human-authored Gherkin-ish Markdown specs into
+- `acceptance` compiles human-authored Gherkin `.feature` specs into
   executable Playwright specs that import host-owned step bindings.
 - `organize` checks directory size, depth, naming, barrels, and cohesion. Use
   `--write-baseline` and `--compare <path>` for baseline workflows.

@@ -13,43 +13,141 @@ describe('acceptance command', () => {
     });
   });
 
-  it('compiles markdown specs into a Playwright spec', async () => {
-    const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'quality-tools-acceptance-'));
-    tempRoots.push(repoRoot);
-    fs.mkdirSync(path.join(repoRoot, 'tests/acceptance/specs'), { recursive: true });
-    fs.writeFileSync(
-      path.join(repoRoot, 'tests/acceptance/specs/graph-view.md'),
-      `# Feature: Graph View
+  it('runs parser, DRY checker, and entrypoint generator as pipeline commands', async () => {
+    const repoRoot = createAcceptanceRepo();
 
-## Scenario: Opening the graph
+    await runAcceptanceCli(
+      [
+        'parse',
+        'tests/acceptance/specs/graph-view.feature',
+        'build/acceptance/ir/graph-view.json'
+      ],
+      { cwd: repoRoot }
+    );
+    await runAcceptanceCli(
+      [
+        'dry-check',
+        'build/acceptance/ir/graph-view.json',
+        'build/acceptance/dry/graph-view.json'
+      ],
+      { cwd: repoRoot }
+    );
+    await runAcceptanceCli(
+      [
+        'generate',
+        'build/acceptance/ir/graph-view.json',
+        'tests/playwright/generated/graph-view.spec.ts',
+        '--steps',
+        'tests/acceptance/steps.ts'
+      ],
+      { cwd: repoRoot }
+    );
+
+    const ir = JSON.parse(
+      fs.readFileSync(path.join(repoRoot, 'build/acceptance/ir/graph-view.json'), 'utf8')
+    ) as unknown;
+    const dry = JSON.parse(
+      fs.readFileSync(path.join(repoRoot, 'build/acceptance/dry/graph-view.json'), 'utf8')
+    ) as {
+      summary: { findings: number; repeated_scenario_shapes: number };
+      repeated_scenario_shapes: unknown[];
+    };
+    const generated = fs.readFileSync(
+      path.join(repoRoot, 'tests/playwright/generated/graph-view.spec.ts'),
+      'utf8'
+    );
+    const runtime = fs.readFileSync(
+      path.join(repoRoot, 'tests/playwright/generated/runtime.ts'),
+      'utf8'
+    );
+
+    expect(ir).toMatchObject({
+      schema_version: 1,
+      source_path: 'tests/acceptance/specs/graph-view.feature',
+      feature: {
+        name: 'Graph View'
+      }
+    });
+    expect(dry.summary.findings).toBeGreaterThan(0);
+    expect(dry.summary.repeated_scenario_shapes).toBeGreaterThan(0);
+    expect(generated).toContain("import { acceptanceSteps, createAcceptanceContext } from '../../acceptance/steps';");
+    expect(generated).toContain("loadAcceptanceIr('build/acceptance/ir/graph-view.json')");
+    expect(generated).not.toContain("await test.step('Given");
+    expect(runtime).toContain('export function runAcceptanceFeature(');
+  });
+
+  it('compiles matching specs by looping the pipeline over a glob', async () => {
+    const repoRoot = createAcceptanceRepo();
+    fs.writeFileSync(
+      path.join(repoRoot, 'tests/acceptance/specs/settings-panel.feature'),
+      `Feature: Settings Panel
+
+Scenario: Opening settings
 
 Given I open the example workspace
-Then I see file nodes
+Then I see settings
 `
     );
 
     await runAcceptanceCli(
       [
         'compile',
-        '--spec',
-        'tests/acceptance/specs/**/*.md',
+        'tests/acceptance/specs/**/*.feature',
+        'tests/playwright/generated',
         '--steps',
         'tests/acceptance/steps.ts',
-        '--out',
-        'tests/playwright/generated/acceptance.spec.ts'
+        '--ir',
+        'build/acceptance/ir',
+        '--dry',
+        'build/acceptance/dry'
       ],
-      {
-        cwd: repoRoot
-      }
+      { cwd: repoRoot }
     );
 
-    const generated = fs.readFileSync(
-      path.join(repoRoot, 'tests/playwright/generated/acceptance.spec.ts'),
-      'utf8'
-    );
-
-    expect(generated).toContain("import { acceptanceSteps, createAcceptanceContext } from '../../acceptance/steps';");
-    expect(generated).toContain("test.describe('Graph View', () => {");
-    expect(generated).toContain("test('Opening the graph', async ({}, testInfo) => {");
+    expect(fs.existsSync(path.join(
+      repoRoot,
+      'tests/playwright/generated/tests-acceptance-specs-graph-view-feature.spec.ts'
+    ))).toBe(true);
+    expect(fs.existsSync(path.join(
+      repoRoot,
+      'tests/playwright/generated/tests-acceptance-specs-settings-panel-feature.spec.ts'
+    ))).toBe(true);
+    expect(fs.existsSync(path.join(
+      repoRoot,
+      'build/acceptance/ir/tests-acceptance-specs-graph-view-feature.json'
+    ))).toBe(true);
+    expect(fs.existsSync(path.join(
+      repoRoot,
+      'build/acceptance/dry/tests-acceptance-specs-graph-view-feature.json'
+    ))).toBe(true);
   });
 });
+
+function createAcceptanceRepo(): string {
+  const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'quality-tools-acceptance-'));
+  tempRoots.push(repoRoot);
+  fs.mkdirSync(path.join(repoRoot, 'tests/acceptance/specs'), { recursive: true });
+  fs.writeFileSync(
+    path.join(repoRoot, 'tests/acceptance/specs/graph-view.feature'),
+    `Feature: Graph View
+
+Scenario: File node type works
+
+Given I open the examples/example-typescript workspace
+When I open the graph view
+And I show no edge types
+When I show only the File node type
+Then I can see there are 18 nodes and 0 connections
+
+Scenario: Folder node type works
+
+Given I open the examples/example-typescript workspace
+When I open the graph view
+And I show no edge types
+When I show only the Folder node type
+Then I can see there are 21 nodes and 0 connections
+`
+  );
+
+  return repoRoot;
+}

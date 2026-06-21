@@ -1,51 +1,40 @@
 import { describe, expect, it } from 'vitest';
-import { generatePlaywrightAcceptanceSpec } from '../../../src/acceptance/playwright/generator';
-import type { AcceptanceDocument } from '../../../src/acceptance/model';
+import {
+  generatePlaywrightAcceptanceRuntime,
+  generatePlaywrightAcceptanceSpec
+} from '../../../src/acceptance/playwright/generator';
 
 describe('playwright acceptance generator', () => {
-  it('generates a Playwright spec that runs each parsed step through host bindings', () => {
-    const documents: AcceptanceDocument[] = [
-      {
-        sourcePath: 'tests/acceptance/specs/graph-view.md',
-        feature: {
-          name: 'Graph View',
-          line: 1
-        },
-        scenarios: [
-          {
-            name: 'Indexing shows graph progress',
-            line: 3,
-            steps: [
-              {
-                keyword: 'Given',
-                text: 'I open the example workspace',
-                line: 5
-              },
-              {
-                keyword: 'Then',
-                text: 'I see file nodes',
-                line: 6
-              }
-            ]
-          }
-        ]
-      }
-    ];
-
-    const source = generatePlaywrightAcceptanceSpec(documents, {
+  it('generates a thin Playwright spec that delegates to JSON IR and runtime', () => {
+    const source = generatePlaywrightAcceptanceSpec({
+      irImportPath: '../generated-ir/graph-view.json',
+      runtimeImportPath: './runtime',
       stepsImportPath: '../../acceptance/steps'
     });
 
     expect(source).toContain("import { test } from '@playwright/test';");
-    expect(source).toContain('/* eslint-disable playwright/expect-expect */');
     expect(source).toContain("import { acceptanceSteps, createAcceptanceContext } from '../../acceptance/steps';");
-    expect(source).toContain("test.describe('Graph View', () => {");
-    expect(source).toContain("test('Indexing shows graph progress', async ({}, testInfo) => {");
-    expect(source).toContain('} finally {');
-    expect(source).toContain('await context.cleanup?.();');
-    expect(source).toContain("await test.step('Given I open the example workspace'");
-    expect(source).toContain('});\n\n      // tests/acceptance/specs/graph-view.md:6');
-    expect(source).toContain("await runAcceptanceStep(context, 'I open the example workspace'");
-    expect(source).toContain("tests/acceptance/specs/graph-view.md:5");
+    expect(source).toContain("import { loadAcceptanceIr, runAcceptanceFeature } from './runtime';");
+    expect(source).toContain("const feature = loadAcceptanceIr('../generated-ir/graph-view.json');");
+    expect(source).toContain('runAcceptanceFeature(test, feature, {');
+    expect(source).not.toContain('/* eslint-disable playwright/expect-expect */');
+    expect(source).not.toContain("test.describe('Graph View'");
+    expect(source).not.toContain("await test.step('Given");
+  });
+
+  it('generates a shared runtime that expands background, examples, and host step handlers', () => {
+    const source = generatePlaywrightAcceptanceRuntime();
+
+    expect(source).toContain('/* eslint-disable playwright/expect-expect */');
+    expect(source).toContain('export function loadAcceptanceIr(filePath: string): AcceptanceIrDocument');
+    expect(source).toContain('export function runAcceptanceFeature(');
+    expect(source).toContain('callback: (fixtures: object, testInfo: TestInfo) => Promise<void>');
+    expect(source).toContain('test(execution.name, async ({}, testInfo) => {');
+    expect(source).not.toContain('async (_fixtures, testInfo)');
+    expect(source).toContain('steps: [...(feature.background?.steps ?? []), ...scenario.steps].map');
+    expect(source).toContain('text: renderStepText(step.text, example.values)');
+    expect(source).toContain('?? registry[step.sourceText]');
+    expect(source).toContain('const explicitName = values.case ?? values.name ?? values.title ?? values.example;');
+    expect(source).toContain('return explicitName;');
   });
 });

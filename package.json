@@ -23,7 +23,7 @@
 		"node": ">=22.22.0"
 	},
 	"scripts": {
-		"build": "esbuild src/cli/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/cli/main.js",
+		"build": "esbuild src/cli/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/cli/main.js && node scripts/copy-acceptance-templates.mjs",
 		"ci": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
 		"release": "pnpm run ci && pnpm publish --no-git-checks",
 		"changeset": "changeset",

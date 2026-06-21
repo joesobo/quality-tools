@@ -3,12 +3,12 @@
 ## Goal
 
 Add a generic `quality-tools acceptance` tool that turns human-authored
-Gherkin-ish Markdown into executable acceptance tests for host projects.
+Gherkin `.feature` files into executable acceptance tests for host projects.
 
 ## Design Decisions
 
-- Human acceptance specs live in Markdown, not TypeScript.
-- Specs use a small Gherkin-ish vocabulary: `Feature`, `Scenario`, `Given`,
+- Human acceptance specs live in `.feature` files, not TypeScript.
+- Specs use a small Gherkin vocabulary: `Feature`, `Scenario`, `Given`,
   `When`, `Then`, `And`, and `But`.
 - `quality-tools` owns parsing and Playwright test generation.
 - Host projects own step bindings and fixtures because only the host knows how
@@ -20,15 +20,17 @@ Gherkin-ish Markdown into executable acceptance tests for host projects.
 
 ## First Slice
 
-1. Parse one Markdown feature with one scenario and several steps.
+1. Parse one Gherkin feature with one scenario and several steps.
 2. Generate one Playwright spec that imports host step bindings.
 3. Add a CLI command:
 
    ```bash
    quality-tools acceptance compile \
-     --spec "tests/acceptance/specs/**/*.md" \
+     "tests/acceptance/specs/**/*.feature" \
+     "tests/playwright/generated" \
      --steps "tests/acceptance/steps.ts" \
-     --out "tests/playwright/generated/acceptance.spec.ts"
+     --ir "build/acceptance/ir" \
+     --dry "build/acceptance/dry"
    ```
 
 4. Use the command from CodeGraphy's VS Code Playwright E2E lane.
