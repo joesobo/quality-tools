@@ -1,5 +1,11 @@
 # @poleski/quality-tools
 
+## 0.2.1
+
+### Patch Changes
+
+- c3e322b: Add acceptance pipeline commands for JSON IR parsing, advisory DRY reports, and thin split Playwright entrypoints.
+
 ## 0.2.0
 
 ### Minor Changes

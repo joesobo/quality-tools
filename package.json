@@ -1,6 +1,6 @@
 {
 	"name": "@poleski/quality-tools",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"description": "Portable TypeScript quality checks for project structure, complexity, mutation, and test health",
 	"license": "MIT",
