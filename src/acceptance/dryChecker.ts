@@ -69,6 +69,12 @@ interface StepOccurrence {
   location: AcceptanceDryFindingLocation;
 }
 
+interface SimilarStepCandidate {
+  left: StepOccurrence;
+  right: StepOccurrence;
+  score: number;
+}
+
 const NEAR_DUPLICATE_THRESHOLD = 0.72;
 const POSSIBLE_SYNONYM_THRESHOLD = 0.45;
 const IGNORED_TOKENS = new Set([
@@ -220,36 +226,53 @@ function findRepeatedStepPatterns(occurrences: StepOccurrence[]): AcceptanceDryF
 }
 
 function findSimilarSteps(occurrences: StepOccurrence[]): AcceptanceDryFinding[] {
-  const findings: AcceptanceDryFinding[] = [];
+  return findSimilarStepCandidates(occurrences).map(createSimilarStepFinding);
+}
 
-  occurrences.forEach((left, leftIndex) => {
-    occurrences.slice(leftIndex + 1).forEach((right) => {
-      if (left.step.text === right.step.text) {
-        return;
-      }
+function findSimilarStepCandidates(occurrences: StepOccurrence[]): SimilarStepCandidate[] {
+  return occurrences.flatMap((left, leftIndex) =>
+    occurrences
+      .slice(leftIndex + 1)
+      .map((right) => createSimilarStepCandidate(left, right))
+      .filter((candidate): candidate is SimilarStepCandidate => candidate !== undefined)
+  );
+}
 
-      if (normalizePlaceholders(left.step.text) === normalizePlaceholders(right.step.text)) {
-        return;
-      }
+function createSimilarStepCandidate(
+  left: StepOccurrence,
+  right: StepOccurrence
+): SimilarStepCandidate | undefined {
+  if (!shouldCompareSimilarSteps(left, right)) {
+    return undefined;
+  }
 
-      const score = tokenSimilarity(left.step.text, right.step.text);
-      if (score < POSSIBLE_SYNONYM_THRESHOLD) {
-        return;
-      }
+  const score = tokenSimilarity(left.step.text, right.step.text);
+  return score >= POSSIBLE_SYNONYM_THRESHOLD ? { left, right, score } : undefined;
+}
 
-      findings.push(createFinding({
-        kind: score >= NEAR_DUPLICATE_THRESHOLD ? 'near-duplicate' : 'possible-synonym',
-        confidence: score >= NEAR_DUPLICATE_THRESHOLD ? 'medium' : 'low',
-        canonicalCandidate: left.step.text,
-        members: [left, right],
-        reason: 'step texts share similar normalized tokens',
-        score: Number(score.toFixed(3)),
-        suggestedAction: 'Review whether these steps express the same behavior before changing feature wording.'
-      }));
-    });
+function shouldCompareSimilarSteps(left: StepOccurrence, right: StepOccurrence): boolean {
+  return left.step.text !== right.step.text
+    && normalizePlaceholders(left.step.text) !== normalizePlaceholders(right.step.text);
+}
+
+function createSimilarStepFinding(candidate: SimilarStepCandidate): AcceptanceDryFinding {
+  return createFinding({
+    kind: similarStepKind(candidate.score),
+    confidence: similarStepConfidence(candidate.score),
+    canonicalCandidate: candidate.left.step.text,
+    members: [candidate.left, candidate.right],
+    reason: 'step texts share similar normalized tokens',
+    score: Number(candidate.score.toFixed(3)),
+    suggestedAction: 'Review whether these steps express the same behavior before changing feature wording.'
   });
+}
 
-  return findings;
+function similarStepKind(score: number): AcceptanceDryFindingKind {
+  return score >= NEAR_DUPLICATE_THRESHOLD ? 'near-duplicate' : 'possible-synonym';
+}
+
+function similarStepConfidence(score: number): AcceptanceDryFinding['confidence'] {
+  return score >= NEAR_DUPLICATE_THRESHOLD ? 'medium' : 'low';
 }
 
 function createLocation(

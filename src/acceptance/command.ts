@@ -38,6 +38,25 @@ interface DryCheckOptions {
   includeSimilar: boolean;
 }
 
+type AcceptanceCommandRunner = (args: string[], cwd: string) => void | Promise<void>;
+
+const ACCEPTANCE_COMMANDS = new Map<string, AcceptanceCommandRunner>([
+  ['parse', parseCommand],
+  ['dry-check', dryCheckCommand],
+  ['generate', generateCommand],
+  ['compile', compileCommand]
+]);
+
+const COMPILE_VALUE_FLAGS = [
+  '--steps',
+  '--ir',
+  '--dry',
+  '--spec',
+  '--out-dir',
+  '--ir-dir',
+  '--dry-report-dir'
+];
+
 export async function runAcceptanceCli(
   rawArgs: string[],
   options: AcceptanceCliOptions = {}
@@ -46,32 +65,12 @@ export async function runAcceptanceCli(
   const [command, ...commandArgs] = args;
   const cwd = options.cwd ?? process.cwd();
 
-  if (!command || command === '--help' || command === '-h') {
+  if (isHelpCommand(command)) {
     console.log(acceptanceUsage());
     return;
   }
 
-  if (command === 'parse') {
-    parseCommand(commandArgs, cwd);
-    return;
-  }
-
-  if (command === 'dry-check') {
-    dryCheckCommand(commandArgs, cwd);
-    return;
-  }
-
-  if (command === 'generate') {
-    generateCommand(commandArgs, cwd);
-    return;
-  }
-
-  if (command === 'compile') {
-    await compileCommand(commandArgs, cwd);
-    return;
-  }
-
-  throw new Error(acceptanceUsage());
+  await requireAcceptanceCommand(command)(commandArgs, cwd);
 }
 
 function acceptanceUsage(): string {
@@ -168,32 +167,69 @@ function parseGenerateOptions(args: string[]): GenerateOptions {
 }
 
 function parseCompileOptions(args: string[]): CompileOptions {
-  const positional = args.filter((arg, index) =>
-    !arg.startsWith('--') &&
-    !isFlagValue(args, index, ['--steps', '--ir', '--dry', '--spec', '--out-dir', '--ir-dir', '--dry-report-dir'])
-  );
-  const legacySpecPatterns = collectFlagValues(args, '--spec');
-  const specPatterns = legacySpecPatterns.length > 0 ? legacySpecPatterns : positional.slice(0, 1);
-  const generatedDir = collectFlagValues(args, '--out-dir').at(0) ?? positional[1];
-  const irDir = collectFlagValues(args, '--ir').at(0)
-    ?? collectFlagValues(args, '--ir-dir').at(0)
-    ?? path.join(generatedDir ?? '', '..', 'generated-ir');
-  const dryDir = collectFlagValues(args, '--dry').at(0)
-    ?? collectFlagValues(args, '--dry-report-dir').at(0);
-
-  if (specPatterns.length === 0 || !generatedDir) {
-    throw new Error('Usage: quality-tools acceptance compile <spec-glob> <generated-output-dir> --steps <path> [--ir <dir>] [--dry <dir>]');
-  }
+  const positional = collectPositionalArgs(args, COMPILE_VALUE_FLAGS);
+  const specPatterns = resolveCompileSpecPatterns(args, positional);
+  const generatedDir = requireCompileGeneratedDir(specPatterns, resolveGeneratedDir(args, positional));
 
   return {
     specPatterns,
     stepsPath: requireFlagValue(args, '--steps'),
     generatedDir,
-    irDir,
-    dryDir,
+    irDir: resolveIrDir(args, generatedDir),
+    dryDir: resolveDryDir(args),
     includeExact: args.includes('--include-exact'),
     includeSimilar: args.includes('--include-similar')
   };
+}
+
+function isHelpCommand(command: string | undefined): boolean {
+  return !command || command === '--help' || command === '-h';
+}
+
+function requireAcceptanceCommand(command: string | undefined): AcceptanceCommandRunner {
+  const runner = command ? ACCEPTANCE_COMMANDS.get(command) : undefined;
+  if (!runner) {
+    throw new Error(acceptanceUsage());
+  }
+
+  return runner;
+}
+
+function collectPositionalArgs(args: string[], valueFlags: string[]): string[] {
+  return args.filter((arg, index) =>
+    !arg.startsWith('--') && !isFlagValue(args, index, valueFlags)
+  );
+}
+
+function resolveCompileSpecPatterns(args: string[], positional: string[]): string[] {
+  const specFlags = collectFlagValues(args, '--spec');
+  return specFlags.length > 0 ? specFlags : positional.slice(0, 1);
+}
+
+function resolveGeneratedDir(args: string[], positional: string[]): string | undefined {
+  return collectFlagValues(args, '--out-dir').at(0) ?? positional[1];
+}
+
+function requireCompileGeneratedDir(
+  specPatterns: string[],
+  generatedDir: string | undefined
+): string {
+  if (specPatterns.length === 0 || !generatedDir) {
+    throw new Error('Usage: quality-tools acceptance compile <spec-glob> <generated-output-dir> --steps <path> [--ir <dir>] [--dry <dir>]');
+  }
+
+  return generatedDir;
+}
+
+function resolveIrDir(args: string[], generatedDir: string): string {
+  return collectFlagValues(args, '--ir').at(0)
+    ?? collectFlagValues(args, '--ir-dir').at(0)
+    ?? path.join(generatedDir, '..', 'generated-ir');
+}
+
+function resolveDryDir(args: string[]): string | undefined {
+  return collectFlagValues(args, '--dry').at(0)
+    ?? collectFlagValues(args, '--dry-report-dir').at(0);
 }
 
 function parseIrFile(cwd: string, featurePath: string): AcceptanceIrDocument {

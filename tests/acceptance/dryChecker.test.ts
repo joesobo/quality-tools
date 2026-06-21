@@ -103,6 +103,45 @@ describe('acceptance IR DRY checker', () => {
       canonical_candidate: 'src/index.ts points to src/user.ts'
     }));
   });
+
+  it('reports similar steps only when requested', () => {
+    const document: AcceptanceIrDocument = {
+      schema_version: 1,
+      source_path: 'features/graph-view.feature',
+      feature: {
+        name: 'Graph View',
+        line: 1
+      },
+      scenarios: [
+        {
+          name: 'Similar wording',
+          line: 3,
+          examples: [],
+          steps: [
+            step('Given', 'I open the graph view', 5),
+            step('When', 'I open the graph view', 6),
+            step('Then', 'I open graph panel', 7),
+            step('Then', 'I open the <target> view', 8),
+            step('Then', 'I open the <panel> view', 9),
+            step('Then', 'workspace loads unrelated fixtures', 10)
+          ]
+        }
+      ]
+    };
+
+    const defaultReport = analyzeAcceptanceIrDryness(document);
+    const similarReport = analyzeAcceptanceIrDryness(document, { includeSimilar: true });
+
+    expect(defaultReport.findings).not.toContainEqual(expect.objectContaining({
+      kind: 'possible-synonym'
+    }));
+    expect(similarReport.findings).toContainEqual(expect.objectContaining({
+      kind: 'possible-synonym',
+      confidence: 'low',
+      canonical_candidate: 'I open the graph view',
+      score: 0.5
+    }));
+  });
 });
 
 function step(keyword: 'Given' | 'When' | 'Then' | 'And' | 'But', text: string, line: number) {
