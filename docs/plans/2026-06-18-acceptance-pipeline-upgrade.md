@@ -25,8 +25,8 @@ keeping this package TypeScript-native and host-project-neutral.
   in shared generated helper code plus host-owned step handlers.
 - Expose Uncle Bob-style primitive commands: `parse`, `dry-check`, and
   `generate`. Keep `compile` as the glob loop for host projects with many specs.
-- Support split generated output by source spec, but keep a single-file output
-  mode for existing hosts during migration.
+- Support split generated output by source spec so large host suites can rerun
+  and shard around focused entrypoints.
 - Do not implement acceptance mutation in this slice.
 
 ## First Upgrade Slice

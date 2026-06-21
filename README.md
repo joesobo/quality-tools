@@ -279,7 +279,7 @@ root, then falls back to the bundled base config.
 ## Other Tools
 
 ```bash
-pnpm exec quality-tools acceptance compile --spec "tests/acceptance/specs/**/*.feature" --steps "tests/acceptance/steps.ts" --out "tests/playwright/generated/acceptance.spec.ts"
+pnpm exec quality-tools acceptance compile "tests/acceptance/specs/**/*.feature" "tests/playwright/generated" --steps "tests/acceptance/steps.ts" --ir "build/acceptance/ir" --dry "build/acceptance/dry"
 pnpm exec quality-tools organize ./src
 pnpm exec quality-tools boundaries parser --strict
 pnpm exec quality-tools reachability parser --strict

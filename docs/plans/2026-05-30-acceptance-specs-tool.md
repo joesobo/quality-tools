@@ -26,9 +26,11 @@ Gherkin `.feature` files into executable acceptance tests for host projects.
 
    ```bash
    quality-tools acceptance compile \
-     --spec "tests/acceptance/specs/**/*.feature" \
+     "tests/acceptance/specs/**/*.feature" \
+     "tests/playwright/generated" \
      --steps "tests/acceptance/steps.ts" \
-     --out "tests/playwright/generated/acceptance.spec.ts"
+     --ir "build/acceptance/ir" \
+     --dry "build/acceptance/dry"
    ```
 
 4. Use the command from CodeGraphy's VS Code Playwright E2E lane.
