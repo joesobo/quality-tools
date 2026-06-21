@@ -27,6 +27,8 @@ keeping this package TypeScript-native and host-project-neutral.
   `generate`. Keep `compile` as the glob loop for host projects with many specs.
 - Support split generated output by source spec so large host suites can rerun
   and shard around focused entrypoints.
+- Copy the shared Playwright runtime from a checked template so generator code
+  stays focused on paths and entrypoints.
 - Do not implement acceptance mutation in this slice.
 
 ## First Upgrade Slice
